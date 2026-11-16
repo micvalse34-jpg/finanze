@@ -1,0 +1,1408 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Finanze personali</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&display=swap">
+<style>
+:root{
+  --bg:#F1F5F0;--ink:#14302A;--muted:#4A5F59;--card:#FFFFFF;--line:#DCE5DF;--border:#B9C8C1;--track:#E6ECE8;
+  --pri:#0E4F47;--pri-ink:#FFFFFF;--pri-soft:#CFE9E2;--pri-track:#1F6B60;--amb:#F4B740;--amb-ink:#14302A;--link:#0B6B5E;
+  --verde-bg:#DDF3E6;--verde-fg:#0B5D3B;--verde:#1E9E6A;--blu-bg:#E3EEFD;--blu-fg:#1D4FA8;--blu:#2F6FDE;--obbl:#BFD6FA;
+  --ambra-bg:#FCE9B8;--ambra-fg:#6B4A00;--ambra:#E0A21C;--corallo-bg:#FDE7DF;--corallo-fg:#9A3412;--corallo:#E8684A;
+  --rosa-bg:#FBE1EC;--rosa-fg:#9D174D;--rosa:#D6457F;--viola-bg:#ECE6FD;--viola-fg:#5B3FC4;--viola:#7A5AF8;
+  --petrolio-bg:#D5F0F0;--petrolio-fg:#0F5E63;--petrolio:#1597A0;--grigio-bg:#E6ECE8;--grigio-fg:#4A5F59;--grigio:#9AACA5;
+  --disp:'Space Grotesk',Inter,system-ui,sans-serif;--testo:Inter,system-ui,-apple-system,'Segoe UI',sans-serif;
+  box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){color-scheme:dark;
+  --bg:#0E1815;--ink:#E7F0EC;--muted:#A3B8B0;--card:#17251F;--line:#283A33;--border:#3D534A;--track:#283A33;
+  --pri:#0E4F47;--pri-soft:#CFE9E2;--pri-track:#1F6B60;--link:#7FD3C2;
+  --verde-bg:#173D2C;--verde-fg:#A6E3C4;--blu-bg:#1B2F52;--blu-fg:#B5CFFA;--obbl:#3B5E9E;
+  --ambra-bg:#4A3908;--ambra-fg:#F8DD95;--corallo-bg:#4D2416;--corallo-fg:#F9C3B0;--rosa-bg:#4A1A30;--rosa-fg:#F6B7D0;
+  --viola-bg:#2E2459;--viola-fg:#CFC3FB;--petrolio-bg:#103E41;--petrolio-fg:#A5E3E6;--grigio-bg:#283A33;--grigio-fg:#A3B8B0;}}
+:root[data-theme="dark"]{color-scheme:dark;
+  --bg:#0E1815;--ink:#E7F0EC;--muted:#A3B8B0;--card:#17251F;--line:#283A33;--border:#3D534A;--track:#283A33;
+  --pri:#0E4F47;--pri-soft:#CFE9E2;--pri-track:#1F6B60;--link:#7FD3C2;
+  --verde-bg:#173D2C;--verde-fg:#A6E3C4;--blu-bg:#1B2F52;--blu-fg:#B5CFFA;--obbl:#3B5E9E;
+  --ambra-bg:#4A3908;--ambra-fg:#F8DD95;--corallo-bg:#4D2416;--corallo-fg:#F9C3B0;--rosa-bg:#4A1A30;--rosa-fg:#F6B7D0;
+  --viola-bg:#2E2459;--viola-fg:#CFC3FB;--petrolio-bg:#103E41;--petrolio-fg:#A5E3E6;--grigio-bg:#283A33;--grigio-fg:#A3B8B0;}
+*,*::before,*::after{box-sizing:border-box}
+html{scroll-padding-top:env(safe-area-inset-top,0px);height:100%}
+body{margin:0;min-height:100%;background:var(--bg);color:var(--ink);font-family:var(--testo);font-size:14px;line-height:1.4;-webkit-text-size-adjust:100%}
+a{color:var(--link)}
+h1{margin:0;font-family:var(--disp);font-size:28px;font-weight:700;letter-spacing:-.5px;line-height:1.15}
+h2{margin:0;font-family:var(--disp);font-size:17px;font-weight:600}
+p{margin:0}
+hr{border:0;height:1px;background:var(--line);margin:0;width:100%}
+button,input,select,textarea{font:inherit;color:inherit}
+.vh{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.app{max-width:1120px;margin:0 auto}
+main{padding:28px 20px 110px;display:flex;flex-direction:column;gap:16px;max-width:560px;margin:0 auto}
+nav{position:fixed;left:0;right:0;bottom:0;z-index:20;background:var(--card);border-top:1px solid var(--line);padding:8px 8px calc(10px + env(safe-area-inset-bottom,0px));display:flex;justify-content:space-between}
+nav a{flex:1;min-height:48px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;font-size:11px;font-weight:500;color:var(--muted);text-decoration:none;border-radius:14px}
+nav a[aria-current]{font-weight:600;color:var(--verde-fg);background:var(--verde-bg)}
+.testa{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
+.testa-az{display:flex;align-items:center;gap:8px;flex-shrink:0}
+.sopra{font-size:13px;color:var(--muted);margin-bottom:4px}
+.indietro{align-self:flex-start;min-height:44px;display:flex;align-items:center;font-size:14px;font-weight:600;text-decoration:none;margin-bottom:-12px}
+.tondo{width:44px;height:44px;border-radius:999px;background:var(--card);color:var(--ink);display:flex;align-items:center;justify-content:center}
+.card{background:var(--card);border-radius:20px;padding:18px;display:flex;flex-direction:column;gap:14px;text-decoration:none;color:inherit}
+.card-testa{display:flex;justify-content:space-between;align-items:baseline;gap:12px}
+.gr{font-family:var(--disp);font-size:17px;font-weight:700;white-space:nowrap}
+.gr.grande{font-size:24px}
+.sotto{font-size:12px;color:var(--muted)}
+.sotto.warn,.warn{color:var(--corallo-fg)}
+.centro{text-align:center}
+.fonte{font-size:12px;color:var(--muted);padding:0 4px}
+.card .fonte{padding:0}
+.titolino{font-size:15px;font-weight:600}
+.titolino.spazio{margin-top:6px;font-size:13px}
+.nome{font-size:14px;font-weight:500}
+.nome.piccolo{font-size:13px;font-weight:400}
+.numero{font-family:var(--disp);font-size:30px;font-weight:700}
+.rosso{color:var(--corallo-fg)}
+.verde{color:var(--verde-fg)}
+.cresce{flex:1;min-width:0}
+.chip{display:inline-block;font-size:12px;font-weight:600;padding:2px 8px;border-radius:999px;white-space:nowrap;vertical-align:middle}
+.chip-link{padding:6px 10px;text-decoration:none}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.t-verde{background:var(--verde-bg);color:var(--verde-fg)}.t-blu{background:var(--blu-bg);color:var(--blu-fg)}.t-ambra{background:var(--ambra-bg);color:var(--ambra-fg)}
+.t-corallo{background:var(--corallo-bg);color:var(--corallo-fg)}.t-rosa{background:var(--rosa-bg);color:var(--rosa-fg)}.t-viola{background:var(--viola-bg);color:var(--viola-fg)}
+.t-petrolio{background:var(--petrolio-bg);color:var(--petrolio-fg)}.t-grigio{background:var(--grigio-bg);color:var(--grigio-fg)}
+.t-pieno,.t-ambra-p{background:var(--amb);color:var(--amb-ink)}.t-primario{background:var(--pri);color:var(--pri-ink)}
+.c-verde{background:var(--verde)}.c-blu{background:var(--blu)}.c-ambra{background:var(--ambra)}.c-corallo{background:var(--corallo)}.c-rosa{background:var(--rosa)}
+.c-viola{background:var(--viola)}.c-petrolio{background:var(--petrolio)}.c-primario{background:var(--pri)}.c-grigio{background:var(--grigio)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .c-primario{background:#2FA08F}}
+:root[data-theme="dark"] .c-primario{background:#2FA08F}
+.eroe,.scura{background:var(--pri);color:var(--pri-ink)}
+.eroe{border-radius:24px;padding:20px}
+.eroe-testa{display:flex;justify-content:space-between;align-items:center;gap:10px;font-size:14px;color:var(--pri-soft)}
+.eroe-num{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
+.eroe-num strong{font-family:var(--disp);font-size:46px;font-weight:700;letter-spacing:-1px;line-height:1.05}
+.eroe-num span,.eroe-nota,.eroe-testo,.chiaro{font-size:14px;color:var(--pri-soft)}
+.eroe-nota{font-size:13px}
+.barra{height:8px;background:var(--track);border-radius:999px;display:flex;overflow:hidden}
+.barra>div{border-radius:999px;transition:width .5s ease}
+@media (prefers-reduced-motion:reduce){.barra>div{transition:none}}
+.barra.su-primario{height:10px;background:var(--pri-track)}
+.barra.su-primario>div{background:var(--amb)}
+.seg{height:14px;display:flex;gap:3px}
+.seg>div{border-radius:999px;min-width:6px}
+.elenco{display:flex;flex-direction:column;gap:12px}
+.elenco.fitto{gap:8px}
+.dest{display:flex;align-items:center;gap:10px;font-size:14px}
+.dest strong{min-width:72px;text-align:right;font-weight:600}
+.pallino{width:10px;height:10px;border-radius:999px;flex-shrink:0}
+.tbar{height:34px;display:flex;gap:3px;font-size:13px;font-weight:600}
+.tbar>div{border-radius:10px;display:flex;align-items:center;padding-left:10px;overflow:hidden;white-space:nowrap}
+.tbar .az{background:var(--pri);color:#fff}.tbar .ob{background:var(--obbl);color:#14302A;padding-left:8px}.tbar .mf{flex:1;background:var(--amb);color:#14302A;justify-content:center;padding:0}
+.tbar.chiaro{height:30px;font-size:12px}.tbar.chiaro .az{background:#fff;color:#14302A}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .tbar .ob{color:#fff}:root:not([data-theme="light"]) .tbar:not(.chiaro) .az{background:#2FA08F;color:#06221D}}
+:root[data-theme="dark"] .tbar .ob{color:#fff}:root[data-theme="dark"] .tbar:not(.chiaro) .az{background:#2FA08F;color:#06221D}
+.scad{display:flex;align-items:center;gap:12px;font-size:14px;text-align:left}
+.scad strong{font-weight:600;white-space:nowrap}
+.quando{width:46px;height:46px;border-radius:14px;font-size:12px;font-weight:600;display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1.15;flex-shrink:0}
+.quando b{font-size:16px;font-weight:600}
+.pn{display:flex;justify-content:space-between;align-items:center;padding:6px 4px;text-decoration:none;color:var(--muted);font-size:13px;min-height:44px}
+.pn strong{font-family:var(--disp);font-size:16px;font-weight:700;color:var(--ink)}
+.busta{display:flex;align-items:center;gap:12px}
+.busta .cresce{display:flex;flex-direction:column;gap:6px}
+.busta-testa{display:flex;justify-content:space-between;gap:10px;font-size:14px}
+.busta-testa span{font-weight:500}.busta-testa strong{font-weight:600;white-space:nowrap}
+.ico{width:42px;height:42px;border-radius:13px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.riga{display:flex;justify-content:space-between;align-items:center;gap:12px;font-size:14px;width:100%;text-align:left}
+.riga>span:first-child{font-weight:500}
+.riga .imp{font-weight:600;text-align:right;white-space:nowrap}
+.riga.rosso{color:var(--corallo-fg)}
+.voce,.etf{display:flex;align-items:center;gap:12px;text-align:left;text-decoration:none;color:inherit;width:100%}
+.voce strong,.etf strong{font-size:15px;font-weight:600;white-space:nowrap}
+.peso{width:48px;height:34px;border-radius:10px;font-size:13px;font-weight:600;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.nudo{background:none;border:0;padding:0;cursor:pointer;min-height:44px}
+.bottoni{display:flex;gap:10px}
+.bottoni.colonna{flex-direction:column}
+.btn{flex:1;min-height:46px;border:1.5px solid var(--border);border-radius:14px;background:var(--card);color:var(--ink);font-size:15px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;text-align:center;padding:8px 14px;text-decoration:none}
+.btn.primario{border-color:var(--amb);background:var(--amb);color:var(--amb-ink)}
+.btn.su-scuro{background:transparent;color:#fff;border-color:var(--pri-soft)}
+.btn.scelto{border-color:var(--pri);box-shadow:inset 0 0 0 1px var(--pri)}
+.btn:disabled,.quadro:disabled{opacity:.45;cursor:default}
+.link{background:none;border:0;padding:0;min-height:44px;color:var(--link);font-size:13px;font-weight:600;cursor:pointer;align-self:flex-start}
+.link.rosso{color:var(--corallo-fg);align-self:center;white-space:nowrap}
+.card>.link{margin:-8px 0}
+.pillola{min-height:44px;padding:0 14px;border:1.5px solid var(--border);border-radius:999px;background:var(--card);font-size:13px;font-weight:500;cursor:pointer}
+.nota-ambra{background:var(--ambra-bg);color:var(--ink)}
+.nota-ambra .sotto{color:var(--ink);font-size:13px}
+.attesa{border:1.5px dashed var(--ambra)}
+.bolla{align-self:flex-end;max-width:270px;font-size:14px;padding:10px 14px;border-radius:16px 16px 4px 16px;background:var(--pri);color:#fff;display:flex;align-items:center;gap:8px}
+.bolla.app{align-self:flex-start;background:var(--card);color:var(--muted);border-radius:16px 16px 16px 4px}
+.scrivi{display:flex;align-items:center;gap:8px;background:var(--bg);border-radius:18px;padding:6px 6px 6px 14px}
+.scrivi.fondo{background:var(--card);position:sticky;bottom:calc(84px + env(safe-area-inset-bottom,0px));box-shadow:0 4px 18px rgba(0,0,0,.08)}
+.scrivi input{flex:1;min-width:0;min-height:44px;border:0;outline:0;background:transparent;font-size:16px}
+.quadro{width:44px;height:44px;border:0;border-radius:14px;display:flex;align-items:center;justify-content:center;flex-shrink:0;cursor:pointer}
+.filebtn{cursor:pointer;position:relative}
+.form{display:flex;flex-direction:column;gap:12px}
+.form label{display:flex;flex-direction:column;gap:6px;font-size:13px;font-weight:500;color:var(--muted)}
+.form input,.form select,input[type=search]{min-height:46px;border:1.5px solid var(--border);border-radius:12px;background:var(--card);color:var(--ink);padding:0 12px;font-size:16px;width:100%}
+input.mini{width:108px;min-height:40px;border:1.5px solid var(--border);border-radius:10px;background:var(--card);padding:0 10px;text-align:right;font-size:16px;font-weight:600}
+:focus-visible{outline:2px solid var(--blu);outline-offset:2px}
+.passo{display:flex;align-items:center;gap:12px;font-size:15px;font-weight:600}
+.passo b{width:32px;height:32px;border-radius:999px;background:var(--pri);color:#fff;font-family:var(--disp);font-size:15px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.velo{position:fixed;inset:0;background:rgba(8,20,17,.5);z-index:40}
+.foglio{position:fixed;left:0;right:0;bottom:0;z-index:41;background:var(--card);border-radius:24px 24px 0 0;padding:22px 20px calc(22px + env(safe-area-inset-bottom,0px));display:flex;flex-direction:column;gap:16px;max-height:88%;overflow-y:auto;max-width:560px;margin:0 auto}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(96px + env(safe-area-inset-bottom,0px));z-index:60;background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:14px;font-size:14px;font-weight:500;max-width:90%;text-align:center}
+.export{width:100%;height:160px;border:1.5px solid var(--border);border-radius:12px;background:var(--bg);font-family:ui-monospace,monospace;font-size:11px;padding:8px}
+.blocco-link{cursor:pointer}
+.griglia{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.eroe-num strong.medio{font-size:28px;letter-spacing:-.5px;line-height:1.15}
+.storico{display:flex;flex-direction:column;gap:6px;padding-bottom:6px}
+a.link{display:inline-flex;align-items:center;text-decoration:none}
+.scad .link,.voce .link{align-self:center;white-space:nowrap}
+@media (min-width:900px){
+  .app{display:grid;grid-template-columns:220px 1fr;gap:8px}
+  nav{position:sticky;top:0;align-self:start;height:100vh;flex-direction:column;justify-content:flex-start;gap:6px;border-top:0;border-right:1px solid var(--line);padding:28px 12px;background:transparent}
+  nav a{flex:0 0 auto;flex-direction:row;justify-content:flex-start;gap:12px;padding:0 14px;font-size:14px}
+  main{max-width:none;margin:0;padding:28px 28px 60px;display:block;columns:2;column-gap:16px}
+  main>*{break-inside:avoid;margin-bottom:16px}
+  main>.indietro{margin-bottom:4px}
+  main[data-vista="assistente"],main[data-vista="chiusura"],main[data-vista="mensilita"],main[data-vista="simula"],main[data-vista="note"],main[data-vista="decisioni"],main[data-vista="rotta"]{columns:1;max-width:640px}
+  main>.testa,main>.indietro,main>.fonte,main>.pn,main>.chips,main>.bottoni,main>.centro{column-span:all}
+  main>.bolla{width:fit-content;margin-left:auto}
+  main>.bottoni{max-width:520px}
+  .scrivi.fondo{bottom:20px}
+  .foglio{bottom:auto;top:50%;left:50%;right:auto;transform:translate(-50%,-50%);border-radius:24px;width:520px}
+  .toast{bottom:32px}
+}
+
+</style>
+</head>
+<body>
+<div class="app">
+<nav id="nav" aria-label="Sezioni"></nav>
+<main id="main"></main>
+</div>
+<div id="strato"><div id="foglio"></div><div id="toast"></div></div>
+<script>
+"use strict";
+/* ===== Stato e archivi ===== */
+const ARCHIVI = ['parametri','conti','saldi','destinazioni','buste','spese_fisse','movimenti','mesi','posizioni','operazioni','fondo_pensione'];
+const S = { a:{}, caricati:{}, uid:null, db:null, sample:null, limiti:null, dett:null, down:null, pronto:false, errore:null, lento:false, mancanti:new Set() };
+ARCHIVI.forEach(n => S.a[n] = {});
+
+/* ===== Date ===== */
+const pad = n => String(n).padStart(2,'0');
+const iso = d => d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());
+const parse = s => { const p = String(s).split('-').map(Number); return new Date(p[0], (p[1]||1)-1, p[2]||1); };
+const oggi = () => { if (window.__OGGI) return parse(window.__OGGI); const d = new Date(); return new Date(d.getFullYear(), d.getMonth(), d.getDate()); };
+const piuGiorni = (d,n) => new Date(d.getFullYear(), d.getMonth(), d.getDate()+n);
+const giorniTra = (a,b) => Math.round((b-a)/864e5);
+const MESI = ['gen','feb','mar','apr','mag','giu','lug','ago','set','ott','nov','dic'];
+const MESI_L = ['gennaio','febbraio','marzo','aprile','maggio','giugno','luglio','agosto','settembre','ottobre','novembre','dicembre'];
+const GIORNI = ['domenica','lunedì','martedì','mercoledì','giovedì','venerdì','sabato'];
+const dataBreve = d => { d = typeof d==='string' ? parse(d) : d; return d.getDate()+' '+MESI[d.getMonth()]; };
+const dataMedia = d => { d = typeof d==='string' ? parse(d) : d; return d.getDate()+' '+MESI[d.getMonth()]+' '+d.getFullYear(); };
+const dataLunga = d => GIORNI[d.getDay()]+' '+d.getDate()+' '+MESI_L[d.getMonth()];
+const isData = s => typeof s==='string' && /^\d{4}-\d{2}-\d{2}$/.test(s) && !isNaN(parse(s));
+
+/* ===== Parametri: unica fonte dei valori delle regole ===== */
+function par(k){ const p = S.a.parametri[k]; if (!p) { S.mancanti.add(k); return null; } return p; }
+function P(k){ const p = par(k); if (!p) return null; const v = Number(p.valore); return isFinite(v) ? v : null; }
+function PS(k){ const p = par(k); return p ? String(p.valore) : null; }
+function fonte(k){ const p = S.a.parametri[k]; if (!p) return ''; return p.documento + (p.sezione ? ' §'+p.sezione : ''); }
+function fonteDoc(o){ return o && o.documento ? o.documento + (o.sezione ? ' §'+o.sezione : '') : ''; }
+const lista = (arch) => Object.entries(S.a[arch]).map(([id,v]) => Object.assign({id}, v));
+const ordinati = (arch) => lista(arch).sort((a,b) => (a.ordine||0)-(b.ordine||0));
+const confermati = (arch) => lista(arch).filter(x => x.stato !== 'non_confermato');
+const inAttesa = (arch) => lista(arch).filter(x => x.stato === 'non_confermato');
+const clamp = (v,a,b) => Math.max(a, Math.min(b, v));
+const r2 = v => Math.round(v*100)/100;
+
+/* ===== Mese di budget (BUDGET §10.1) ===== */
+function meseDi(d){
+  const g = P('budget.mese.giorno_inizio') || 10;
+  let y = d.getFullYear(), m = d.getMonth();
+  if (d.getDate() < g) m--;
+  const inizio = new Date(y, m, g);
+  const fine = new Date(inizio.getFullYear(), inizio.getMonth()+1, g-1);
+  return { id: inizio.getFullYear()+'-'+pad(inizio.getMonth()+1), inizio, fine, prossimo: piuGiorni(fine,1) };
+}
+function meseDaId(id){ const p = id.split('-').map(Number); return meseDi(new Date(p[0], p[1]-1, P('budget.mese.giorno_inizio') || 10)); }
+function mesePrec(m){ return meseDi(piuGiorni(m.inizio, -1)); }
+const etichettaMese = m => dataBreve(m.inizio)+' – '+dataBreve(m.fine);
+function accredito(y, m){ const g = P('budget.stipendio.giorno_accredito') || 10; let d = new Date(y, m, g); while (d.getDay()===0 || d.getDay()===6 || festivo(d)) d = piuGiorni(d,1); return d; }
+function prossimoStipendio(){ const t = oggi(); for (let i = 0; i < 3; i++) { const d = accredito(t.getFullYear(), t.getMonth()+i); if (d > t) return d; } return meseDi(t).prossimo; }
+const giorniAlloStipendio = () => giorniTra(oggi(), prossimoStipendio());
+const nelMese = (dataIso, m) => dataIso >= iso(m.inizio) && dataIso <= iso(m.fine);
+
+function stipendioAtteso(dataIso){
+  let best = null;
+  for (const [k,p] of Object.entries(S.a.parametri)) {
+    if (!k.startsWith('budget.stipendio.netto.') || !p.valido_dal || p.valido_dal > dataIso) continue;
+    if (!best || p.valido_dal > best.valido_dal) best = Object.assign({k}, p);
+  }
+  return best ? { importo: Number(best.valore), chiave: best.k } : null;
+}
+const TIPI_MENSILITA = {
+  tredicesima: 'Tredicesima', quattordicesima: 'Quattordicesima', premio: 'Premio di risultato',
+  una_tantum: 'Una tantum', premio_extra: 'Premio extra', rimborso_730: 'Rimborso 730'
+};
+function mensilitaDelMese(meseNum){
+  const out = [];
+  for (const t of ['tredicesima','quattordicesima','premio'])
+    if (P('budget.mensilita.'+t+'.mese') === meseNum) out.push({ tipo:t, nome:TIPI_MENSILITA[t], importo:P('budget.mensilita.'+t+'.importo') });
+  return out;
+}
+
+/* ===== Buste (BUDGET §10.2) ===== */
+function saldoBusta(id){
+  let s = 0;
+  for (const m of confermati('movimenti')) {
+    if (m.busta !== id) continue;
+    if (m.tipo === 'alimentazione' || m.tipo === 'rettifica') s += m.importo;
+    else if (m.tipo === 'spesa' || m.tipo === 'non_registrate') s -= m.importo;
+  }
+  return r2(s);
+}
+function alimentatoAnno(id, anno){
+  let s = 0;
+  for (const m of confermati('movimenti')) if (m.busta === id && m.tipo === 'alimentazione' && String(m.data).slice(0,4) === String(anno)) s += m.importo;
+  return r2(s);
+}
+const importoBusta = b => P(b.param);
+function statoBuste(){
+  return ordinati('buste').map(b => { const imp = importoBusta(b), saldo = saldoBusta(b.id); return Object.assign({}, b, { importo: imp, saldo, perc: imp ? clamp(saldo/imp*100, 0, 100) : 0 }); });
+}
+const bustaQuotidiana = () => ordinati('buste').find(b => b.assorbe_non_registrate) || null;
+const saldoTotaleBuste = () => r2(statoBuste().reduce((s,b) => s + Math.max(0,b.saldo), 0));
+
+/* ===== Conti e saldi (BUDGET §10.1, PATRIMONIO §1) ===== */
+function ultimoSaldo(conto, entro){
+  let best = null;
+  for (const s of confermati('saldi')) {
+    if (s.oggetto === 'posizione' || s.conto !== conto) continue;
+    if (entro && s.data > entro) continue;
+    if (!best || s.data > best.data || (s.data === best.data && (s.creato||'') > (best.creato||''))) best = s;
+  }
+  return best;
+}
+function quotaConto(c){ const q = P(c.param_quota); return q == null ? null : q/100; }
+function liquidita(entro, soloCorrenti){
+  const righe = []; let tot = 0; const mancanti = [];
+  for (const c of ordinati('conti')) {
+    if (c.classe !== 'liquidita') continue;
+    if (soloCorrenti && c.tipo !== 'corrente') continue;
+    const s = ultimoSaldo(c.id, entro), q = quotaConto(c);
+    if (!s || q == null) { mancanti.push(c); righe.push({ c, s:null, valore:null, q }); continue; }
+    const v = r2(s.importo*q); tot += v; righe.push({ c, s, valore:v, q });
+  }
+  return { totale: r2(tot), righe, mancanti, completo: mancanti.length === 0 && righe.length > 0 };
+}
+function eVecchio(dataIso, chiave){ const g = P(chiave); if (!dataIso || g == null) return false; return giorniTra(parse(dataIso), oggi()) > g; }
+function giacenze(){
+  const out = [];
+  for (const c of ordinati('conti')) {
+    if (!c.param_minimo) continue;
+    const s = ultimoSaldo(c.id), min = P(c.param_minimo), pieno = c.param_pieno ? P(c.param_pieno) : null;
+    let stato = 'manca';
+    if (s && min != null) stato = s.importo < min ? 'sotto' : (pieno != null && s.importo >= pieno ? 'pieno' : 'ok');
+    out.push({ c, s, min, pieno, stato });
+  }
+  return out;
+}
+
+/* ===== Liquidità per destinazione (INVESTIMENTI §1–2) ===== */
+function rateEseguite(){
+  const set = new Set(); let tot = 0;
+  for (const o of confermati('operazioni')) if (o.tipo === 'rata_ingresso') { set.add(o.rata); tot += o.importo; }
+  return { numeri:set, totale:r2(tot) };
+}
+function destinazioni(){
+  const L = liquidita();
+  let resto = L.totale; const righe = []; let scoperto = false;
+  const D = S.a.destinazioni;
+  const prendi = (id, voluto, extra) => {
+    const v = r2(clamp(voluto, 0, Math.max(0, resto))); if (v < voluto - 0.005) scoperto = true; resto = r2(resto - v);
+    righe.push(Object.assign({ id, nome:(D[id]||{}).nome || id, colore:(D[id]||{}).colore, valore:v, obiettivo:voluto, pieno: v >= voluto - 0.005, fonte: fonteDoc(D[id]) }, extra||{}));
+  };
+  const fe = P('investimenti.fondo_emergenza.importo'), rc = P('investimenti.riserva_casa.importo'), go = P('budget.giacenza_operativa');
+  const usato = (D.fondo_emergenza||{}).utilizzato || 0;
+  if (fe != null) prendi('fondo_emergenza', Math.max(0, fe - usato), { usato, target:fe });
+  if (rc != null) prendi('riserva_casa', rc, { target:rc });
+  if (go != null) prendi('giacenza_operativa', go, { target:go });
+  const sb = saldoTotaleBuste();
+  if (sb > 0) prendi('buste', sb, {});
+  const di = D.da_investire || {};
+  const fissato = di.importo_fissato != null;
+  if (fissato) {
+    const residuo = Math.max(0, di.importo_fissato - rateEseguite().totale);
+    prendi('da_investire', residuo, { fissato:true });
+    righe.push({ id:'corrente', nome:'Liquidità del mese', colore:'grigio', valore:r2(resto), obiettivo:null, pieno:true, fonte:'BUDGET §10.4' });
+  } else {
+    righe.push({ id:'da_investire', nome:(di.nome||'Da investire'), colore:di.colore, valore:r2(Math.max(0,resto)), obiettivo:null, pieno:true, fissato:false, fonte:fonteDoc(di) });
+  }
+  return { totale:L.totale, righe, completo:L.completo, mancanti:L.mancanti, scoperto };
+}
+function extraDaInvestire(){
+  let dest = 0, fatto = 0;
+  for (const d of lista('destinazioni')) if (d.tipo === 'mensilita') dest += d.portafoglio || 0;
+  for (const o of confermati('operazioni')) if (o.tipo === 'risparmio_extra') fatto += o.importo;
+  return r2(Math.max(0, dest - fatto));
+}
+
+/* ===== Spese fisse ===== */
+function occorrenze(sf, da, a){
+  if (sf.giorno == null || sf.giorno === '') return [];
+  const out = [];
+  for (let i = -1; i < 15; i++) {
+    const mm = new Date(da.getFullYear(), da.getMonth()+i, 1);
+    const ult = new Date(mm.getFullYear(), mm.getMonth()+1, 0).getDate();
+    const g = sf.giorno === 'fine' ? ult : Math.min(Number(sf.giorno), ult);
+    const d = new Date(mm.getFullYear(), mm.getMonth(), g);
+    if (d > a) break; if (d < da) continue;
+    if (Array.isArray(sf.mesi) && sf.mesi.length && !sf.mesi.includes(mm.getMonth()+1)) continue;
+    if (sf.dal && iso(d) < sf.dal) continue; if (sf.al && iso(d) > sf.al) continue;
+    out.push(d);
+  }
+  return out;
+}
+const mediaMensile = sf => r2(sf.importo * (sf.occorrenze_anno||12) / 12);
+const attiva = (sf, m) => !(sf.al && sf.al < iso(m.inizio)) && !(sf.dal && sf.dal > iso(m.fine));
+function fisseMese(m){
+  const datate = [], senzaData = []; let tot = 0; const t = oggi();
+  for (const sf of ordinati('spese_fisse')) {
+    if (!attiva(sf, m)) continue;
+    const segno = sf.entrata ? -1 : 1;
+    if (sf.giorno == null || sf.giorno === '') { const v = mediaMensile(sf); senzaData.push({ sf, importo:v, segno }); tot += segno*v; continue; }
+    for (const d of occorrenze(sf, m.inizio, m.fine)) { datate.push({ sf, data:d, importo:sf.importo, segno, pagata: d < t }); tot += segno*sf.importo; }
+  }
+  datate.sort((a,b) => a.data-b.data);
+  const daPagare = r2(datate.filter(x => !x.pagata && x.segno > 0).reduce((s,x) => s+x.importo, 0));
+  return { datate, senzaData, totale:r2(tot), daPagare };
+}
+
+/* ===== Calendario ===== */
+function pasqua(y){ const a=y%19,b=Math.floor(y/100),c=y%100,d=Math.floor(b/4),e=b%4,f=Math.floor((b+8)/25),g=Math.floor((b-f+1)/3),h=(19*a+b-d-g+15)%30,i=Math.floor(c/4),k=c%4,l=(32+2*e+2*i-h-k)%7,m=Math.floor((a+11*h+22*l)/451),mo=Math.floor((h+l-7*m+114)/31),da=((h+l-7*m+114)%31)+1; return new Date(y,mo-1,da); }
+function festivo(d){
+  const md = pad(d.getMonth()+1)+'-'+pad(d.getDate());
+  if (['01-01','01-06','04-25','05-01','06-02','08-15','11-01','12-08','12-25','12-26'].includes(md)) return true;
+  return iso(piuGiorni(pasqua(d.getFullYear()),1)) === iso(d);
+}
+function primoLavorativo(y, m){ let d = new Date(y, m, 1); while (d.getDay()===0 || d.getDay()===6 || festivo(d)) d = piuGiorni(d,1); return d; }
+
+/* ===== Target del portafoglio (POLICY §6–7) ===== */
+function eta(d){ const n = PS('personale.nascita'); if (!n) return null; const p = n.split('-').map(Number); let e = d.getFullYear()-p[0]; if (d.getMonth()+1 < p[1]) e--; return e; }
+function azioniFormula(d, prec, ffOverride){
+  const base=P('policy.formula.base'), k=P('policy.formula.coefficiente'), mn=P('policy.formula.ff_min'), mx=P('policy.formula.ff_max'), e=eta(d), blocco=P('policy.formula.eta_blocco');
+  const ff0 = ffOverride != null ? ffOverride : P('policy.fed_funds.punto_medio');
+  if ([base,k,mn,mx,e,ff0].some(v => v == null)) return null;
+  let a = Math.round(base - e - k*clamp(ff0, mn, mx));
+  if (blocco != null && e > blocco) a = Math.round(base - blocco - k*clamp(ff0, mn, mx));
+  const lim = P('policy.formula.variazione_max');
+  if (prec != null && lim != null) a = clamp(a, prec-lim, prec+lim);
+  return a;
+}
+function blocchi(az){ const mf = P('policy.target.managed_futures'); if (az == null || mf == null) return null; return { azioni:az, obbligazioni:100-mf-az, managed_futures:mf }; }
+function target(perData){
+  const p = par('policy.target.azioni'); if (!p) return null;
+  const inVigore = Number(p.valore), anno = p.anno || Number(String(p.versione||'').slice(0,4));
+  const ricalcolo = primoLavorativo(anno+1, 0);
+  const prob = azioniFormula(ricalcolo, inVigore);
+  const d = perData || oggi();
+  const usaProb = d >= ricalcolo && prob != null;
+  return { inVigore: blocchi(inVigore), probabile: blocchi(prob), ricalcolo, anno, daConfermare: oggi() >= ricalcolo, attivo: blocchi(usaProb ? prob : inVigore), attivoProbabile: usaProb };
+}
+function pesiETF(bl){
+  if (!bl) return {};
+  const out = {};
+  for (const nome of ['azioni','obbligazioni','managed_futures']) {
+    const etf = ordinati('posizioni').filter(e => e.blocco === nome); if (!etf.length) continue;
+    const nucleo = etf.find(e => e.nucleo) || etf[0]; let somma = 0;
+    for (const e of etf) { if (e.id === nucleo.id) continue; const q = P(e.param_quota); const w = q == null ? 0 : Math.round(bl[nome]*q/100); out[e.id] = w; somma += w; }
+    out[nucleo.id] = bl[nome] - somma;
+  }
+  return out;
+}
+function ripartisci(importo, pesi){
+  const ids = Object.keys(pesi), tot = ids.reduce((s,i) => s+pesi[i], 0); if (!tot) return {};
+  const grezzi = ids.map(i => ({ i, v: importo*pesi[i]/tot })); const out = {}; let somma = 0;
+  for (const g of grezzi) { out[g.i] = Math.floor(g.v); somma += out[g.i]; }
+  let resto = Math.round(importo - somma);
+  grezzi.sort((a,b) => (b.v-Math.floor(b.v)) - (a.v-Math.floor(a.v)));
+  for (let j = 0; j < grezzi.length && resto > 0; j++, resto--) out[grezzi[j].i]++;
+  return out;
+}
+
+/* ===== Portafoglio (POLICY §8, INVESTIMENTI §2–3) ===== */
+const valorePos = e => (e.quote != null && e.prezzo != null) ? r2(e.quote*e.prezzo) : (e.valore != null ? r2(e.valore) : 0);
+function portafoglio(){
+  const t = target(); const bl = t ? t.attivo : null; const pesi = pesiETF(bl);
+  const etf = ordinati('posizioni'); const tot = r2(etf.reduce((s,e) => s+valorePos(e), 0));
+  const fEtf = P('policy.fasce.etf'), fMax = P('policy.fasce.etf_max_punti'), fBl = P('policy.fasce.blocchi'), fEcc = P('policy.fasce.eccezione');
+  const righe = etf.map(e => {
+    const v = valorePos(e), att = tot ? v/tot*100 : null, tg = pesi[e.id];
+    let lim = (tg != null && fEtf != null) ? tg*fEtf/100 : null;
+    if (lim != null && e.id === 'world' && fMax != null) lim = Math.min(lim, fMax);
+    const fuori = att != null && lim != null && Math.abs(att-tg) > lim;
+    return { e, valore:v, attuale:att, target:tg, limite:lim, fuori, vecchio: v > 0 && eVecchio(e.data, 'app.vecchio.prezzi') };
+  });
+  const bloc = bl ? ['azioni','obbligazioni','managed_futures'].map(n => {
+    const v = righe.filter(r => r.e.blocco === n).reduce((s,r) => s+r.valore, 0), att = tot ? v/tot*100 : null;
+    const sc = att == null ? null : att - bl[n];
+    return { nome:n, target:bl[n], attuale:att, fuori: sc != null && fBl != null && Math.abs(sc) > fBl, eccezione: sc != null && fEcc != null && Math.abs(sc) > fEcc };
+  }) : [];
+  return { totale:tot, righe, blocchi:bloc, target:t, pesi };
+}
+function pianoIngresso(){
+  const n = P('investimenti.ingresso.rate'), primo = PS('investimenti.ingresso.primo_mese'); if (!n || !primo) return null;
+  const p0 = parse(primo+'-01'); const di = S.a.destinazioni.da_investire || {};
+  const fissato = di.importo_fissato != null; const stimaSaldi = fissato ? null : proponiImportoDaInvestire(); const importo = fissato ? di.importo_fissato : (stimaSaldi != null ? stimaSaldi : P('investimenti.ingresso.importo_stimato'));
+  const fatte = rateEseguite(); const rate = [];
+  for (let i = 0; i < n; i++) rate.push({ n:i+1, data: primoLavorativo(p0.getFullYear(), p0.getMonth()+i), fatta: fatte.numeri.has(i+1) });
+  const prossima = rate.find(r => !r.fatta) || null;
+  const residuo = importo == null ? null : Math.max(0, importo - fatte.totale);
+  const restanti = rate.filter(r => !r.fatta).length;
+  const rata = (residuo != null && restanti) ? Math.round(residuo/restanti) : null;
+  const t = prossima ? target(prossima.data) : null;
+  const pesi = t ? pesiETF(t.attivo) : {};
+  return { n, rate, prossima, importo, fissato, rata, residuo, pesi, target:t, split: rata != null ? ripartisci(rata, pesi) : {}, dataFotografia: di.data_fotografia || null };
+}
+function proponiImportoDaInvestire(){
+  const d = destinazioni(); if (!d.completo) return null;
+  const r = d.righe.find(x => x.id === 'da_investire'); return r ? Math.floor(r.valore) : null;
+}
+function versamentoMensile(){
+  const imp = P('investimenti.versamento.minimo'), primo = PS('investimenti.versamento.primo_mese'), g = P('budget.stipendio.giorno_accredito');
+  if (imp == null || !primo || g == null) return null;
+  const p0 = parse(primo+'-01'); const t0 = oggi();
+  const dopo = (y, m) => piuGiorni(accredito(y, m), 1);
+  let d = dopo(t0.getFullYear(), t0.getMonth()); if (d < t0) d = dopo(t0.getFullYear(), t0.getMonth()+1);
+  const primoGiorno = dopo(p0.getFullYear(), p0.getMonth()); if (d < primoGiorno) d = primoGiorno;
+  const t = target(d); const pesi = t ? pesiETF(t.attivo) : {};
+  return { importo:imp, obiettivo:P('investimenti.versamento.obiettivo'), data:d, pesi, split: ripartisci(imp, pesi) };
+}
+function soglia(d){
+  const pts = Object.entries(S.a.parametri).filter(([k]) => k.startsWith('pensione.soglia.')).map(([k,p]) => ({ a:Number(k.split('.').pop()), v:Number(p.valore) })).sort((x,y) => x.a-y.a);
+  if (!pts.length) return null;
+  const x = d.getFullYear() + (giorniTra(new Date(d.getFullYear(),0,1), d) / 365.25);
+  if (x <= pts[0].a) return pts[0].v; if (x >= pts[pts.length-1].a) return pts[pts.length-1].v;
+  for (let i = 0; i < pts.length-1; i++) if (x >= pts[i].a && x <= pts[i+1].a) return Math.round(pts[i].v + (pts[i+1].v-pts[i].v)*(x-pts[i].a)/(pts[i+1].a-pts[i].a));
+  return null;
+}
+
+/* ===== Patrimonio (PATRIMONIO §1, PIANO CASA §1) ===== */
+function mutuoResiduo(d){
+  const pts = Object.entries(S.a.parametri).filter(([k]) => k.startsWith('casa.mutuo.residuo.')).map(([k,p]) => ({ d:k.slice('casa.mutuo.residuo.'.length), v:Number(p.valore) })).sort((x,y) => x.d < y.d ? -1 : 1);
+  if (!pts.length) return null; const x = iso(d);
+  if (x <= pts[0].d) return { valore:pts[0].v, data:pts[0].d, oltre:false };
+  const u = pts[pts.length-1]; if (x >= u.d) return { valore:u.v, data:u.d, oltre: x > u.d };
+  for (let i = 0; i < pts.length-1; i++) if (x >= pts[i].d && x <= pts[i+1].d) { const a = parse(pts[i].d), b = parse(pts[i+1].d); return { valore: r2(pts[i].v + (pts[i+1].v-pts[i].v)*giorniTra(a,d)/giorniTra(a,b)), data:x, oltre:false }; }
+  return null;
+}
+function ultimaFP(tipo){ let best = null; for (const f of confermati('fondo_pensione')) { if (f.tipo !== tipo) continue; if (!best || f.data > best.data) best = f; } return best; }
+function credito730(){
+  const imp = P('budget.credito_730.importo'), anno = PS('investimenti.credito_730.anno_destinato'); if (imp == null) return null;
+  const incassato = confermati('movimenti').some(m => m.tipo === 'entrata' && m.sottotipo === 'rimborso_730' && String(m.data).slice(0,4) === String(anno));
+  return incassato ? null : imp;
+}
+function patrimonio(){
+  const L = liquidita(); const voci = []; let tot = L.totale; let completo = L.completo;
+  const fin = ultimoSaldo('fineco_etf'); const pf = portafoglio().totale; const fp = ultimaFP('posizione'); const cr = credito730();
+  if (fin) tot += fin.importo; if (fp) tot += fp.posizione; else completo = false;
+  tot += pf; if (cr) tot += cr;
+  const q = P('casa.quota_personale'), casa = P('casa.bologna.valore'), mu = mutuoResiduo(oggi());
+  const casaQ = (q != null && casa != null) ? casa*q/100 : null, mutuoQ = (q != null && mu) ? mu.valore*q/100 : null;
+  if (casaQ != null) tot += casaQ; if (mutuoQ != null) tot -= mutuoQ;
+  return { totale:r2(tot), completo, liquidita:L, finecoEtf:fin, portafoglio:pf, fondo:fp, credito:cr, casa:casaQ, mutuo:mutuoQ, mutuoInfo:mu };
+}
+
+/* ===== Chiusura del mese (BUDGET §10.3) ===== */
+function chiusura(id){
+  const m = meseDaId(id); const d0 = iso(piuGiorni(m.inizio,-1)), d1 = iso(m.fine);
+  const L0 = liquidita(d0), L1 = liquidita(d1); const tol = P('app.fotografia.tolleranza') || 0;
+  const avvisi = [];
+  const controlla = (L, dRif, nome) => { for (const r of L.righe) { if (!r.s) avvisi.push('Manca il saldo di “'+r.c.nome+'” per la fotografia del '+dataBreve(dRif)+'.'); else if (giorniTra(parse(r.s.data), parse(dRif)) > tol) avvisi.push('“'+r.c.nome+'”: il saldo usato per il '+dataBreve(dRif)+' è del '+dataBreve(r.s.data)+'.'); } };
+  controlla(L0, d0); if (oggi() >= m.fine) controlla(L1, d1);
+  let entrate = 0, investito = 0, segnalate = 0;
+  for (const x of confermati('movimenti')) { if (!nelMese(x.data, m)) continue; if (x.tipo === 'entrata') entrate += x.importo; else if (x.tipo === 'fondo_pensione') investito += x.importo; else if (x.tipo === 'spesa') segnalate += x.importo; }
+  for (const o of confermati('operazioni')) if (nelMese(o.data, m)) investito += o.importo;
+  const fisse = fisseMese(m).totale; const pronta = oggi() >= m.fine && L0.completo && L1.completo;
+  const spesaReale = r2(L0.totale + entrate - investito - L1.totale);
+  const nonReg = r2(spesaReale - fisse - segnalate); const bq = bustaQuotidiana();
+  const saldoBq = bq ? saldoBusta(bq.id) : null;
+  return { mese:m, L0:L0.totale, L1:L1.totale, d0, d1, entrate:r2(entrate), investito:r2(investito), spesaReale, fisse, segnalate:r2(segnalate), nonRegistrate:nonReg, busta:bq, saldoBusta:saldoBq, saldoDopo: saldoBq == null ? null : r2(saldoBq - Math.max(0, nonReg)), avvisi, pronta, scaduta: oggi() >= m.fine, completi: L0.completo && L1.completo };
+}
+function meseDaChiudere(){
+  const aperti = lista('mesi').filter(x => x.stato === 'aperto').sort((a,b) => a.id < b.id ? -1 : 1);
+  for (const x of aperti) { const m = meseDaId(x.id); if (oggi() > m.fine || iso(oggi()) === iso(m.fine)) return x.id; }
+  return null;
+}
+
+/* ===== Destinazione delle mensilità aggiuntive (BUDGET §10.4) ===== */
+function proponiMensilita(tipo, importo, dataIso){
+  let r = Math.round(importo*100)/100; const anno = String(dataIso).slice(0,4); const note = [];
+  const out = { tipo, importo:r, data:dataIso, buste:{}, fe:0, fp:0, portafoglio:0, libera:0, note };
+  if (tipo === 'rimborso_730') {
+    if (anno === PS('investimenti.credito_730.anno_destinato')) { out.portafoglio = r; note.push('Rimborso del 730/'+anno+': tutto al portafoglio, in un’unica soluzione (INVESTIMENTI §2).'); }
+    else { out.libera = r; note.push('Per questo rimborso i documenti non fissano una destinazione: resta liquidità.'); }
+    return out;
+  }
+  const bisogni = {}; let totB = 0;
+  for (const b of ordinati('buste')) { if (b.tipo !== 'annuale') continue; const imp = importoBusta(b); if (imp == null) continue; const n = Math.max(0, r2(imp - alimentatoAnno(b.id, anno))); bisogni[b.id] = n; totB += n; }
+  if (totB > 0) {
+    if (r >= totB) { for (const k in bisogni) out.buste[k] = bisogni[k]; r = r2(r - totB); }
+    else { const sp = ripartisci(Math.floor(r), bisogni); for (const k in bisogni) out.buste[k] = sp[k] || 0; const usato = Object.values(out.buste).reduce((s,v) => s+v, 0); r = r2(r - usato); note.push('La mensilità non copre tutte le buste: ripartizione proporzionale a quanto manca a ciascuna (criterio dell’app, modificabile).'); }
+  }
+  const usatoFE = (S.a.destinazioni.fondo_emergenza||{}).utilizzato || 0;
+  if (usatoFE > 0 && r > 0) { out.fe = Math.min(usatoFE, r); r = r2(r - out.fe); }
+  if ((tipo === 'una_tantum' || tipo === 'premio_extra') && r > 0) {
+    const lim = P('budget.fondo_pensione.limite_deducibile'); const c = lista('fondo_pensione').filter(f => f.tipo === 'contributi' && String(f.anno) === anno && f.stato !== 'non_confermato').sort((a,b) => a.data < b.data ? 1 : -1)[0];
+    if (c && lim != null) { out.fp = Math.min(Math.max(0, r2(lim - c.progressivo)), r); r = r2(r - out.fp); }
+    else note.push('Progressivo dei contributi deducibili '+anno+' non registrato: inseriscilo nei Conti per calcolare il margine sui € 5.300.');
+  }
+  const q = P('budget.mensilita.quota_portafoglio');
+  if (r > 0 && q != null) { out.portafoglio = Math.round(r*q/100); out.libera = r2(r - out.portafoglio); }
+  return out;
+}
+
+/* ===== Scadenze del cruscotto ===== */
+function scadenze(n, giorni){
+  const t = oggi(), fine = piuGiorni(t, giorni||75), out = [];
+  for (const sf of ordinati('spese_fisse')) { if (sf.entrata) continue; for (const d of occorrenze(sf, t, fine)) out.push({ data:d, nome:sf.nome, importo:sf.importo, tono:'blu' }); }
+  const g = P('budget.stipendio.giorno_accredito');
+  if (g != null) for (let i = 0; i < 15; i++) { const d = accredito(t.getFullYear(), t.getMonth()+i); if (d < t || d > fine) continue; const ms = mensilitaDelMese(d.getMonth()+1); out.push({ data:d, nome: ms.length ? 'Stipendio e '+ms.map(x => x.nome.toLowerCase()).join(', ') : 'Stipendio', nota: ms.length ? 'da destinare' : null, tono:'verde' }); }
+  const m = meseDi(t); out.push({ data:m.fine, nome:'Fotografia dei saldi e chiusura del mese', tono:'ambra' });
+  const pi = pianoIngresso(); if (pi) for (const r of pi.rate) if (!r.fatta && r.data <= fine) out.push({ data:r.data, nome:'Rata di ingresso '+r.n+' di '+pi.n, importo:pi.rata, tono:'corallo', ritardo: r.data < t });
+  const vm = versamentoMensile(); if (vm && vm.data <= fine) out.push({ data:vm.data, nome:'Versamento mensile nel portafoglio', importo:vm.importo, tono:'corallo' });
+  const tg = target(); if (tg && tg.ricalcolo >= t && tg.ricalcolo <= fine) out.push({ data:tg.ricalcolo, nome:'Ricalcolo del target del portafoglio', tono:'ambra' });
+  const eventi = [['budget.fondo_pensione.verifica_progressivo','Contributi deducibili: verifica del margine sui € 5.300'],['investimenti.deposito.fine_tasso','Finisce il 4% sul conto deposito'],['investimenti.versamento.verifica','Valuta il passaggio a € 400 al mese']];
+  for (const [k,nome] of eventi) { const v = PS(k); if (isData(v) && parse(v) >= t) out.push({ data:parse(v), nome, tono:'ambra', lontana: parse(v) > fine }); }
+  out.sort((a,b) => a.data-b.data);
+  return out.slice(0, n||6);
+}
+
+/* ===== Dati vecchi o mancanti ===== */
+function datiVecchi(){
+  const out = [];
+  for (const c of ordinati('conti')) { const s = ultimoSaldo(c.id); if (!s) out.push({ nome:c.nome, stato:'manca' }); else if (eVecchio(s.data, 'app.vecchio.saldi')) out.push({ nome:c.nome, stato:'vecchio', data:s.data }); }
+  for (const e of ordinati('posizioni')) if (valorePos(e) > 0 && eVecchio(e.data, 'app.vecchio.prezzi')) out.push({ nome:e.ticker, stato:'vecchio', data:e.data });
+  const fp = ultimaFP('posizione'); if (!fp) out.push({ nome:'Fondo pensione', stato:'manca' }); else if (eVecchio(fp.data, 'app.vecchio.fondo_pensione')) out.push({ nome:'Fondo pensione', stato:'vecchio', data:fp.data });
+  return out;
+}
+
+</script>
+<script>
+"use strict";
+/* ===== Utilità di presentazione ===== */
+const h = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+function fmtNum(v, dec){ const neg = v < 0; v = Math.abs(v); const s = v.toFixed(dec); const p = s.split('.'); p[0] = p[0].replace(/\B(?=(\d{3})+(?!\d))/g, '.'); return (neg ? '−' : '') + p[0] + (dec ? ','+p[1] : ''); }
+const eur = v => (v == null || !isFinite(v)) ? '—' : (v < 0 ? '− € ' : '€ ') + fmtNum(Math.abs(v), Math.abs(v - Math.round(v)) > 0.004 ? 2 : 0);
+const eur0 = v => (v == null || !isFinite(v)) ? '—' : (v < 0 ? '− € ' : '€ ') + fmtNum(Math.abs(Math.round(v)), 0);
+const perc = v => v == null ? '—' : fmtNum(v, 1) + '%';
+function num(s){ if (typeof s === 'number') return s; s = String(s == null ? '' : s).replace(/[€\s]/g, ''); if (!s) return NaN; if (s.includes(',')) s = s.replace(/\./g, '').replace(',', '.'); else if (/^-?\d{1,3}(\.\d{3})+$/.test(s)) s = s.replace(/\./g, ''); return parseFloat(s); }
+const gg = n => n === 1 ? '1 giorno' : n+' giorni';
+const nid = () => Date.now().toString(36) + Math.random().toString(36).slice(2,6);
+const adesso = () => new Date().toISOString();
+
+const ICONE = {
+  casa_nav:'<path d="M4 11l8-7 8 7v9H4z"/>', busta_nav:'<rect x="3" y="6" width="18" height="13" rx="2"/><path d="M3 8l9 6 9-6"/>',
+  banca:'<path d="M3 10l9-5 9 5"/><path d="M5 10v8M12 10v8M19 10v8M3 19h18"/>', torta:'<path d="M12 3v9h9"/><path d="M20.5 15A9 9 0 1 1 9 3.5"/>',
+  chat:'<path d="M4 5h16v11H9l-5 4z"/>', tazza:'<path d="M5 8h11v6a5 5 0 0 1-5 5h-1a5 5 0 0 1-5-5z"/><path d="M16 10h2a2 2 0 0 1 0 4h-2"/><path d="M8 3v2M12 3v2"/>',
+  croce:'<rect x="4" y="4" width="16" height="16" rx="4"/><path d="M12 8v8M8 12h8"/>', sole:'<circle cx="12" cy="12" r="4"/><path d="M12 3v2M12 19v2M3 12h2M19 12h2M5.6 5.6l1.4 1.4M17 17l1.4 1.4M5.6 18.4L7 17M17 7l1.4-1.4"/>',
+  casa:'<path d="M4 11l8-7 8 7v9H4z"/><path d="M10 20v-5h4v5"/>', auto:'<path d="M4 16v-4l2-5h12l2 5v4z"/><path d="M4 12h16"/><circle cx="7.5" cy="16.5" r="1.5"/><circle cx="16.5" cy="16.5" r="1.5"/>',
+  regalo:'<rect x="4" y="10" width="16" height="10" rx="2"/><path d="M3 7h18v3H3zM12 7v13"/><path d="M12 7c-2-4-6-3-5 0M12 7c2-4 6-3 5 0"/>',
+  ciclo:'<path d="M4 12a8 8 0 0 1 14-5l2 2"/><path d="M20 4v5h-5"/><path d="M20 12a8 8 0 0 1-14 5l-2-2"/><path d="M4 20v-5h5"/>',
+  foto:'<rect x="3" y="6" width="18" height="14" rx="3"/><circle cx="12" cy="13" r="3.5"/><path d="M8 6l1.5-2h5L16 6"/>', mic:'<rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/>',
+  invia:'<path d="M5 12h14M13 6l6 6-6 6"/>', dati:'<ellipse cx="12" cy="6" rx="8" ry="3"/><path d="M4 6v6c0 1.7 3.6 3 8 3s8-1.3 8-3V6"/><path d="M4 12v6c0 1.7 3.6 3 8 3s8-1.3 8-3v-6"/>',
+  stop:'<rect x="7" y="7" width="10" height="10" rx="2"/>'
+};
+const ico = (n, s) => '<svg aria-hidden="true" width="'+(s||22)+'" height="'+(s||22)+'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">'+(ICONE[n]||'')+'</svg>';
+const chip = (t, tono) => '<span class="chip t-'+(tono||'verde')+'">'+h(t)+'</span>';
+const riga = (a, b, cls) => '<div class="riga '+(cls||'')+'"><span>'+a+'</span><span class="imp">'+b+'</span></div>';
+const fonteRiga = t => '<p class="fonte">'+t+'</p>';
+
+/* ===== Stato dell’interfaccia ===== */
+const ui = { vista:'oggi', sheet:null, chat:[], occupato:false, campi:{}, chius:{}, mens:{ tipo:'tredicesima', modifica:false, mod:null }, filtro:'', elimina:null, toast:null, mic:{ attivo:false, campo:null, parziale:'' }, ultimaSpesa:null };
+const VISTE_NAV = [['oggi','Oggi','casa_nav'],['budget','Budget','busta_nav'],['conti','Conti','banca'],['portafoglio','Portafoglio','torta'],['assistente','Assistente','chat']];
+const TUTTE = ['oggi','budget','conti','portafoglio','assistente','chiusura','mensilita','dati'];
+
+/* ===== Database ===== */
+const col = n => S.db.collection('data/users/'+S.uid+'/app/'+n);
+async function scrivi(fn){ try { await fn(); return true; } catch (e) { console.error(e); avviso(e && e.code === 'quota_exceeded' ? 'Archivio pieno: esporta i dati e alleggerisci i movimenti.' : 'Salvataggio non riuscito. Riprova.'); return false; } }
+async function metti(arch, id, dati){ S.a[arch][id] = dati; await col(arch).doc(id).set(dati); }
+async function aggiorna(arch, id, patch){ S.a[arch][id] = Object.assign({}, S.a[arch][id], patch); await col(arch).doc(id).update(patch); }
+async function aggiungi(arch, dati){ const id = nid(); await metti(arch, id, Object.assign({ creato:adesso() }, dati)); return id; }
+async function togli(arch, id){ delete S.a[arch][id]; await col(arch).doc(id).delete(); }
+function avviso(t){ ui.toast = t; render(); clearTimeout(avviso.t); avviso.t = setTimeout(() => { ui.toast = null; render(); }, 4200); }
+
+/* ===== Intestazione comune ===== */
+function testa(sopra, titolo, indietro){
+  const att = numInAttesa();
+  return (indietro ? '<a class="indietro" href="#'+indietro[0]+'">‹ '+h(indietro[1])+'</a>' : '') +
+  '<header class="testa"><div><p class="sopra">'+sopra+'</p><h1>'+titolo+'</h1></div><div class="testa-az">'+
+  (att ? '<a class="chip t-ambra chip-link" href="#assistente">'+att+' da confermare</a>' : '')+
+  '<a class="tondo" href="#dati" aria-label="Dati e regole">'+ico('dati',20)+'</a></div></header>';
+}
+const numInAttesa = () => inAttesa('movimenti').length + inAttesa('saldi').length + inAttesa('fondo_pensione').length;
+function barra(p, colore, fondo, k){ return '<div class="barra'+(fondo ? ' su-primario' : '')+'"><div class="c-'+colore+'"'+(k ? ' data-k="'+k+'"' : '')+' style="width:'+clamp(p,0,100).toFixed(1)+'%"></div></div>'; }
+function barraTarget(bl, chiaro){
+  if (!bl) return '';
+  return '<div class="tbar'+(chiaro ? ' chiaro' : '')+'"><div class="az" style="width:'+bl.azioni+'%">Azioni '+bl.azioni+'</div><div class="ob" style="width:'+bl.obbligazioni+'%">Obbl. '+bl.obbligazioni+'</div><div class="mf">'+bl.managed_futures+'</div></div>';
+}
+
+/* ===== Schede dei dati in attesa di conferma ===== */
+function cardAttesa(arch, x){
+  let corpo = '', titolo = 'Ho letto questi dati. Li salvo?';
+  if (arch === 'movimenti') {
+    if (x.tipo === 'spesa') {
+      const b = x.busta ? S.a.buste[x.busta] : null;
+      if (b) { const imp = P(b.param), s = saldoBusta(x.busta); titolo = 'Scalo '+eur(x.importo)+' da “'+h(b.nome)+'”?'; corpo = '<p class="sotto">Nella busta restano '+eur(s - x.importo)+' di '+eur(imp)+'.</p>'; }
+      else { titolo = 'Registro '+eur(x.importo)+' come spesa non a budget?'; corpo = '<p class="sotto">Non rientra in nessuna busta: pesa sul mese (BUDGET §10.2).</p>'; }
+      corpo += '<p class="sotto">'+h(x.descrizione||'Spesa')+' · '+dataMedia(x.data)+'</p>';
+    } else { titolo = 'Registro un’entrata di '+eur(x.importo)+'?'; corpo = '<p class="sotto">'+h(x.descrizione||'Entrata')+' · '+dataMedia(x.data)+'</p>'; }
+  } else if (arch === 'saldi') {
+    if (x.oggetto === 'posizione') { const e = S.a.posizioni[x.etf] || {}; corpo = riga(h(e.ticker||x.etf), h(e.nome||'')) + (x.quote != null ? riga('Quote', fmtNum(x.quote, 4)) : '') + (x.prezzo != null ? riga('Prezzo', eur(x.prezzo)) : '') + (x.valore != null ? riga('Valore', eur(x.valore)) : '') + riga('Data', dataMedia(x.data)); }
+    else { const c = S.a.conti[x.conto] || {}; corpo = riga(h(c.nome||x.conto), eur(x.importo)) + riga('Data del saldo', dataMedia(x.data)) + riga('Fonte', h(x.fonte||'')); }
+  } else if (arch === 'fondo_pensione') {
+    corpo = x.tipo === 'contributi' ? riga('Contributi deducibili '+h(x.anno), eur(x.progressivo)) + riga('Data', dataMedia(x.data)) : riga('Posizione nel fondo pensione', eur(x.posizione)) + riga('Data', dataMedia(x.data));
+  }
+  return '<section class="card attesa"><p class="titolino">'+titolo+' '+chip('non confermato','ambra')+'</p>'+corpo+
+    '<div class="bottoni"><button class="btn primario" data-act="conferma" data-arch="'+arch+'" data-id="'+h(x.id)+'">Conferma</button><button class="btn" data-act="correggi" data-arch="'+arch+'" data-id="'+h(x.id)+'">'+(arch === 'movimenti' ? 'Modifica' : 'Correggi')+'</button></div>'+
+    '<button class="link" data-act="scarta" data-arch="'+arch+'" data-id="'+h(x.id)+'">Scarta</button></section>';
+}
+const attese = arch => inAttesa(arch).sort((a,b) => (a.creato||'') < (b.creato||'') ? -1 : 1).map(x => cardAttesa(arch, x)).join('');
+
+/* ===== Vista: Oggi ===== */
+function vOggi(){
+  const m = meseDi(oggi()), g = giorniAlloStipendio(), aperto = S.a.mesi[m.id];
+  let o = testa('Mese di budget '+etichettaMese(m), 'Ciao Michele');
+  o += avvisiGenerali();
+  const bq = bustaQuotidiana();
+  if (!aperto) {
+    o += '<section class="card eroe"><div class="eroe-testa"><span>Mese di budget '+etichettaMese(m)+'</span>'+chip(gg(g)+' allo stipendio','pieno')+'</div><p class="eroe-testo">Il mese non è ancora aperto: le buste mensili non sono state alimentate.</p><button class="btn primario" data-act="sheet" data-sheet="apri_mese">Apri il mese</button></section>';
+  } else if (bq) {
+    const imp = P(bq.param), s = saldoBusta(bq.id), f = fisseMese(m), corr = liquidita(null, true), go = P('budget.giacenza_operativa');
+    let cop = '';
+    if (f.daPagare > 0) cop = !corr.completo ? ' · saldi dei conti mancanti' : (go != null && corr.totale - f.daPagare >= go ? ' · già coperte' : ' · non coperte con la giacenza minima');
+    o += '<section class="card eroe"><div class="eroe-testa"><span>'+h(bq.nome)+'</span>'+chip(gg(g)+' allo stipendio','pieno')+'</div>'+
+      '<div class="eroe-num"><strong>'+eur0(s)+'</strong><span>restano di '+eur(imp)+'</span></div>'+barra(imp ? s/imp*100 : 0, 'ambra', true, 'eroe')+
+      '<p class="eroe-nota">Uscite fisse con data ancora da pagare: '+eur0(f.daPagare)+cop+'</p></section>';
+  }
+  const d = destinazioni();
+  o += '<section class="card"><div class="card-testa"><h2>I tuoi soldi, per destinazione</h2><strong class="gr">'+(d.totale || d.completo ? eur0(d.totale) : '—')+'</strong></div>';
+  if (!d.righe.some(r => r.valore > 0)) o += '<p class="sotto">Mancano i saldi dei conti. Inseriscili in <a href="#conti">Conti</a> o con una foto.</p>';
+  else {
+    o += '<div class="seg">'+d.righe.filter(r => r.valore > 0).map(r => '<div class="c-'+(r.colore||'grigio')+'" style="flex:'+r.valore+'"></div>').join('')+'</div><div class="elenco">';
+    for (const r of d.righe) {
+      let st = '';
+      if (r.obiettivo != null && r.id !== 'buste' && r.id !== 'da_investire') st = r.pieno ? (r.usato ? chip('usato '+eur0(r.usato),'corallo') : chip(r.id === 'riserva_casa' ? 'piena' : (r.id === 'giacenza_operativa' ? 'ok' : 'pieno'),'verde')) : chip('mancano '+eur0(r.obiettivo - r.valore),'corallo');
+      let nome = h(r.nome); if (r.id === 'da_investire') nome = r.fissato ? 'Da investire, rate restanti' : 'Da investire (stima)';
+      o += '<div class="dest"><i class="pallino c-'+(r.colore||'grigio')+'"></i><span class="cresce">'+nome+'</span>'+st+'<strong>'+eur0(r.valore)+'</strong></div>';
+    }
+    o += '</div>';
+    if (!d.completo) o += '<p class="sotto warn">Totale parziale: manca il saldo di '+d.mancanti.map(c => h(c.nome)).join(', ')+'.</p>';
+    if (d.scoperto) o += '<p class="sotto warn">La liquidità non copre tutte le destinazioni.</p>';
+  }
+  o += fonteRiga('Regola: INVESTIMENTI §1–2 · “Da investire” si rimisura alla fotografia del 9 che precede l’avvio')+'</section>';
+
+  const t = target(), pi = pianoIngresso();
+  if (t) {
+    const mostra = (pi && pi.prossima && t.probabile && !valoreTotalePos()) ? t.probabile : t.attivo;
+    const eProb = mostra === t.probabile && t.probabile !== t.inVigore;
+    o += '<section class="card"><div class="card-testa"><h2>Portafoglio</h2><span class="sotto">'+(pi && pi.prossima ? 'ingresso in '+pi.n+' rate, prossima il '+dataBreve(pi.prossima.data) : (valoreTotalePos() ? eur0(valoreTotalePos()) : ''))+'</span></div>'+barraTarget(mostra)+
+      fonteRiga((eProb ? 'Target probabile dal '+dataMedia(t.ricalcolo)+' (in vigore: '+t.inVigore.azioni+' / '+t.inVigore.obbligazioni+' / '+t.inVigore.managed_futures+')' : 'Target in vigore')+' · POLICY §6. Il '+mostra.managed_futures+' sono i managed futures.')+'</section>';
+  }
+  const sc = scadenze(6);
+  o += '<section class="card"><h2>Prossime scadenze</h2><div class="elenco">'+sc.map(x => '<div class="scad"><div class="quando t-'+x.tono+'">'+(x.lontana ? '<b>'+MESI[x.data.getMonth()]+'</b><span>'+x.data.getFullYear()+'</span>' : '<b>'+x.data.getDate()+'</b><span>'+MESI[x.data.getMonth()]+'</span>')+'</div><span class="cresce">'+h(x.nome)+'</span>'+(x.importo != null ? '<strong>'+eur0(x.importo)+'</strong>' : (x.nota ? '<strong class="verde">'+h(x.nota)+'</strong>' : ''))+'</div>').join('')+'</div>'+'<a class="link" href="#scadenze">Tutte le scadenze e le verifiche</a>'+'</section>';
+  const pn = patrimonio();
+  o += '<a class="pn" href="#conti"><span>Patrimonio netto stimato'+(pn.completo ? '' : ' (parziale)')+'</span><strong>≈ '+eur0(pn.totale)+'</strong></a>';
+  return o;
+}
+const valoreTotalePos = () => r2(lista('posizioni').reduce((s,e) => s+valorePos(e), 0));
+function avvisiGenerali(){
+  let o = '';
+  if (S.pronto && !Object.keys(S.a.parametri).length) o += '<section class="card nota-ambra"><p class="titolino">Archivio parametri vuoto</p><p class="sotto">Senza parametri l’app non applica nessuna regola. Chiedi in chat di ricaricarli dai documenti di progetto.</p></section>';
+  else if (S.mancanti.size) o += '<section class="card nota-ambra"><p class="titolino">Parametri mancanti</p><p class="sotto">'+[...S.mancanti].map(h).join(', ')+'</p></section>';
+  const mc = meseDaChiudere();
+  if (mc) o += '<a class="card nota-ambra blocco-link" href="#chiusura"><p class="titolino">Il mese '+etichettaMese(meseDaId(mc))+' è da chiudere</p><p class="sotto">Fotografa i saldi del 9 e conferma la chiusura.</p></a>';
+  const dv = datiVecchi().filter(x => x.stato === 'vecchio');
+  if (dv.length) o += '<a class="card nota-ambra blocco-link" href="#conti"><p class="titolino">Dati vecchi</p><p class="sotto">'+dv.map(x => h(x.nome)+' ('+dataBreve(x.data)+')').join(' · ')+'</p></a>';
+  const t = target();
+  if (t && t.daConfermare) o += '<a class="card nota-ambra blocco-link" href="#portafoglio"><p class="titolino">Ricalcolo del target da confermare</p><p class="sotto">Dal '+dataMedia(t.ricalcolo)+' vale la formula di gennaio: conferma i Fed Funds (POLICY §6).</p></a>';
+  return o;
+}
+
+/* ===== Vista: Budget ===== */
+function rigaBusta(b){
+  const unita = b.tipo === 'mensile' ? '' : ' l’anno';
+  return '<div class="busta"><div class="ico t-'+b.colore+'">'+ico(b.icona)+'</div><div class="cresce"><div class="busta-testa"><span>'+h(b.nome)+'</span><strong class="'+(b.saldo < 0 ? 'rosso' : '')+'">'+eur0(b.saldo)+'</strong></div>'+barra(b.perc, b.colore, false, 'b_'+b.id)+'<p class="sotto">di '+eur(b.importo)+unita+' · '+h(b.contenuto||'')+'</p></div></div>';
+}
+function vBudget(){
+  const m = meseDi(oggi()), g = giorniAlloStipendio();
+  let o = testa(etichettaMese(m)+' · '+gg(g)+' allo stipendio', 'Le tue buste');
+  if (!S.a.mesi[m.id]) o += '<section class="card nota-ambra"><p class="titolino">Il mese non è ancora aperto</p><p class="sotto">Aprendolo registri lo stipendio e alimenti le buste mensili.</p><button class="btn primario" data-act="sheet" data-sheet="apri_mese">Apri il mese</button></section>';
+  o += '<section class="card"><h2>Segna una spesa</h2>'+(ui.ultimaSpesa ? '<div class="bolla utente">'+h(ui.ultimaSpesa)+'</div>' : '')+
+    '<div class="scrivi"><label class="vh" for="q_spesa">Spesa a parole</label><input id="q_spesa" type="text" data-campo="spesa" data-invio="spesa_parole" placeholder="Es. ho speso 800 € per le vacanze" autocomplete="off">'+
+    (S.dett ? '<button class="quadro t-ambra-p" data-act="mic" data-campo="spesa" aria-label="'+(ui.mic.attivo ? 'Ferma la dettatura' : 'Detta')+'">'+ico(ui.mic.attivo && ui.mic.campo === 'spesa' ? 'stop' : 'mic')+'</button>' : '')+
+    '<button class="quadro t-primario" data-act="spesa_parole" aria-label="Invia"'+(ui.occupato ? ' disabled' : '')+'>'+ico('invia')+'</button></div>'+
+    (ui.occupato === 'spesa' ? '<p class="sotto">Leggo la spesa…</p>' : '')+
+    '<button class="link" data-act="sheet" data-sheet="spesa">Inserisci a mano</button></section>';
+  o += attese('movimenti');
+  const bs = statoBuste();
+  o += '<section class="card"><div><h2>Ogni mese</h2><p class="sotto">Si riempiono con lo stipendio del 10</p></div>'+bs.filter(b => b.tipo === 'mensile').map(rigaBusta).join('')+'</section>';
+  o += '<section class="card"><div><h2>Durante l’anno</h2><p class="sotto">Si riempiono con tredicesima, quattordicesima e premio</p></div>'+bs.filter(b => b.tipo === 'annuale').map(rigaBusta).join('')+(bs.some(b => b.tipo === 'annuale') && bs.filter(b => b.tipo === 'annuale').every(b => !b.saldo) ? '<p class="sotto">Sono vuote finché non destini la prima mensilità aggiuntiva. Fino ad allora una spesa di queste voci manda la busta sotto zero e si recupera all’alimentazione.</p>' : '')+
+    '<button class="btn" data-go="mensilita">Destina una mensilità aggiuntiva</button></section>';
+  const f = fisseMese(m);
+  o += '<section class="card"><div class="card-testa"><h2>Spese fisse del mese</h2><strong class="gr">'+eur0(f.totale)+'</strong></div><div class="elenco">'+
+    f.datate.map(x => '<button class="scad nudo" data-act="sheet" data-sheet="fissa" data-id="'+h(x.sf.id)+'"><div class="quando t-'+(x.pagata ? 'grigio' : 'blu')+'"><b>'+x.data.getDate()+'</b><span>'+MESI[x.data.getMonth()]+'</span></div><span class="cresce">'+h(x.sf.nome)+(x.pagata ? ' <span class="sotto">· passata</span>' : '')+'</span><strong>'+(x.segno < 0 ? '+ ' : '')+eur(x.importo)+'</strong></button>').join('')+
+    '</div><p class="titolino spazio">Senza data: media del mese</p><div class="elenco fitto">'+
+    f.senzaData.map(x => '<button class="riga nudo" data-act="sheet" data-sheet="fissa" data-id="'+h(x.sf.id)+'"><span>'+h(x.sf.nome)+'</span><span class="imp">'+(x.segno < 0 ? '+ ' : '')+eur(x.importo)+'</span></button>').join('')+
+    '</div>'+fonteRiga('Importi dal BUDGET §2–4 e PATRIMONIO §2. Tocca una voce per indicare giorno e importo reali.')+'</section>';
+  o += '<section class="card"><h2>Chiusura del mese</h2><p class="sotto">Spesa reale, spese non registrate e saldo delle buste, con la fotografia dei saldi del 9.</p><div class="bottoni"><button class="btn" data-go="chiusura">Apri la chiusura</button><button class="btn" data-go="calibrazione">Calibrazione</button></div></section>';
+  o += fonteRiga('Regole: BUDGET §10.2 (buste), §10.3 (chiusura), §10.4 (mensilità aggiuntive).');
+  return o;
+}
+
+/* ===== Vista: Conti ===== */
+function notaSaldo(s, c, q){
+  if (!s) return '<span class="warn">saldo mancante</span>';
+  return 'saldo del '+dataBreve(s.data)+' · '+h(s.fonte||'manuale')+(q != null && q !== 1 ? ' · conta al '+Math.round(q*100)+'% di '+eur(s.importo) : '')+(eVecchio(s.data, 'app.vecchio.saldi') ? ' '+chip('dato vecchio','corallo') : '');
+}
+function vConti(){
+  const pn = patrimonio(), L = pn.liquidita;
+  let o = testa('Ogni saldo con data e fonte', 'Conti e patrimonio');
+  o += attese('saldi') + attese('fondo_pensione');
+  o += '<section class="card"><div class="card-testa"><h2>Liquidità</h2><strong class="gr">'+eur0(L.totale)+'</strong></div>'+
+    L.righe.map(r => '<button class="voce nudo" data-act="sheet" data-sheet="saldo" data-id="'+h(r.c.id)+'"><div class="cresce"><p class="nome">'+h(r.c.nome)+'</p><p class="sotto">'+notaSaldo(r.s, r.c, r.q)+'</p></div><strong>'+eur(r.valore)+'</strong></button>').join('');
+  const gz = giacenze();
+  if (gz.length) o += '<div class="chips">'+gz.map(x => { const t = { manca:['saldo mancante','grigio'], sotto:['sotto il minimo di '+eur0(x.min),'corallo'], ok:['sopra il minimo di '+eur0(x.min),'verde'], pieno:['pieno ('+eur0(x.pieno)+')','verde'] }[x.stato]; return '<span class="chip t-'+t[1]+'">'+h(x.c.nome)+': '+t[0]+'</span>'; }).join('')+'</div>';
+  o += fonteRiga('Giacenze minime misurate il 9 · BUDGET §10.1. Il conteggio al 50% è corretto se i versamenti sul conto comune sono pari.')+'</section>';
+
+  const fin = pn.finecoEtf, cf = S.a.conti.fineco_etf, fp = pn.fondo, ctr = ultimaFP('contributi'), lim = P('budget.fondo_pensione.limite_deducibile');
+  o += '<section class="card"><h2>Investimenti e previdenza</h2>'+
+    '<a class="voce" href="#portafoglio"><div class="cresce"><p class="nome">Portafoglio di lungo periodo</p><p class="sotto">9 ETF su Scalable · POLICY §2</p></div><strong>'+eur0(pn.portafoglio)+'</strong></a>'+
+    (cf ? '<button class="voce nudo" data-act="sheet" data-sheet="saldo" data-id="fineco_etf"><div class="cresce"><p class="nome">'+h(cf.nome)+'</p><p class="sotto">congelati, fuori dall’allocazione · '+notaSaldo(fin, cf, 1)+'</p></div><strong>'+eur(fin ? fin.importo : null)+'</strong></button>' : '')+
+    '<button class="voce nudo" data-act="sheet" data-sheet="fp"><div class="cresce"><p class="nome">Fondo pensione</p><p class="sotto">'+(fp ? 'valore lordo al '+dataBreve(fp.data)+' · '+h(fp.fonte||'manuale')+(eVecchio(fp.data, 'app.vecchio.fondo_pensione') ? ' '+chip('dato vecchio','corallo') : '') : '<span class="warn">posizione mancante</span>')+'</p></div><strong>'+eur(fp ? fp.posizione : null)+'</strong></button>'+
+    (ctr && lim != null ? '<div class="voce"><div class="cresce"><p class="nome">Contributi deducibili '+h(ctr.anno)+'</p><p class="sotto">progressivo al '+dataBreve(ctr.data)+' · margine sui '+eur0(lim)+': '+eur(Math.max(0, lim - ctr.progressivo))+'</p></div><strong>'+eur(ctr.progressivo)+'</strong></div>' : '')+
+    (pn.credito ? '<div class="voce"><div class="cresce"><p class="nome">Rimborso atteso dal 730</p><p class="sotto">stima, si registra all’incasso · BUDGET §6</p></div><strong>≈ '+eur0(pn.credito)+'</strong></div>' : '')+'</section>';
+
+  const q = P('casa.quota_personale');
+  o += '<section class="card"><h2>Casa e mutuo</h2>'+
+    '<div class="voce"><div class="cresce"><p class="nome">Casa di Bologna, la tua metà</p><p class="sotto">stima centrale '+eur0(P('casa.bologna.valore'))+' · '+fonte('casa.bologna.valore')+'</p></div><strong>'+eur0(pn.casa)+'</strong></div>'+
+    '<div class="voce"><div class="cresce"><p class="nome">Mutuo, la tua metà</p><p class="sotto">'+(pn.mutuoInfo ? 'debito familiare '+eur0(pn.mutuoInfo.valore)+(pn.mutuoInfo.oltre ? ' al '+dataMedia(pn.mutuoInfo.data)+' '+chip('dato vecchio','corallo') : ' · interpolato dal piano')+' · PIANO CASA §1.3' : 'debito residuo mancante')+'</p></div><strong>'+(pn.mutuo != null ? eur0(-pn.mutuo) : '—')+'</strong></div></section>';
+  o += '<section class="card scura"><div class="card-testa"><span class="chiaro">Patrimonio netto stimato'+(pn.completo ? '' : ' (parziale)')+'</span><strong class="gr grande">≈ '+eur0(pn.totale)+'</strong></div></section>';
+  o += '<div class="bottoni colonna">'+(S.sample ? '<label class="btn primario filebtn">Aggiorna i saldi con una foto<input type="file" accept="image/*" data-foto="conti" class="vh"></label>' : '')+
+    '<button class="btn" data-act="sheet" data-sheet="saldo">Inserisci un saldo a mano</button><button class="btn" data-act="sheet" data-sheet="fe">Ho usato il fondo emergenza</button><button class="btn" data-go="storico">Storico del patrimonio</button></div>';
+  o += fonteRiga('Regola del conteggio: conto personale al 100%, conto comune al 50% · BUDGET §10.1. Patrimonio: PATRIMONIO §1.');
+  return o;
+}
+
+/* ===== Vista: Portafoglio ===== */
+function vPortafoglio(){
+  const pf = portafoglio(), pi = pianoIngresso(), t = pf.target, vm = versamentoMensile();
+  let o = testa('Pesi contro target, non andamento', 'Portafoglio');
+  o += attese('saldi');
+  if (t && t.daConfermare) o += '<section class="card nota-ambra"><p class="titolino">Ricalcolo di gennaio da confermare</p><p class="sotto">Formula: '+P('policy.formula.base')+' − età − '+P('policy.formula.coefficiente')+' × Fed Funds. Con i Fed Funds registrati il target è '+(t.probabile ? t.probabile.azioni+' / '+t.probabile.obbligazioni+' / '+t.probabile.managed_futures : '—')+'.</p><button class="btn primario" data-act="sheet" data-sheet="ricalcolo">Conferma il ricalcolo</button></section>';
+  if (pi && pi.prossima) {
+    o += '<section class="card eroe"><div class="eroe-testa"><span>Prossima rata di ingresso</span>'+chip(pi.prossima.n+' di '+pi.n,'pieno')+'</div><div class="eroe-num"><strong>'+eur0(pi.rata)+'</strong><span>'+dataLunga(pi.prossima.data)+'</span></div>'+barraTarget(pi.target ? pi.target.attivo : null, true)+
+      '<p class="eroe-nota">Date fisse, nessun rinvio in attesa di un calo.'+(pi.fissato ? ' Importo fissato con la fotografia del '+dataBreve(pi.dataFotografia)+'.' : ' Importo stimato sui saldi di oggi: da rimisurare alla fotografia del 9 che precede l’avvio.')+'</p>'+
+      '<div class="bottoni">'+(!pi.fissato ? '<button class="btn primario" data-act="sheet" data-sheet="fissa_importo">Fissa l’importo</button>' : '')+'<button class="btn su-scuro" data-act="sheet" data-sheet="acquisto" data-tipo="rata_ingresso">Registra la rata</button></div></section>';
+    o += '<section class="card"><h2>Cosa compri con la rata</h2>'+listaEtf(pi.pesi, pi.split)+fonteRiga('Pesi: POLICY §6–7'+(pi.target && pi.target.attivoProbabile ? ', target probabile del ricalcolo di gennaio con Fed Funds al '+fmtNum(P('policy.fed_funds.punto_medio'),3)+'%' : '')+'. Rate: INVESTIMENTI §2.')+'</section>';
+  }
+  if (pf.totale > 0) {
+    o += '<section class="card"><div class="card-testa"><h2>Pesi contro target</h2><strong class="gr">'+eur0(pf.totale)+'</strong></div>'+
+      pf.blocchi.map(b => riga(({azioni:'Azioni',obbligazioni:'Obbligazioni',managed_futures:'Managed futures'})[b.nome]+(b.eccezione ? ' '+chip('ribilanciare subito','corallo') : (b.fuori ? ' '+chip('fuori fascia','corallo') : '')), perc(b.attuale)+' <span class="sotto">su '+b.target+'%</span>')).join('')+'<hr>'+
+      pf.righe.map(r => '<button class="etf nudo" data-act="sheet" data-sheet="posizione" data-id="'+h(r.e.id)+'"><div class="peso '+(r.fuori ? 't-corallo' : 't-verde')+'">'+(r.attuale == null ? '—' : fmtNum(r.attuale,1))+'</div><div class="cresce"><p class="nome">'+h(r.e.nome)+'</p><p class="sotto">target '+r.target+'% · fascia ±'+fmtNum(r.limite||0,1)+(r.fuori ? ' · '+'<b class="rosso">fuori fascia</b>' : '')+(r.vecchio ? ' '+chip('prezzo vecchio','corallo') : '')+(r.e.data ? ' · '+dataBreve(r.e.data) : '')+'</p></div><strong>'+eur0(r.valore)+'</strong></button>').join('')+
+      (pf.righe.some(r => r.fuori) ? '<p class="sotto warn">Un ETF fuori fascia al controllo trimestrale riceve i versamenti del trimestre successivo, al posto della ripartizione ordinaria. Le vendite solo al ricalcolo di gennaio.</p>' : '')+
+      fonteRiga('Fasce: blocchi ±'+P('policy.fasce.blocchi')+' punti, ETF ±'+P('policy.fasce.etf')+'% del proprio peso · POLICY §8.')+'</section>';
+  }
+  if (vm) o += '<section class="card"><div class="card-testa"><h2>Versamento mensile</h2><strong class="gr">'+eur0(vm.importo)+'</strong></div><p class="sotto">Prossimo: '+dataLunga(vm.data)+' '+vm.data.getFullYear()+', il giorno dopo lo stipendio. Minimo vincolante; obiettivo '+eur0(vm.obiettivo)+'.</p>'+
+    (pi && pi.prossima ? '' : listaEtf(vm.pesi, vm.split))+'<button class="btn" data-act="sheet" data-sheet="acquisto" data-tipo="versamento">Registra il versamento</button>'+fonteRiga('INVESTIMENTI §3 · POLICY §9.')+'</section>';
+  const ex = extraDaInvestire();
+  if (ex > 0) o += '<section class="card"><div class="card-testa"><h2>Risparmio extra da versare</h2><strong class="gr">'+eur0(ex)+'</strong></div><p class="sotto">Quota delle mensilità aggiuntive e del rimborso 730 destinata al portafoglio.</p><button class="btn" data-act="sheet" data-sheet="acquisto" data-tipo="risparmio_extra">Registra il versamento</button>'+fonteRiga('BUDGET §10.4 · INVESTIMENTI §2.')+'</section>';
+  const pv = P('policy.soglia.prima_verifica'), sg = pv ? soglia(new Date(pv,0,1)) : null;
+  if (sg != null) {
+    const attiva = oggi().getFullYear() >= pv, so = attiva ? soglia(oggi()) : null;
+    o += '<section class="card"><div class="card-testa"><div><p class="nome">Soglia e jolly</p><p class="sotto">'+(attiva ? 'Soglia a oggi, interpolata' : 'Prima verifica a gennaio '+pv+': nel '+(pv-1)+' la soglia non si applica')+'</p></div><strong class="gr">'+eur0(attiva ? so : sg)+'</strong></div>'+fonteRiga('PIANO PENSIONE §7.4 · POLICY §9. <a href="#rotta">Sono in rotta?</a>')+'</section>';
+  }
+  if (!(pi && pi.prossima) && pf.totale === 0 && t) o += '<section class="card"><h2>Target in vigore</h2>'+barraTarget(t.attivo)+listaEtf(pf.pesi, {})+'</section>';
+  o += '<div class="bottoni colonna">'+(S.sample ? '<label class="btn primario filebtn">Aggiorna le posizioni con una foto<input type="file" accept="image/*" data-foto="portafoglio" class="vh"></label>' : '')+'</div>';
+  o += fonteRiga('Nessun grafico di andamento e nessun rendimento giornaliero: scelta di progetto.');
+  return o;
+}
+function listaEtf(pesi, split){
+  return ordinati('posizioni').map(e => '<div class="etf"><div class="peso t-verde">'+(pesi[e.id] != null ? pesi[e.id]+'%' : '—')+'</div><div class="cresce"><p class="nome">'+h(e.nome)+'</p><p class="sotto">'+h(e.descrizione)+'</p></div>'+(split[e.id] != null ? '<strong>'+eur0(split[e.id])+'</strong>' : '')+'</div>').join('');
+}
+
+/* ===== Vista: Chiusura ===== */
+function chiusuraCon(id){
+  const c = chiusura(id), x = ui.chius;
+  for (const k of ['entrate','investito','fisse']) if (x[k] != null && x[k] !== '' && isFinite(num(x[k]))) c[k] = num(x[k]);
+  c.spesaReale = r2(c.L0 + c.entrate - c.investito - c.L1); c.nonRegistrate = r2(c.spesaReale - c.fisse - c.segnalate);
+  c.saldoDopo = c.saldoBusta == null ? null : r2(c.saldoBusta - Math.max(0, c.nonRegistrate));
+  return c;
+}
+function vChiusura(){
+  const daCh = meseDaChiudere(), id = daCh || meseDi(oggi()).id, c = chiusuraCon(id), m = c.mese, md = S.a.mesi[id];
+  let o = testa(etichettaMese(m), 'Chiusura del mese', ['budget','Budget']);
+  if (!md) { o += '<section class="card nota-ambra"><p class="titolino">Il mese non è aperto</p><p class="sotto">Apri il mese dal Budget: la chiusura si fa sui mesi aperti.</p></section>'; return o; }
+  if (!daCh) o += '<section class="card nota-ambra"><p class="titolino">Anteprima: il mese si chiude il '+dataBreve(m.fine)+'</p><p class="sotto">I numeri sono provvisori finché non c’è la fotografia dei saldi del 9.</p></section>';
+  if (c.avvisi.length) o += '<section class="card nota-ambra"><p class="titolino">Saldi da controllare</p>'+c.avvisi.map(a => '<p class="sotto">'+h(a)+'</p>').join('')+'</section>';
+  const inp = (k, v) => '<input class="mini" id="c_'+k+'" inputmode="decimal" data-chius="'+k+'" value="'+h(ui.chius[k] != null ? ui.chius[k] : fmtNum(v, Math.abs(v-Math.round(v)) > 0.004 ? 2 : 0))+'" aria-label="'+k+'">';
+  o += '<section class="card"><h2>Il conto</h2>'+riga('Liquidità il '+dataBreve(c.d0), c.completi || c.L0 ? eur0(c.L0) : '—')+riga('+ Entrate del mese', inp('entrate', c.entrate))+riga('− Investito o versato al fondo', inp('investito', c.investito))+riga('− Liquidità il '+dataBreve(c.d1), c.scaduta ? eur0(c.L1) : '<span class="sotto">'+eur0(c.L1)+' a oggi</span>')+'<hr>'+riga('<b>Spesa reale</b>', '<b>'+eur0(c.spesaReale)+'</b>')+'</section>';
+  o += '<section class="card"><h2>Dove sono andati</h2>'+riga('Uscite fisse', inp('fisse', c.fisse))+riga('Spese che mi hai segnalato', eur0(c.segnalate))+riga('<b>Spese non registrate</b>', '<b>'+eur0(c.nonRegistrate)+'</b>', c.nonRegistrate > 0 ? 'rosso' : '')+'</section>';
+  if (c.busta) {
+    if (c.nonRegistrate < 0) o += '<section class="card"><p class="titolino">Avanzo di '+eur0(-c.nonRegistrate)+'</p><p class="sotto">La spesa reale è più bassa di uscite fisse e spese segnalate. I documenti non dicono dove va l’avanzo: l’app non lo attribuisce a nessuna busta.</p></section>';
+    else if (c.saldoDopo < 0) o += '<section class="card nota-ambra"><p class="titolino">“'+h(c.busta.nome)+'” chiude a '+eur0(c.saldoDopo)+'</p><p class="sotto">Le spese non registrate finiscono in questa busta. Come vuoi recuperare?</p><div class="bottoni colonna"><button class="btn'+(ui.chius.recupero !== 'importo' ? ' scelto' : '')+'" data-act="recupero" data-v="mese">Scalo '+eur0(-c.saldoDopo)+' dal mese prossimo</button><button class="btn'+(ui.chius.recupero === 'importo' ? ' scelto' : '')+'" data-act="recupero" data-v="importo">Correggo l’importo della busta</button></div>'+(ui.chius.recupero === 'importo' ? '<p class="sotto">L’importo è una regola del BUDGET §10.2: aggiorna prima il documento, poi il parametro in Dati e regole. La chiusura registra la decisione.</p>' : '')+'</section>';
+    else o += '<section class="card"><p class="titolino">“'+h(c.busta.nome)+'” chiude a '+eur0(c.saldoDopo)+'</p><p class="sotto">Quello che avanza passa al mese successivo.</p></section>';
+  }
+  o += '<div class="bottoni colonna"><button class="btn primario" data-act="chiudi_mese" data-id="'+id+'"'+(c.pronta ? '' : ' disabled')+'>Conferma la chiusura</button></div>'+(c.pronta ? '' : '<p class="sotto centro">'+(c.scaduta ? 'Servono i saldi di tutti i conti alle due date.' : 'Si può confermare dal '+dataBreve(m.fine)+'.')+'</p>')+(c.scaduta && !c.completi ? '<div class="bottoni colonna"><button class="btn" data-act="chiudi_senza" data-id="'+id+'">Chiudi senza conteggio</button></div><p class="sotto centro">Per il primo mese, se manca la fotografia del 9 precedente: il mese si chiude senza spesa reale e senza scalare le buste.</p>' : '');
+  o += fonteRiga('Spesa reale = liquidità del 9 precedente + entrate − importi investiti o versati al fondo − liquidità del 9. Giroconti esclusi. Regola: BUDGET §10.3.');
+  const chiusi = lista('mesi').filter(x => x.stato === 'chiuso').sort((a,b) => a.id < b.id ? 1 : -1).slice(0,6);
+  if (chiusi.length) o += '<section class="card"><h2>Mesi chiusi</h2>'+chiusi.map(x => riga(etichettaMese(meseDaId(x.id)), x.senza_conteggio ? 'chiuso senza conteggio' : 'spesa reale '+eur0(x.spesa_reale)+' · non registrate '+eur0(x.non_registrate))).join('')+'</section>';
+  return o;
+}
+
+/* ===== Vista: Mensilità aggiuntive ===== */
+function mensCorrente(){
+  const M = ui.mens, t = oggi(); const data = isData(M.data) ? M.data : iso(t);
+  let imp = num(M.importo); if (!isFinite(imp)) imp = P('budget.mensilita.'+M.tipo+'.importo') || 0;
+  const prop = proponiMensilita(M.tipo, imp, data);
+  if (M.mod) { for (const k in prop.buste) if (M.mod['b_'+k] != null) prop.buste[k] = num(M.mod['b_'+k]) || 0; for (const k of ['fe','fp','portafoglio','libera']) if (M.mod[k] != null) prop[k] = num(M.mod[k]) || 0; }
+  const somma = r2(Object.values(prop.buste).reduce((s,v) => s+v, 0) + prop.fe + prop.fp + prop.portafoglio + prop.libera);
+  return { prop, imp, data, somma, differenza: r2(imp - somma) };
+}
+function vMensilita(){
+  const M = ui.mens, x = mensCorrente(), p = x.prop, mod = M.modifica;
+  const campo = (k, v) => mod ? '<input class="mini" id="m_'+k+'" inputmode="decimal" data-mens="'+k+'" value="'+h(M.mod && M.mod[k] != null ? M.mod[k] : fmtNum(v, 0))+'" aria-label="'+k+'">' : eur0(v);
+  let o = testa('Tredicesima, quattordicesima, premio e altre entrate extra', 'Mensilità aggiuntiva', ['budget','Budget']);
+  o += '<section class="card"><div class="form"><label>Che cosa è arrivato<select data-mensf="tipo">'+Object.entries(TIPI_MENSILITA).map(([k,n]) => '<option value="'+k+'"'+(M.tipo === k ? ' selected' : '')+'>'+n+'</option>').join('')+'</select></label>'+
+    '<label>Importo netto accreditato<input inputmode="decimal" data-mensf="importo" value="'+h(M.importo != null ? M.importo : fmtNum(x.imp, 0))+'"></label><label>Data di accredito<input type="date" data-mensf="data" value="'+x.data+'"></label></div></section>';
+  const passo = (n, titolo, tot, corpo) => '<section class="card"><div class="passo"><b>'+n+'</b><span class="cresce">'+titolo+'</span><strong class="gr">'+eur0(tot)+'</strong></div>'+corpo+'</section>';
+  if (M.tipo === 'rimborso_730') o += passo(1, 'Portafoglio di lungo periodo', p.portafoglio, '') + (p.libera ? passo(2, 'Liquidità', p.libera, '') : '');
+  else {
+    const totB = Object.values(p.buste).reduce((s,v) => s+v, 0);
+    o += passo(1, 'Buste dell’anno', totB, ordinati('buste').filter(b => b.tipo === 'annuale').map(b => riga(h(b.nome)+' <span class="sotto">· già alimentata '+eur0(alimentatoAnno(b.id, x.data.slice(0,4)))+' di '+eur0(P(b.param))+'</span>', campo('b_'+b.id, p.buste[b.id] || 0))).join(''));
+    const usato = (S.a.destinazioni.fondo_emergenza||{}).utilizzato || 0;
+    o += passo(2, 'Fondo emergenza', p.fe, usato > 0 ? riga('Reintegro (usati '+eur0(usato)+')', campo('fe', p.fe)) : '<p class="sotto">È pieno: niente da reintegrare.</p>');
+    let n = 3;
+    if (M.tipo === 'una_tantum' || M.tipo === 'premio_extra') o += passo(n++, 'Fondo pensione, fino a '+eur0(P('budget.fondo_pensione.limite_deducibile')), p.fp, riga('Versamento volontario', campo('fp', p.fp)));
+    o += passo(n, 'Risparmio extra', p.portafoglio + p.libera, riga('Al portafoglio di lungo periodo', campo('portafoglio', p.portafoglio)) + riga('Liquidità libera', campo('libera', p.libera)) + '<p class="sotto">Quello che avanza va metà al portafoglio e metà resta libero. La liquidità libera non è jolly.</p>');
+  }
+  if (p.note.length) o += '<section class="card nota-ambra">'+p.note.map(n => '<p class="sotto">'+h(n)+'</p>').join('')+'</section>';
+  if (Math.abs(x.differenza) > 0.5) o += '<p class="sotto warn centro">'+(x.differenza > 0 ? 'Da assegnare ancora ' : 'Assegnati in più ')+eur0(Math.abs(x.differenza))+'</p>';
+  o += '<div class="bottoni"><button class="btn primario" data-act="mens_ok"'+(Math.abs(x.differenza) > 0.5 || !(x.imp > 0) ? ' disabled' : '')+'>Conferma</button>'+(M.tipo !== 'rimborso_730' ? '<button class="btn" data-act="mens_mod">'+(mod ? 'Torna alla proposta' : 'Modifica importi')+'</button>' : '')+'</div>';
+  o += fonteRiga('L’ordine è fisso; gli importi li puoi cambiare prima di confermare. Regola: BUDGET §10.4.');
+  return o;
+}
+
+/* ===== Vista: Assistente ===== */
+function vAssistente(){
+  let o = testa('Scrivi, detta o fotografa', 'Assistente');
+  o += '<div class="chips">'+[['quanto_resta','Quanto posso spendere?'],['fasce','Quale ETF è fuori fascia?'],['scadenze','Prossime scadenze'],['dati_vecchi','Dati da aggiornare']].map(([f,t]) => '<button class="pillola" data-act="funzione" data-f="'+f+'" data-t="'+h(t)+'">'+t+'</button>').join('')+'</div>';
+  if (!S.sample) o += '<section class="card nota-ambra"><p class="sotto">In questa vista l’assistente non può leggere testo e foto. Le domande rapide qui sopra funzionano lo stesso: le calcola l’app.</p></section>';
+  const viste = new Set();
+  for (const c of ui.chat) {
+    if (c.ruolo === 'utente') o += '<div class="bolla utente">'+(c.foto ? ico('foto',18)+' ' : '')+h(c.testo)+'</div>';
+    else if (c.ruolo === 'pensa') o += '<div class="bolla app">Leggo…</div>';
+    else if (c.ruolo === 'nota') o += '<section class="card"><p class="sotto">'+h(c.testo)+'</p></section>';
+    else if (c.ruolo === 'risposta') o += '<section class="card">'+(c.valore ? '<p class="numero">'+h(c.valore)+'</p>' : '')+'<p>'+h(c.testo)+'</p>'+(c.righe ? c.righe.map(r => riga(h(r[0]), h(r[1]))).join('') : '')+fonteRiga('Calcolato dall’app, non dall’assistente'+(c.fonte ? ' · '+h(c.fonte) : ''))+'</section>';
+    else if (c.ruolo === 'attesa') { const x = S.a[c.arch][c.id]; viste.add(c.id); if (x && x.stato === 'non_confermato') o += cardAttesa(c.arch, Object.assign({id:c.id}, x)); else if (x) o += '<section class="card"><p class="sotto">Dato confermato e salvato.</p></section>'; else o += '<section class="card"><p class="sotto">Dato scartato.</p></section>'; }
+  }
+  for (const arch of ['movimenti','saldi','fondo_pensione']) for (const x of inAttesa(arch)) if (!viste.has(x.id)) o += cardAttesa(arch, x);
+  o += '<div class="scrivi fondo"><label class="vh" for="q_chat">Messaggio</label><input id="q_chat" type="text" data-campo="chat" data-invio="chiedi" placeholder="Es. ho comprato una PS5 da 550 €" autocomplete="off"'+(S.sample ? '' : ' disabled')+'>'+
+    (S.sample && S.limiti && S.limiti.images ? '<label class="quadro t-blu filebtn" aria-label="Allega una foto">'+ico('foto')+'<input type="file" accept="image/*" data-foto="chat" class="vh"></label>' : '')+
+    (S.dett ? '<button class="quadro t-ambra-p" data-act="mic" data-campo="chat" aria-label="'+(ui.mic.attivo ? 'Ferma la dettatura' : 'Detta')+'">'+ico(ui.mic.attivo && ui.mic.campo === 'chat' ? 'stop' : 'mic')+'</button>' : '')+
+    '<button class="quadro t-primario" data-act="chiedi" aria-label="Invia"'+(ui.occupato || !S.sample ? ' disabled' : '')+'>'+ico('invia')+'</button></div>';
+  o += fonteRiga('L’assistente non calcola: estrae i dati e richiama le funzioni dell’app. Ogni dato letto resta “non confermato” finché non lo approvi.');
+  return o;
+}
+
+/* ===== Vista: Dati e regole ===== */
+function vDati(){
+  let o = testa('Archivi, parametri ed esportazione', 'Dati e regole', ['oggi','Oggi']);
+  o += '<section class="card"><h2>Esportazione</h2><p class="sotto">Un file con tutti gli archivi: '+ARCHIVI.map(n => n.replace('_',' ')+' ('+Object.keys(S.a[n]).length+')').join(', ')+'.</p><button class="btn primario" data-act="esporta">Esporta i dati in un file</button>'+(ui.exportTesto ? '<textarea class="export" readonly>'+h(ui.exportTesto)+'</textarea><p class="sotto">Il salvataggio non è disponibile in questa vista: copia il testo.</p>' : '')+'</section>';
+  const f = ui.filtro.trim().toLowerCase();
+  const ps = Object.entries(S.a.parametri).map(([id,p]) => Object.assign({id}, p)).filter(p => !f || (p.nome+' '+p.id+' '+p.documento).toLowerCase().includes(f));
+  const docs = {}; for (const p of ps) (docs[p.documento] = docs[p.documento] || []).push(p);
+  o += '<section class="card"><h2>Parametri</h2><p class="sotto">I valori delle regole, con documento, sezione e data della versione. Se una regola cambia si aggiorna prima il documento, poi il parametro.</p><label class="vh" for="q_filtro">Cerca</label><input id="q_filtro" type="search" data-campo="filtro" placeholder="Cerca un parametro" value="'+h(ui.filtro)+'">';
+  for (const d of Object.keys(docs).sort()) {
+    o += '<p class="titolino spazio">'+h(d)+' <span class="sotto">· versione del '+dataMedia(docs[d][0].versione)+'</span></p>';
+    for (const p of docs[d].sort((a,b) => a.id < b.id ? -1 : 1)) o += '<button class="voce nudo" data-act="sheet" data-sheet="parametro" data-id="'+h(p.id)+'"><div class="cresce"><p class="nome">'+h(p.nome)+'</p><p class="sotto">'+(p.sezione ? '§'+h(p.sezione)+' · ' : '')+h(p.tipo)+(p.versione !== docs[d][0].versione ? ' · '+dataMedia(p.versione) : '')+(p.nota ? ' · '+h(p.nota) : '')+'</p></div><strong>'+h(fmtPar(p))+'</strong></button>';
+  }
+  o += '</section>';
+  const mv = lista('movimenti').sort((a,b) => (b.data+(b.creato||'')) < (a.data+(a.creato||'')) ? -1 : 1).slice(0,40);
+  o += '<section class="card"><h2>Ultimi movimenti</h2>'+(mv.length ? mv.map(x => rigaElim('movimenti', x, dataBreve(x.data)+' · '+({spesa:'spesa',alimentazione:'alimentazione',entrata:'entrata',non_registrate:'non registrate',fondo_pensione:'fondo pensione',rettifica:'rettifica'}[x.tipo]||x.tipo)+(x.busta && S.a.buste[x.busta] ? ' · '+S.a.buste[x.busta].nome : '')+(x.descrizione ? ' · '+x.descrizione : ''), eur(x.importo))).join('') : '<p class="sotto">Nessun movimento.</p>')+'</section>';
+  const sd = lista('saldi').sort((a,b) => (b.data+(b.creato||'')) < (a.data+(a.creato||'')) ? -1 : 1).slice(0,30);
+  o += '<section class="card"><h2>Ultimi saldi e letture</h2>'+(sd.length ? sd.map(x => rigaElim('saldi', x, dataBreve(x.data)+' · '+(x.oggetto === 'posizione' ? ((S.a.posizioni[x.etf]||{}).ticker||x.etf) : ((S.a.conti[x.conto]||{}).nome||x.conto))+' · '+(x.fonte||''), eur(x.oggetto === 'posizione' ? (x.valore != null ? x.valore : (x.quote||0)*(x.prezzo||0)) : x.importo))).join('') : '<p class="sotto">Nessun saldo.</p>')+'</section>';
+  const op = lista('operazioni').sort((a,b) => b.data < a.data ? -1 : 1).slice(0,30);
+  if (op.length) o += '<section class="card"><h2>Operazioni sul portafoglio</h2>'+op.map(x => rigaElim('operazioni', x, dataBreve(x.data)+' · '+({rata_ingresso:'rata di ingresso '+x.rata,versamento:'versamento mensile',risparmio_extra:'risparmio extra'}[x.tipo]||x.tipo), eur(x.importo))).join('')+fonteRiga('Eliminare un’operazione non modifica le posizioni: correggile a mano nel Portafoglio.')+'</section>';
+  o += fonteRiga('I dati stanno nel database privato dell’artefatto, legati al tuo account. Niente accesso al web, niente notifiche, niente uso senza connessione.');
+  return o;
+}
+function fmtPar(p){ if (typeof p.valore === 'number') { const dec = Math.abs(p.valore - Math.round(p.valore)) > 1e-9 ? (String(p.valore).split('.')[1]||'').length : 0; if (p.unita === '€' || String(p.unita).startsWith('€/')) return eur(p.valore)+(p.unita.length > 1 ? p.unita.slice(1) : ''); if (p.unita === 'anno' || p.unita === 'giorno' || p.unita === 'mese') return String(p.valore); return fmtNum(p.valore, Math.min(dec,3))+(p.unita === '%' ? '%' : ' '+p.unita); } if (p.unita === 'data' && isData(p.valore)) return dataMedia(p.valore); return String(p.valore); }
+function rigaElim(arch, x, testo, imp){ const k = arch+':'+x.id; return '<div class="voce"><div class="cresce"><p class="nome piccolo">'+h(testo)+(x.stato === 'non_confermato' ? ' '+chip('non confermato','ambra') : '')+'</p></div><strong>'+imp+'</strong><button class="link rosso" data-act="elimina" data-k="'+h(k)+'">'+(ui.elimina === k ? 'Confermi?' : 'Elimina')+'</button></div>'; }
+
+/* ===== Fogli (moduli) ===== */
+const opzBuste = sel => '<option value="">Nessuna busta (pesa sul mese)</option>'+ordinati('buste').map(b => '<option value="'+b.id+'"'+(sel === b.id ? ' selected' : '')+'>'+h(b.nome)+'</option>').join('');
+function foglio(){
+  const s = ui.sheet; if (!s) return '';
+  let t = '', c = '', ok = 'Salva', act = s.tipo+'_ok';
+  if (s.tipo === 'spesa') { const x = s.id ? S.a.movimenti[s.id] : {}; t = s.id ? 'Modifica la spesa' : 'Segna una spesa';
+    c = '<label>Importo<input id="f_imp" inputmode="decimal" value="'+h(x.importo != null ? fmtNum(x.importo, 2) : '')+'"></label><label>Busta<select id="f_busta">'+opzBuste(x.busta)+'</select></label><label>Descrizione<input id="f_desc" value="'+h(x.descrizione||'')+'"></label><label>Data<input id="f_data" type="date" value="'+h(x.data||iso(oggi()))+'"></label>'; ok = 'Conferma e scala'; }
+  else if (s.tipo === 'saldo') { const x = s.pend ? S.a.saldi[s.pend] : {}; const sel = x.conto || s.id; t = 'Saldo di un conto';
+    c = '<label>Conto<select id="f_conto">'+ordinati('conti').map(k => '<option value="'+k.id+'"'+(sel === k.id ? ' selected' : '')+'>'+h(k.nome)+'</option>').join('')+'</select></label><label>Saldo (per il conto comune, il saldo intero)<input id="f_imp" inputmode="decimal" value="'+h(x.importo != null ? fmtNum(x.importo, 2) : '')+'"></label><label>Data del saldo<input id="f_data" type="date" value="'+h(x.data||iso(oggi()))+'"></label>'; }
+  else if (s.tipo === 'posizione') { const e = S.a.posizioni[s.id] || {}; const x = s.pend ? S.a.saldi[s.pend] : e; t = e.ticker+' · '+e.nome;
+    c = '<p class="sotto">'+h(e.descrizione)+' · ISIN '+h(e.isin)+' · TER '+h(e.ter)+'</p><label>Quote<input id="f_quote" inputmode="decimal" value="'+h(x.quote != null ? String(x.quote).replace('.',',') : '')+'"></label><label>Prezzo per quota<input id="f_prezzo" inputmode="decimal" value="'+h(x.prezzo != null ? String(x.prezzo).replace('.',',') : '')+'"></label><label>Oppure valore totale<input id="f_valore" inputmode="decimal" value="'+h(x.quote == null && x.valore != null ? fmtNum(x.valore, 2) : '')+'"></label><label>Data<input id="f_data" type="date" value="'+h(x.data||iso(oggi()))+'"></label>'; }
+  else if (s.tipo === 'fp') { const x = s.pend ? S.a.fondo_pensione[s.pend] : {}; const an = S.a.fondo_pensione.anagrafica || {}; t = 'Fondo pensione';
+    c = '<p class="sotto">'+h(an.fondo||'')+' · comparto '+h(an.comparto||'')+'</p><label>Che cosa registri<select id="f_tipo"><option value="posizione"'+(x.tipo !== 'contributi' ? ' selected' : '')+'>Posizione individuale (valore lordo)</option><option value="contributi"'+(x.tipo === 'contributi' ? ' selected' : '')+'>Progressivo dei contributi deducibili dell’anno (voce 60450)</option></select></label><label>Importo<input id="f_imp" inputmode="decimal" value="'+h(x.posizione != null ? fmtNum(x.posizione,2) : (x.progressivo != null ? fmtNum(x.progressivo,2) : ''))+'"></label><label>Data<input id="f_data" type="date" value="'+h(x.data||iso(oggi()))+'"></label>'; }
+  else if (s.tipo === 'fissa') { const x = S.a.spese_fisse[s.id]; t = x.nome;
+    c = '<p class="sotto">'+h(x.frequenza)+' · '+(x.occorrenze_anno||12)+' volte l’anno · '+fonteDoc(x)+(x.nota ? ' · '+h(x.nota) : '')+'</p><label>Importo per volta (quota personale)<input id="f_imp" inputmode="decimal" value="'+h(fmtNum(x.importo, 2))+'"></label><label>Giorno del mese (vuoto = senza data, “fine” = ultimo giorno)<input id="f_giorno" value="'+h(x.giorno == null ? '' : x.giorno)+'"></label><label>Mesi in cui cade (numeri separati da virgola; vuoto = tutti)<input id="f_mesi" value="'+h(Array.isArray(x.mesi) ? x.mesi.join(', ') : '')+'"></label><p class="sotto">Importi e date sono dati reali: se cambia la stima annua, aggiorna anche il BUDGET.</p>'; }
+  else if (s.tipo === 'apri_mese') { const m = meseDi(oggi()), st = stipendioAtteso(iso(m.inizio)); t = 'Apri il mese '+etichettaMese(m);
+    c = '<label>Stipendio netto accreditato il '+dataBreve(accredito(m.inizio.getFullYear(), m.inizio.getMonth()))+'<input id="f_imp" inputmode="decimal" value="'+h(st ? fmtNum(st.importo, 0) : '')+'"></label><p class="sotto">Stima dal '+(st ? fonte(st.chiave) : 'BUDGET §1')+': sostituiscila con il netto reale. Mensilità aggiuntive e premio si registrano a parte.</p>'+
+      ordinati('buste').filter(b => b.tipo === 'mensile').map(b => riga('Alimento “'+h(b.nome)+'”', eur(P(b.param)))).join('')+'<p class="sotto">Se parti a mese iniziato, la prima chiusura non è calcolabile: manca la fotografia del 9 precedente.</p>'; ok = 'Apri il mese'; }
+  else if (s.tipo === 'fissa_importo') { const pr = proponiImportoDaInvestire(), d = destinazioni(); t = 'Importo da investire';
+    c = '<p class="sotto">Liquidità − fondo emergenza − riserva casa − giacenza operativa − saldo delle buste, alla fotografia del 9 che precede l’avvio (INVESTIMENTI §2).</p>'+d.righe.map(r => riga(h(r.nome), eur0(r.valore))).join('')+(pr == null ? '<p class="sotto warn">Mancano dei saldi: completa i conti prima di fissare l’importo.</p>' : '')+'<label>Importo fissato<input id="f_imp" inputmode="decimal" value="'+h(pr != null ? fmtNum(pr, 0) : '')+'"></label>'; ok = 'Fissa l’importo'; }
+  else if (s.tipo === 'acquisto') { const pi = pianoIngresso(), vm = versamentoMensile(); let imp = 0, pesi = {};
+    if (s.sub === 'rata_ingresso' && pi && pi.prossima) { imp = pi.rata; pesi = pi.pesi; t = 'Rata di ingresso '+pi.prossima.n+' di '+pi.n; }
+    else if (s.sub === 'versamento' && vm) { imp = vm.importo; pesi = vm.pesi; t = 'Versamento mensile'; }
+    else { imp = extraDaInvestire(); pesi = pesiETF(target().attivo); t = 'Risparmio extra'; }
+    const v = s.imp != null ? s.imp : imp, sp = ripartisci(isFinite(num(v)) ? num(v) : 0, pesi);
+    c = '<label>Importo investito<input id="f_imp" inputmode="decimal" data-foglio="imp" value="'+h(typeof v === 'number' ? fmtNum(v, 0) : v)+'"></label><label>Data dell’acquisto<input id="f_data" type="date" value="'+iso(oggi())+'"></label>'+ordinati('posizioni').map(e => riga(h(e.ticker)+' <span class="sotto">'+(pesi[e.id]||0)+'%</span>', eur0(sp[e.id]||0))).join('')+'<p class="sotto">Ripartizione secondo i pesi target. Quote e prezzi reali si aggiornano poi con una foto delle posizioni.</p>'; ok = 'Registra'; }
+  else if (s.tipo === 'ricalcolo') { const tg = target(); const ff = s.ff != null ? s.ff : String(P('policy.fed_funds.punto_medio')).replace('.',','); const az = azioniFormula(tg.ricalcolo, tg.inVigore.azioni, isFinite(num(ff)) ? num(ff) : null), bl = blocchi(az); t = 'Ricalcolo del '+dataMedia(tg.ricalcolo);
+    c = '<p class="sotto">Azioni = '+P('policy.formula.base')+' − età ('+eta(tg.ricalcolo)+') − '+P('policy.formula.coefficiente')+' × Fed Funds, con variazione massima di ±'+P('policy.formula.variazione_max')+' punti l’anno (POLICY §6).</p><label>Fed Funds: punto medio della forchetta ufficiale alla data di ricalcolo (%)<input id="f_ff" inputmode="decimal" data-foglio="ff" value="'+h(ff)+'"></label><p class="sotto">L’app non accede al web: leggi la forchetta sul sito della Federal Reserve.</p>'+(bl ? barraTarget(bl)+riga('Nuovo target', bl.azioni+' / '+bl.obbligazioni+' / '+bl.managed_futures) : ''); ok = 'Conferma il ricalcolo'; }
+  else if (s.tipo === 'parametro') { const p = S.a.parametri[s.id]; t = p.nome;
+    c = '<p class="sotto">'+h(p.documento)+(p.sezione ? ' §'+h(p.sezione) : '')+' · '+h(p.tipo)+' · versione del '+dataMedia(p.versione)+'</p><p class="sotto warn">L’app non è una seconda fonte: aggiorna prima il documento, poi qui valore e data della versione.</p><label>Valore ('+h(p.unita)+')<input id="f_val" value="'+h(typeof p.valore === 'number' ? String(p.valore).replace('.',',') : p.valore)+'"></label><label>Data della versione del documento<input id="f_ver" type="date" value="'+h(p.versione)+'"></label><label>Nota<input id="f_nota" value="'+h(p.nota||'')+'"></label>'; }
+  else if (s.tipo === 'fe') { const d = S.a.destinazioni.fondo_emergenza || {}; t = 'Fondo emergenza';
+    c = '<p class="sotto">Se usato, si reintegra entro 12 mesi con il residuo mensile e con le mensilità aggiuntive (INVESTIMENTI §1, BUDGET §10.4).</p><label>Importo usato e non ancora reintegrato<input id="f_imp" inputmode="decimal" value="'+h(fmtNum(d.utilizzato||0, 0))+'"></label>'; }
+  return '<div class="velo" data-act="chiudi_sheet"></div><div class="foglio" role="dialog" aria-modal="true" aria-label="'+h(t)+'"><h2>'+h(t)+'</h2><div class="form">'+c+'</div><div class="bottoni"><button class="btn primario" data-act="'+act+'">'+ok+'</button><button class="btn" data-act="chiudi_sheet">Annulla</button></div></div>';
+}
+
+/* ===== Funzioni richiamabili dall’assistente (calcola l’app) ===== */
+const FUNZIONI = {
+  quanto_resta: { d:'quanto resta da spendere fino allo stipendio', f(){ const b = bustaQuotidiana(); if (!b) return { testo:'Manca la busta delle uscite quotidiane.' }; const m = meseDi(oggi()), fx = fisseMese(m); return { valore:eur0(saldoBusta(b.id)), testo:'È quello che resta in “'+b.nome+'” per '+gg(giorniAlloStipendio())+'. Uscite fisse con data ancora da pagare: '+eur0(fx.daPagare)+'.'+(S.a.mesi[m.id] ? '' : ' Il mese non è ancora aperto: la busta non è stata alimentata.'), fonte:'BUDGET §10.2' }; } },
+  buste: { d:'saldo di tutte le buste', f(){ return { testo:'Saldo delle buste a oggi.', righe: statoBuste().map(b => [b.nome, eur0(b.saldo)+' di '+eur0(b.importo)]), fonte:'BUDGET §10.2' }; } },
+  busta: { d:'saldo di una busta (argomento: id della busta)', f(a){ const b = statoBuste().find(x => x.id === a); if (!b) return FUNZIONI.buste.f(); return { valore:eur0(b.saldo), testo:'Resta in “'+b.nome+'”, su '+eur(b.importo)+(b.tipo === 'annuale' ? ' l’anno' : ' al mese')+'.', fonte:'BUDGET §10.2' }; } },
+  destinazioni: { d:'liquidità divisa per destinazione (fondo emergenza, riserva casa, da investire…)', f(){ const d = destinazioni(); return { valore:eur0(d.totale), testo:'Liquidità per destinazione'+(d.completo ? '.' : ' (parziale: mancano dei saldi).'), righe: d.righe.map(r => [r.nome, eur0(r.valore)]), fonte:'INVESTIMENTI §1–2' }; } },
+  giacenze: { d:'giacenze minime dei conti correnti', f(){ return { testo:'Giacenze minime, misurate il 9.', righe: giacenze().map(x => [x.c.nome, x.s ? eur0(x.s.importo)+' (minimo '+eur0(x.min)+')' : 'saldo mancante']), fonte:'BUDGET §10.1' }; } },
+  target: { d:'target di azioni, obbligazioni e managed futures', f(){ const t = target(); if (!t) return { testo:'Target non disponibile.' }; const s = b => b.azioni+' / '+b.obbligazioni+' / '+b.managed_futures; return { valore:s(t.attivo), testo:'Azioni / obbligazioni / managed futures '+(t.attivoProbabile ? 'secondo la formula (ricalcolo da confermare).' : 'in vigore.')+(t.probabile && !t.attivoProbabile ? ' Probabile dal '+dataMedia(t.ricalcolo)+': '+s(t.probabile)+'.' : ''), fonte:'POLICY §6' }; } },
+  fasce: { d:'ETF e blocchi fuori dalle fasce di ribilanciamento', f(){ const p = portafoglio(); if (!p.totale) return { testo:'Il portafoglio non ha ancora posizioni: nessun ETF può essere fuori fascia.', fonte:'POLICY §8' }; const fu = p.righe.filter(r => r.fuori); return { valore: fu.length ? String(fu.length) : 'Nessuno', testo: fu.length ? 'ETF fuori fascia: ricevono i versamenti del trimestre successivo.' : 'Tutti gli ETF sono dentro la fascia.', righe: fu.map(r => [r.e.ticker, perc(r.attuale)+' su '+r.target+'%']), fonte:'POLICY §8' }; } },
+  prossima_rata: { d:'prossima rata di ingresso nel portafoglio', f(){ const pi = pianoIngresso(); if (!pi || !pi.prossima) return { testo:'Non ci sono rate di ingresso da fare.', fonte:'INVESTIMENTI §2' }; return { valore:eur0(pi.rata), testo:'Rata '+pi.prossima.n+' di '+pi.n+', '+dataLunga(pi.prossima.data)+' '+pi.prossima.data.getFullYear()+'.'+(pi.fissato ? '' : ' Importo stimato, da rimisurare prima dell’avvio.'), fonte:'INVESTIMENTI §2' }; } },
+  versamento: { d:'versamento mensile nel portafoglio', f(){ const v = versamentoMensile(); if (!v) return { testo:'Versamento non disponibile.' }; return { valore:eur0(v.importo), testo:'Minimo vincolante, prossimo il '+dataMedia(v.data)+'. Obiettivo '+eur0(v.obiettivo)+'.', fonte:'INVESTIMENTI §3' }; } },
+  scadenze: { d:'prossime scadenze', f(){ return { testo:'Prossime scadenze.', righe: scadenze(8).map(x => [dataMedia(x.data)+' · '+x.nome, x.importo != null ? eur0(x.importo) : '']), fonte:'BUDGET §1–4, INVESTIMENTI §2–3' }; } },
+  patrimonio: { d:'patrimonio netto stimato', f(){ const p = patrimonio(); return { valore:'≈ '+eur0(p.totale), testo:'Patrimonio netto stimato'+(p.completo ? '.' : ' (parziale: mancano dei saldi).'), righe:[['Liquidità',eur0(p.liquidita.totale)],['Portafoglio',eur0(p.portafoglio)],['Fondo pensione',eur0(p.fondo ? p.fondo.posizione : null)],['Casa, la tua metà',eur0(p.casa)],['Mutuo, la tua metà',eur0(p.mutuo != null ? -p.mutuo : null)]], fonte:'PATRIMONIO §1' }; } },
+  soglia: { d:'soglia minima del portafoglio libero', f(){ const pv = P('policy.soglia.prima_verifica'); if (oggi().getFullYear() < pv) return { valore:eur0(soglia(new Date(pv,0,1))), testo:'Soglia al 1° gennaio '+pv+', data della prima verifica. Prima non si applica.', fonte:'PIANO PENSIONE §7.4, POLICY §9' }; return { valore:eur0(soglia(oggi())), testo:'Soglia a oggi, interpolata.', fonte:'PIANO PENSIONE §7.4' }; } },
+  dati_vecchi: { d:'saldi e prezzi vecchi o mancanti', f(){ const d = datiVecchi(); return { valore: d.length ? String(d.length) : 'Nessuno', testo: d.length ? 'Dati da aggiornare.' : 'Saldi e prezzi sono aggiornati.', righe: d.map(x => [x.nome, x.stato === 'manca' ? 'mancante' : 'del '+dataMedia(x.data)]) }; } },
+  parametro: { d:'valore di una regola o di un parametro (argomento: parole da cercare)', f(a){ const q = String(a||'').toLowerCase().split(/\s+/).filter(w => w.length > 2); const tr = Object.entries(S.a.parametri).map(([id,p]) => ({ id, p, n: q.filter(w => (p.nome+' '+id+' '+(p.nota||'')).toLowerCase().includes(w)).length })).filter(x => x.n > 0).sort((x,y) => y.n-x.n).slice(0,5); if (!tr.length) return { testo:'Nessun parametro trovato. Cerca in Dati e regole.' }; return { testo:'Parametri trovati.', righe: tr.map(x => [x.p.nome+' ('+x.p.documento+(x.p.sezione ? ' §'+x.p.sezione : '')+')', fmtPar(x.p)]) }; } }
+};
+
+/* ===== Assistente: lettura di testo e foto ===== */
+function prompt(testo, conFoto){
+  return 'Sei il lettore di dati di un’app di finanza personale in italiano. NON fai calcoli e NON dai consigli: estrai i dati dal messaggio'+(conFoto ? ' e dall’immagine allegata (uno screenshot di banca, broker o fondo pensione)' : '')+' e scegli quali funzioni dell’app richiamare. Rispondi solo con un oggetto JSON, senza altro testo.\n\nOggi è '+iso(oggi())+'.\n\nBUSTE (id: nome – contenuto):\n'+ordinati('buste').map(b => b.id+': '+b.nome+' – '+b.contenuto).join('\n')+
+  '\n\nCONTI (id: nome):\n'+ordinati('conti').map(c => c.id+': '+c.nome).join('\n')+'\n\nETF DEL PORTAFOGLIO (id: sigla – nome – ISIN):\n'+ordinati('posizioni').map(e => e.id+': '+e.ticker+' – '+e.nome+' – '+e.isin).join('\n')+
+  '\n\nFUNZIONI (nome: che cosa calcola l’app):\n'+Object.entries(FUNZIONI).map(([k,v]) => k+': '+v.d).join('\n')+
+  '\n\nFormato: {"azioni":[...],"nota":""}\nTipi di azione ammessi:\n{"tipo":"spesa","importo":numero,"busta":"id" oppure null,"descrizione":"breve","data":"AAAA-MM-GG"}\n{"tipo":"entrata","importo":numero,"descrizione":"breve","data":"AAAA-MM-GG"}\n{"tipo":"saldo","conto":"id","importo":numero,"data":"AAAA-MM-GG"}\n{"tipo":"posizione","etf":"id","quote":numero oppure null,"prezzo":numero oppure null,"valore":numero oppure null,"data":"AAAA-MM-GG"}\n{"tipo":"fondo_pensione","posizione":numero,"data":"AAAA-MM-GG"}\n{"tipo":"domanda","funzione":"nome","argomento":"testo o id, anche vuoto"}\n\nRegole:\n- Copia i numeri come li leggi, senza somme, conversioni, stime o arrotondamenti. Usa il punto come separatore decimale.\n- Se un dato non è leggibile o non è certo, non inventarlo: lascialo fuori e dillo in "nota".\n- Se la data non è indicata usa quella di oggi; per uno screenshot usa la data che compare nell’immagine, se c’è.\n- Per una spesa scegli la busta dal contenuto; se non rientra in nessuna, "busta": null.\n- Mutuo, nido, bollette, spesa alimentare e le altre spese fisse non si registrano come spese: mettilo in "nota".\n- Per il conto comune riporta il saldo intero del conto, non la metà.\n- Per una domanda scegli una sola funzione dell’elenco; se nessuna risponde, azioni vuoto e una frase in "nota".\n- "nota" è una frase breve in italiano, senza numeri calcolati da te.\n\nMessaggio dell’utente: «'+String(testo||'').slice(0,2000)+'»';
+}
+const ERR_SAMPLE = { not_granted:'Non hai autorizzato l’assistente in questa vista.', rate_limited:'Troppe richieste: riprova tra poco.', invalid_json:'Non sono riuscito a leggere una risposta valida. Riprova o inserisci il dato a mano.', image_rejected:'Immagine non leggibile: usa un file JPEG o PNG.', images_unavailable:'In questa vista non posso leggere le immagini.', refused:'Richiesta non gestibile.', cancelled:'Richiesta annullata.' };
+async function chiedi(testo, file, contesto){
+  if (!S.sample || ui.occupato) return;
+  ui.occupato = contesto || 'chat';
+  if (contesto !== 'spesa') { ui.chat.push({ ruolo:'utente', testo: testo || 'Screenshot', foto: !!file }); ui.chat.push({ ruolo:'pensa' }); }
+  render(); scorri();
+  let esiti = [];
+  try {
+    const opt = { cache:false, modelTier: file ? 'default' : 'quick' }; if (file) opt.images = [file];
+    const r = await S.sample.json(prompt(testo, !!file), opt);
+    esiti = await elabora(r, file ? 'screenshot' : 'assistente');
+  } catch (e) { esiti = [{ ruolo:'nota', testo: ERR_SAMPLE[e && e.code] || 'L’assistente non è raggiungibile. Riprova più tardi.' }]; if (!(e && e.code)) console.error(e); }
+  ui.chat = ui.chat.filter(c => c.ruolo !== 'pensa');
+  if (contesto === 'spesa') { const n = esiti.filter(x => x.ruolo === 'nota' || x.ruolo === 'risposta'); if (n.length) avviso(n[0].testo); }
+  else if (contesto === 'conti' || contesto === 'portafoglio') { const n = esiti.find(x => x.ruolo === 'nota'); ui.chat.push(...esiti); if (n && !esiti.some(x => x.ruolo === 'attesa')) avviso(n.testo); }
+  else ui.chat.push(...esiti);
+  ui.occupato = false; render(); if (!contesto) scorri();
+}
+async function elabora(r, fonteDato){
+  const out = []; const az = r && Array.isArray(r.azioni) ? r.azioni.slice(0,20) : [];
+  const dataOk = d => isData(d) && d <= iso(piuGiorni(oggi(),1)) ? d : iso(oggi());
+  const n = v => (typeof v === 'number' && isFinite(v)) ? v : (typeof v === 'string' && isFinite(num(v)) ? num(v) : null);
+  for (const a of az) {
+    if (!a || typeof a !== 'object') continue;
+    const base = { stato:'non_confermato', fonte:fonteDato, creato:adesso() };
+    if (a.tipo === 'domanda' && FUNZIONI[a.funzione]) { try { out.push(Object.assign({ ruolo:'risposta' }, FUNZIONI[a.funzione].f(String(a.argomento||'')))); } catch (e) { console.error(e); out.push({ ruolo:'nota', testo:'Non riesco a calcolare questa risposta con i dati presenti.' }); } }
+    else if ((a.tipo === 'spesa' || a.tipo === 'entrata') && n(a.importo) > 0) { const d = Object.assign(base, { tipo:a.tipo, importo:r2(n(a.importo)), descrizione:String(a.descrizione||'').slice(0,120), data:dataOk(a.data) }); if (a.tipo === 'spesa') d.busta = S.a.buste[a.busta] ? a.busta : null; const id = nid(); if (await scrivi(() => metti('movimenti', id, d))) out.push({ ruolo:'attesa', arch:'movimenti', id }); }
+    else if (a.tipo === 'saldo' && S.a.conti[a.conto] && n(a.importo) != null) { const id = nid(); if (await scrivi(() => metti('saldi', id, Object.assign(base, { conto:a.conto, importo:r2(n(a.importo)), data:dataOk(a.data) })))) out.push({ ruolo:'attesa', arch:'saldi', id }); }
+    else if (a.tipo === 'posizione' && S.a.posizioni[a.etf] && (n(a.quote) != null || n(a.valore) != null)) { const id = nid(); if (await scrivi(() => metti('saldi', id, Object.assign(base, { oggetto:'posizione', etf:a.etf, quote:n(a.quote), prezzo:n(a.prezzo), valore:n(a.valore), data:dataOk(a.data) })))) out.push({ ruolo:'attesa', arch:'saldi', id }); }
+    else if (a.tipo === 'fondo_pensione' && n(a.posizione) > 0) { const id = nid(); if (await scrivi(() => metti('fondo_pensione', id, Object.assign(base, { tipo:'posizione', posizione:r2(n(a.posizione)), data:dataOk(a.data) })))) out.push({ ruolo:'attesa', arch:'fondo_pensione', id }); }
+  }
+  const nota = r && typeof r.nota === 'string' ? r.nota.trim().slice(0,300) : '';
+  if (nota) out.push({ ruolo:'nota', testo:nota });
+  if (!out.length) out.push({ ruolo:'nota', testo:'Non ho trovato dati o domande che l’app sa gestire in questa versione.' });
+  return out;
+}
+function scorri(){ requestAnimationFrame(() => { const e = document.getElementById('q_chat'); if (e && ui.vista === 'assistente') e.scrollIntoView({ block:'end' }); }); }
+
+/* ===== Azioni ===== */
+const val = id => { const e = document.getElementById(id); return e ? e.value : ''; };
+const chiudiSheet = () => { ui.sheet = null; };
+async function confermaLettura(arch, id, patch){
+  const x = Object.assign({}, S.a[arch][id], patch||{});
+  if (arch === 'saldi' && x.oggetto === 'posizione') {
+    const valore = (x.quote != null && x.prezzo != null) ? r2(x.quote*x.prezzo) : x.valore;
+    await aggiorna('posizioni', x.etf, { quote: x.quote != null ? x.quote : null, prezzo: x.prezzo != null ? x.prezzo : null, valore: valore != null ? valore : null, data:x.data, fonte:x.fonte||'manuale' });
+  }
+  await aggiorna(arch, id, Object.assign({}, patch||{}, { stato:'confermato', confermato_il:adesso() }));
+}
+const AZ = {
+  sheet(el){ ui.sheet = { tipo:el.dataset.sheet, id:el.dataset.id||null, sub:el.dataset.tipo||null }; },
+  chiudi_sheet(){ chiudiSheet(); },
+  async conferma(el){ await scrivi(() => confermaLettura(el.dataset.arch, el.dataset.id)); },
+  async scarta(el){ await scrivi(() => togli(el.dataset.arch, el.dataset.id)); },
+  correggi(el){ const a = el.dataset.arch, id = el.dataset.id, x = S.a[a][id]; if (!x) return; if (a === 'movimenti') ui.sheet = { tipo:'spesa', id }; else if (a === 'saldi' && x.oggetto === 'posizione') ui.sheet = { tipo:'posizione', id:x.etf, pend:id }; else if (a === 'saldi') ui.sheet = { tipo:'saldo', pend:id }; else ui.sheet = { tipo:'fp', pend:id }; },
+  async spesa_ok(){ const s = ui.sheet, imp = num(val('f_imp')), data = val('f_data'); if (!(imp > 0) || !isData(data)) return avviso('Controlla importo e data.'); const d = { importo:r2(imp), busta:val('f_busta')||null, descrizione:val('f_desc').slice(0,120), data, stato:'confermato' };
+    if (await scrivi(() => s.id ? aggiorna('movimenti', s.id, Object.assign(d, { confermato_il:adesso() })) : aggiungi('movimenti', Object.assign({ tipo:'spesa', fonte:'manuale' }, d)))) chiudiSheet(); },
+  async saldo_ok(){ const s = ui.sheet, imp = num(val('f_imp')), data = val('f_data'), conto = val('f_conto'); if (!isFinite(imp) || !isData(data) || !S.a.conti[conto]) return avviso('Controlla saldo e data.'); const d = { conto, importo:r2(imp), data };
+    if (await scrivi(() => s.pend ? confermaLettura('saldi', s.pend, d) : aggiungi('saldi', Object.assign({ fonte:'manuale', stato:'confermato' }, d)))) chiudiSheet(); },
+  async posizione_ok(){ const s = ui.sheet, q = num(val('f_quote')), pr = num(val('f_prezzo')), v = num(val('f_valore')), data = val('f_data'); if (!isData(data) || !((isFinite(q) && isFinite(pr)) || isFinite(v))) return avviso('Indica quote e prezzo, oppure il valore totale.');
+    const d = { oggetto:'posizione', etf:s.id, quote: isFinite(q) ? q : null, prezzo: isFinite(pr) ? pr : null, valore: (isFinite(q) && isFinite(pr)) ? r2(q*pr) : r2(v), data };
+    if (await scrivi(async () => { if (s.pend) await confermaLettura('saldi', s.pend, d); else { const id = await aggiungi('saldi', Object.assign({ fonte:'manuale', stato:'non_confermato' }, d)); await confermaLettura('saldi', id); } })) chiudiSheet(); },
+  async fp_ok(){ const s = ui.sheet, imp = num(val('f_imp')), data = val('f_data'), tipo = val('f_tipo'); if (!(imp >= 0) || !isData(data)) return avviso('Controlla importo e data.');
+    const d = tipo === 'contributi' ? { tipo, progressivo:r2(imp), anno:Number(data.slice(0,4)), data } : { tipo:'posizione', posizione:r2(imp), data };
+    if (await scrivi(() => s.pend ? confermaLettura('fondo_pensione', s.pend, d) : aggiungi('fondo_pensione', Object.assign({ fonte:'manuale', stato:'confermato' }, d)))) chiudiSheet(); },
+  async fissa_ok(){ const s = ui.sheet, imp = num(val('f_imp')), g = val('f_giorno').trim().toLowerCase(), ms = val('f_mesi').split(/[,\s]+/).map(Number).filter(n => n >= 1 && n <= 12); if (!(imp >= 0)) return avviso('Controlla l’importo.'); const giorno = g === '' ? null : (g === 'fine' ? 'fine' : Number(g)); if (giorno !== null && giorno !== 'fine' && !(giorno >= 1 && giorno <= 31)) return avviso('Il giorno va da 1 a 31, oppure “fine”.');
+    if (await scrivi(() => aggiorna('spese_fisse', s.id, { importo:r2(imp), giorno, mesi: ms.length ? ms : null, modificato_il:iso(oggi()) }))) chiudiSheet(); },
+  async apri_mese_ok(){ const m = meseDi(oggi()); if (S.a.mesi[m.id]) return chiudiSheet(); const st = num(val('f_imp')), data = iso(m.inizio);
+    if (await scrivi(async () => { await metti('mesi', m.id, { stato:'aperto', inizio:data, fine:iso(m.fine), aperto_il:iso(oggi()) }); if (st > 0) await aggiungi('movimenti', { tipo:'entrata', sottotipo:'stipendio', importo:r2(st), data:iso(accredito(m.inizio.getFullYear(), m.inizio.getMonth())), descrizione:'Stipendio', fonte:'manuale', stato:'confermato' });
+      for (const b of ordinati('buste')) { if (b.tipo !== 'mensile') continue; const imp = P(b.param); if (imp > 0) await aggiungi('movimenti', { tipo:'alimentazione', busta:b.id, importo:imp, data, descrizione:'Alimentazione del mese', fonte:'app', stato:'confermato' }); } })) chiudiSheet(); },
+  async fissa_importo_ok(){ const imp = num(val('f_imp')); if (!(imp > 0)) return avviso('Indica l’importo.'); if (await scrivi(() => aggiorna('destinazioni', 'da_investire', { importo_fissato:r2(imp), data_fotografia:iso(oggi()) }))) chiudiSheet(); },
+  async acquisto_ok(){ const s = ui.sheet, imp = num(val('f_imp')), data = val('f_data'); if (!(imp > 0) || !isData(data)) return avviso('Controlla importo e data.'); const pi = pianoIngresso(), vm = versamentoMensile();
+    const pesi = s.sub === 'rata_ingresso' && pi ? pi.pesi : (s.sub === 'versamento' && vm ? vm.pesi : pesiETF(target().attivo)); const sp = ripartisci(imp, pesi);
+    const op = { tipo:s.sub, importo:r2(imp), data, dettaglio:sp, stato:'confermato', fonte:'manuale' }; if (s.sub === 'rata_ingresso' && pi && pi.prossima) op.rata = pi.prossima.n;
+    if (await scrivi(async () => { await aggiungi('operazioni', op); for (const id in sp) { const e = S.a.posizioni[id]; if (!e || !sp[id]) continue; if (e.quote != null && e.prezzo != null) continue; await aggiorna('posizioni', id, { valore: r2((e.valore||0) + sp[id]), data, fonte:'importo investito' }); } })) chiudiSheet(); },
+  async ricalcolo_ok(){ const ff = num(val('f_ff')), tg = target(); if (!isFinite(ff)) return avviso('Indica i Fed Funds.'); const az = azioniFormula(tg.ricalcolo, tg.inVigore.azioni, ff); if (az == null) return avviso('Mancano dei parametri della formula.'); const v = iso(oggi());
+    if (await scrivi(async () => { await aggiorna('parametri', 'policy.fed_funds.punto_medio', { valore:ff, versione:v, nota:'Letto al ricalcolo del '+dataMedia(tg.ricalcolo) }); await aggiorna('parametri', 'policy.target.azioni', { valore:az, anno:tg.ricalcolo.getFullYear(), versione:v, nota:'Ricalcolo del '+dataMedia(tg.ricalcolo)+' con Fed Funds al '+fmtNum(ff,3)+'%' }); })) chiudiSheet(); },
+  async parametro_ok(){ const s = ui.sheet, p = S.a.parametri[s.id], ver = val('f_ver'); let v = val('f_val').trim(); if (!isData(ver)) return avviso('Indica la data della versione.'); if (typeof p.valore === 'number') { v = num(v); if (!isFinite(v)) return avviso('Il valore deve essere un numero.'); }
+    if (await scrivi(() => aggiorna('parametri', s.id, { valore:v, versione:ver, nota:val('f_nota').slice(0,200), modificato_il:iso(oggi()) }))) { S.mancanti.clear(); chiudiSheet(); } },
+  async fe_ok(){ const imp = num(val('f_imp')); if (!(imp >= 0)) return avviso('Controlla l’importo.'); if (await scrivi(() => aggiorna('destinazioni', 'fondo_emergenza', { utilizzato:r2(imp) }))) chiudiSheet(); },
+  spesa_parole(){ const t = (ui.campi.spesa||'').trim(); if (!t) return; if (!S.sample) { ui.sheet = { tipo:'spesa' }; return; } ui.ultimaSpesa = t; ui.campi.spesa = ''; chiedi(t, null, 'spesa'); },
+  chiedi(){ const t = (ui.campi.chat||'').trim(); if (!t) return; ui.campi.chat = ''; chiedi(t, null); },
+  funzione(el){ ui.chat.push({ ruolo:'utente', testo:el.dataset.t }); try { ui.chat.push(Object.assign({ ruolo:'risposta' }, FUNZIONI[el.dataset.f].f(''))); } catch (e) { console.error(e); } scorri(); },
+  mic(el){ const d = S.dett; if (!d) return; if (ui.mic.attivo) { d.stop().catch(() => {}); return; } ui.mic.campo = el.dataset.campo; d.start().catch(e => { if (e && e.code !== 'stopped' && e.code !== 'dismissed') avviso(e.code === 'not_granted' ? 'Dettatura non autorizzata: scrivi il messaggio.' : 'Dettatura non disponibile ora.'); }); },
+  recupero(el){ ui.chius.recupero = el.dataset.v; },
+  async chiudi_mese(el){ const id = el.dataset.id, c = chiusuraCon(id); if (!c.pronta) return;
+    if (await scrivi(async () => { if (c.nonRegistrate > 0 && c.busta) await aggiungi('movimenti', { tipo:'non_registrate', busta:c.busta.id, importo:c.nonRegistrate, data:c.d1, descrizione:'Spese non registrate, chiusura '+etichettaMese(c.mese), fonte:'chiusura', stato:'confermato' });
+      await aggiorna('mesi', id, { stato:'chiuso', chiuso_il:iso(oggi()), liquidita_inizio:c.L0, liquidita_fine:c.L1, entrate:c.entrate, investito:c.investito, spesa_reale:c.spesaReale, uscite_fisse:c.fisse, segnalate:c.segnalate, non_registrate:c.nonRegistrate, saldo_busta_quotidiana:c.saldoDopo, recupero: c.saldoDopo < 0 ? (ui.chius.recupero === 'importo' ? 'correggere_importo_busta' : 'mese_successivo') : null }); })) { ui.chius = {}; avviso('Mese chiuso.'); } },
+  async chiudi_senza(el){ if (await scrivi(() => aggiorna('mesi', el.dataset.id, { stato:'chiuso', chiuso_il:iso(oggi()), senza_conteggio:true }))) { ui.chius = {}; avviso('Mese chiuso senza conteggio.'); } },
+  mens_mod(){ ui.mens.modifica = !ui.mens.modifica; ui.mens.mod = ui.mens.modifica ? {} : null; },
+  async mens_ok(){ const x = mensCorrente(), p = x.prop; if (Math.abs(x.differenza) > 0.5 || !(x.imp > 0)) return; const nome = TIPI_MENSILITA[p.tipo];
+    if (await scrivi(async () => { await aggiungi('movimenti', { tipo:'entrata', sottotipo:p.tipo, importo:r2(x.imp), data:x.data, descrizione:nome, fonte:'manuale', stato:'confermato' });
+      for (const k in p.buste) if (p.buste[k] > 0) await aggiungi('movimenti', { tipo:'alimentazione', busta:k, importo:r2(p.buste[k]), data:x.data, descrizione:nome, fonte:'mensilità', stato:'confermato' });
+      if (p.fe > 0) { const u = (S.a.destinazioni.fondo_emergenza||{}).utilizzato || 0; await aggiorna('destinazioni', 'fondo_emergenza', { utilizzato: r2(Math.max(0, u - p.fe)) }); }
+      await metti('destinazioni', 'mens-'+nid(), { tipo:'mensilita', sottotipo:p.tipo, nome, data:x.data, importo:r2(x.imp), buste:p.buste, fe:p.fe, fp:p.fp, portafoglio:p.portafoglio, libera:p.libera, creato:adesso() }); })) { ui.mens = { tipo:'tredicesima', modifica:false, mod:null }; avviso(nome+' destinata.'); location.hash = 'budget'; } },
+  async elimina(el){ const k = el.dataset.k; if (ui.elimina !== k) { ui.elimina = k; return; } ui.elimina = null; const [a, id] = k.split(':'); await scrivi(() => togli(a, id)); },
+  async esporta(){ const dati = { app:'Finanze personali', esportato:adesso(), archivi:S.a }; const testo = JSON.stringify(dati, null, 1); const nome = 'finanze-'+iso(oggi())+'.json';
+    if (!S.down) { ui.exportTesto = testo; return; } try { await S.down.save({ filename:nome, data:testo }); avviso('File salvato.'); } catch (e) { if (e && e.code === 'declined') return; ui.exportTesto = testo; } }
+};
+
+/* ===== Rendering ===== */
+const VISTE = { oggi:vOggi, budget:vBudget, conti:vConti, portafoglio:vPortafoglio, assistente:vAssistente, chiusura:vChiusura, mensilita:vMensilita, dati:vDati };
+function render(){
+  const main = document.getElementById('main'); if (!main) return;
+  const att = document.activeElement, fid = att && att.id, sel = att && att.selectionStart;
+  document.getElementById('nav').innerHTML = VISTE_NAV.map(([k,n,i]) => '<a href="#'+k+'"'+((ui.vista === k || (k === 'budget' && (ui.vista === 'chiusura' || ui.vista === 'mensilita'))) ? ' aria-current="page"' : '')+'>'+ico(i)+'<span>'+n+'</span></a>').join('');
+  let o = '';
+  if (S.errore) o = '<header class="testa"><div><p class="sopra">Finanze personali</p><h1>Dati non disponibili</h1></div></header><section class="card nota-ambra"><p class="sotto">'+(S.errore === 'fuori' ? 'Apri l’app dalla sua pagina su claude.ai, con il tuo account: fuori da lì il database privato non è raggiungibile.' : 'In questa vista il database privato non è raggiungibile (accesso non effettuato o permesso revocato). Ricarica la pagina dal tuo account.')+'</p></section>';
+  else if (!S.pronto) o = '<header class="testa"><div><p class="sopra">Finanze personali</p><h1>Carico i tuoi dati…</h1></div></header>'+(S.lento ? '<section class="card nota-ambra"><p class="sotto">I dati non sono ancora raggiungibili. L’app non funziona senza connessione: resta in attesa, riprova da sola.</p></section>' : '');
+  else { try { o = VISTE[ui.vista](); } catch (e) { console.error(e); o = '<section class="card nota-ambra"><p class="titolino">Errore in questa schermata</p><p class="sotto">'+h(e.message)+'</p></section>'; } }
+  const precB = {}; main.querySelectorAll('[data-k]').forEach(e => { precB[e.dataset.k] = e.style.width; });
+  main.innerHTML = o; main.dataset.vista = ui.vista;
+  main.querySelectorAll('[data-k]').forEach(e => { const pr = precB[e.dataset.k], nu = e.style.width; if (pr && pr !== nu) { e.style.transition = 'none'; e.style.width = pr; void e.offsetWidth; e.style.transition = ''; e.style.width = nu; } });
+  const chiave = ui.sheet && S.pronto ? [ui.sheet.tipo, ui.sheet.id, ui.sheet.pend, ui.sheet.sub].join('|') : '';
+  if (chiave !== render.chiave || ui.forzaFoglio || !chiave) { document.getElementById('foglio').innerHTML = chiave ? foglio() : ''; render.chiave = chiave; ui.forzaFoglio = false; if (chiave) { const p = document.querySelector('#foglio input:not([type=date]), #foglio select'); if (p && !fid) p.focus({ preventScroll:true }); } }
+  document.getElementById('toast').innerHTML = ui.toast ? '<div class="toast" role="status">'+h(ui.toast)+'</div>' : '';
+  main.querySelectorAll('[data-campo]').forEach(e => { const k = e.dataset.campo; if (k !== 'filtro') e.value = ui.campi[k] || ''; });
+  if (fid) { const e = document.getElementById(fid); if (e && e !== document.activeElement) { e.focus({ preventScroll:true }); try { if (sel != null && e.setSelectionRange && e.type !== 'date') e.setSelectionRange(sel, sel); } catch (x) {} } }
+}
+let rT = null; const programma = () => { clearTimeout(rT); rT = setTimeout(render, 60); };
+function vai(){ const v = location.hash.replace('#',''); ui.vista = TUTTE.includes(v) ? v : 'oggi'; ui.sheet = null; ui.elimina = null; render(); window.scrollTo(0,0); }
+
+document.addEventListener('click', async ev => {
+  const go = ev.target.closest('[data-go]'); if (go) { location.hash = go.dataset.go; return; }
+  const el = ev.target.closest('[data-act]'); if (!el || el.disabled) return;
+  const fn = AZ[el.dataset.act]; if (!fn) return;
+  if (el.dataset.act !== 'elimina') ui.elimina = null;
+  const r = fn(el, ev); render(); if (r && r.then) { await r; render(); }
+});
+document.addEventListener('input', ev => {
+  const e = ev.target;
+  if (e.dataset.campo) { if (e.dataset.campo === 'filtro') { ui.filtro = e.value; programma(); } else ui.campi[e.dataset.campo] = e.value; }
+  else if (e.dataset.mens) { ui.mens.mod = ui.mens.mod || {}; ui.mens.mod[e.dataset.mens] = e.value; }
+  else if (e.dataset.chius) ui.chius[e.dataset.chius] = e.value;
+  else if (e.dataset.foglio && ui.sheet) ui.sheet[e.dataset.foglio] = e.value;
+});
+document.addEventListener('change', ev => {
+  const e = ev.target;
+  if (e.dataset.foto) { const f = e.files && e.files[0]; e.value = ''; if (!f) return; if (e.dataset.foto !== 'chat') location.hash = 'assistente'; setTimeout(() => chiedi(e.dataset.foto === 'portafoglio' ? 'Screenshot delle posizioni del portafoglio' : (e.dataset.foto === 'conti' ? 'Screenshot dei saldi' : (ui.campi.chat||'').trim() || 'Screenshot'), f, null), 30); if (e.dataset.foto === 'chat') ui.campi.chat = ''; return; }
+  if (e.dataset.mensf) { ui.mens[e.dataset.mensf] = e.value; if (e.dataset.mensf === 'tipo') { ui.mens.importo = null; ui.mens.mod = ui.mens.modifica ? {} : null; } render(); }
+  else if (e.dataset.foglio) { ui.forzaFoglio = true; render(); }
+  else if (e.dataset.mens || e.dataset.chius) render();
+});
+document.addEventListener('keydown', ev => { if (ev.key === 'Enter' && ev.target.dataset && ev.target.dataset.invio) { ev.preventDefault(); const fn = AZ[ev.target.dataset.invio]; if (fn) { fn(ev.target); render(); } } else if (ev.key === 'Escape' && ui.sheet) { chiudiSheet(); render(); } });
+window.addEventListener('hashchange', vai);
+
+/* ===== Avvio ===== */
+async function avvia(){
+  ui.vista = TUTTE.includes(location.hash.replace('#','')) ? location.hash.replace('#','') : 'oggi';
+  render();
+  if (!window.claude || !window.claude.use) { S.errore = 'fuori'; render(); return; }
+  const usa = n => window.claude.use(n).catch(() => null);
+  const [db, user, sample, dett, down] = await Promise.all(['db','user','sample','dictation','downloads'].map(usa));
+  S.sample = sample; S.dett = dett; S.down = down;
+  let uid = null; try { uid = user ? await user.id() : null; } catch (e) {}
+  if (!db || !uid) { S.errore = 'nodb'; render(); return; }
+  S.db = db; S.uid = uid;
+  const timer = setTimeout(() => { if (!S.pronto) { S.lento = true; render(); } }, 10000);
+  for (const n of ARCHIVI) {
+    col(n).onSnapshot(snap => {
+      const o = {}; for (const d of snap.docs) o[d.id] = JSON.parse(JSON.stringify(d.data()));
+      S.a[n] = o; if (!snap.metadata || !snap.metadata.fromCache || snap.docs.length) S.caricati[n] = true;
+      if (!S.pronto && ARCHIVI.every(k => S.caricati[k])) { S.pronto = true; S.lento = false; clearTimeout(timer); }
+      if (n === 'parametri') S.mancanti.clear();
+      programma();
+    }, e => { console.error(e); if (!S.pronto || e.code === 'revoked') { S.errore = e.code || 'nodb'; render(); } });
+  }
+  if (sample) sample.limits().then(l => { S.limiti = l; programma(); }).catch(() => {});
+  if (dett) {
+    dett.onFinal(({ text }) => { const k = ui.mic.campo; if (!k) return; const prima = ui.campi[k] || ''; ui.campi[k] = prima ? prima + text : text.replace(/^\s+/, ''); programma(); });
+    dett.onState(({ state }) => { ui.mic.attivo = state !== 'idle'; programma(); });
+  }
+}
+/* ================= SECONDA FASE ================= */
+for (const n of ['scadenze','decisioni','note_mercato','storico']) { ARCHIVI.push(n); S.a[n] = {}; }
+TUTTE.push('scadenze','decisioni','fisco','note','rotta','simula','calibrazione','storico');
+ui.sim = { busta:'', necessita:false };
+
+/* ---- Calcoli ---- */
+function dateVersamento(da, a){ const primo = PS('investimenti.versamento.primo_mese'); if (!primo) return []; const p0 = parse(primo+'-01'), out = []; for (let i = 0; i < 600; i++) { const d = piuGiorni(accredito(p0.getFullYear(), p0.getMonth()+i), 1); if (d > a) break; if (d >= da) out.push(d); } return out; }
+function jollyDa(pf, sg){ const pieno = P('policy.jolly.pieno'), q = P('policy.jolly.quota_oltre'); const d = pf - sg; if (d <= 0 || pieno == null || q == null) return 0; return d <= pieno ? d : pieno + (d - pieno)*q/100; }
+function rotta(){
+  const t = oggi(), pf = portafoglio().totale, pi = pianoIngresso(), min = P('investimenti.versamento.minimo'), voci = [];
+  if (pi) { const dov = pi.rate.filter(r => r.data <= t).length, fat = pi.rate.filter(r => r.fatta).length; voci.push({ nome:'Rate di ingresso', stato: fat >= dov ? 'ok' : 'ko', testo: fat+' fatte su '+dov+' dovute a oggi ('+pi.n+' in tutto)', fonte:'INVESTIMENTI §2' }); }
+  if (min != null) { const nd = dateVersamento(new Date(2000,0,1), t).length; let v = 0; for (const o of confermati('operazioni')) if (o.tipo === 'versamento') v += o.importo; voci.push({ nome:'Versamento mensile minimo', stato: v >= nd*min - 0.5 ? 'ok' : 'ko', testo: nd ? eur0(v)+' versati su '+eur0(nd*min)+' dovuti in '+nd+(nd === 1 ? ' mese' : ' mesi') : 'parte a '+MESI_L[parse(PS('investimenti.versamento.primo_mese')+'-01').getMonth()]+' '+PS('investimenti.versamento.primo_mese').slice(0,4), nota: v < nd*min - 0.5 ? 'Versare meno del minimo equivale a un prelievo.' : '', fonte:'POLICY §9' }); }
+  const us = (S.a.destinazioni.fondo_emergenza||{}).utilizzato || 0;
+  voci.push({ nome:'Fondo emergenza', stato: us > 0 ? 'att' : 'ok', testo: us > 0 ? 'usati '+eur0(us)+': da reintegrare entro 12 mesi' : 'intatto', fonte:'INVESTIMENTI §1' });
+  const d = destinazioni(); const go = d.righe.find(r => r.id === 'giacenza_operativa');
+  if (go) voci.push({ nome:'Giacenza operativa', stato: !d.completo ? 'nd' : (go.pieno ? 'ok' : 'ko'), testo: !d.completo ? 'saldi mancanti' : (go.pieno ? 'coperta' : 'mancano '+eur0(go.obiettivo - go.valore)+': si ricostituisce prima di ogni risparmio extra'), fonte:'INVESTIMENTI §1' });
+  const lim = P('budget.fondo_pensione.limite_deducibile'), c = ultimaFP('contributi'), cOk = c && String(c.anno) === String(t.getFullYear());
+  voci.push({ nome:'Fondo pensione al limite deducibile', stato: !cOk ? 'nd' : (c.progressivo >= lim - 50 ? 'ok' : 'att'), testo: !cOk ? 'progressivo '+t.getFullYear()+' non registrato' : eur0(c.progressivo)+' su '+eur0(lim)+' al '+dataBreve(c.data), fonte:'BUDGET §5' });
+  const pv = P('policy.soglia.prima_verifica'); let sogliaInfo = null;
+  if (pv != null) {
+    const dv = new Date(pv, 0, 1);
+    if (t < dv) { const nv = dateVersamento(piuGiorni(t,1), piuGiorni(dv,-1)).length; const resto = pi && pi.residuo != null ? pi.residuo : 0, cr = credito730() || 0, ex = extraDaInvestire(); const prev = r2(pf + resto + cr + ex + nv*(min||0)), sg = soglia(dv);
+      sogliaInfo = { prevista:prev, soglia:sg, attiva:false, righe:[['Portafoglio oggi', pf], ['Rate di ingresso restanti', resto], ['Rimborso 730 atteso', cr], ['Risparmio extra da versare', ex], [nv+' versamenti minimi', nv*(min||0)]] };
+      voci.push({ nome:'Soglia alla prima verifica', stato: prev >= sg ? 'ok' : 'att', testo:'previsti '+eur0(prev)+' contro '+eur0(sg)+' al 1° gennaio '+pv, nota:'Senza rendimenti. Nel '+(pv-1)+' la soglia non si applica.', fonte:'PIANO PENSIONE §7.4 · POLICY §9' }); }
+    else { const sg = soglia(t), j = jollyDa(pf, sg); sogliaInfo = { soglia:sg, attiva:true, jolly:j, margine:r2(pf - sg) };
+      voci.push({ nome:'Portafoglio contro soglia', stato: pf >= sg ? 'ok' : 'ko', testo: eur0(pf)+' contro '+eur0(sg)+(pf >= sg ? ' · jolly '+eur0(j) : ' · mancano '+eur0(sg - pf)), fonte:'PIANO PENSIONE §7.4 · POLICY §9' }); }
+  }
+  const esito = voci.some(v => v.stato === 'ko') ? 'ko' : (voci.some(v => v.stato === 'att') ? 'att' : 'ok');
+  return { voci, esito, soglia:sogliaInfo, portafoglio:pf };
+}
+function simulaSpesa(imp, necessita, bustaId){
+  let r = imp; const passi = []; const usa = (nome, disp, nota, fonteT, ammesso) => { const v = ammesso === false ? 0 : r2(Math.max(0, Math.min(disp, r))); r = r2(r - v); passi.push({ nome, valore:v, disponibile:disp, nota, fonte:fonteT }); return v; };
+  if (bustaId && S.a.buste[bustaId]) { const s = Math.max(0, saldoBusta(bustaId)); const v = usa('Busta “'+S.a.buste[bustaId].nome+'”', s, '', 'BUDGET §10.2'); passi[passi.length-1].nota = 'nella busta restano '+eur0(s - v); }
+  const d = destinazioni(), corr = d.righe.find(x => x.id === 'corrente');
+  usa('Liquidità del mese', corr ? Math.max(0, corr.valore) : 0, corr ? 'le spese non a budget pesano sul mese' : 'non misurabile finché l’importo da investire non è fissato', 'BUDGET §10.2');
+  const fe = P('investimenti.fondo_emergenza.importo'), us = (S.a.destinazioni.fondo_emergenza||{}).utilizzato || 0;
+  const vfe = usa('Fondo emergenza', Math.max(0, (fe||0) - us), '', 'INVESTIMENTI §1 · POLICY §9', necessita); passi[passi.length-1].nota = necessita ? (vfe > 0 ? 'da reintegrare entro 12 mesi: '+eur0(vfe/12)+' al mese' : '') : 'solo per imprevisti e necessità';
+  const ro = rotta(); const j = ro.soglia && ro.soglia.attiva ? ro.soglia.jolly : 0;
+  usa('Jolly', j, ro.soglia && ro.soglia.attiva ? 'portafoglio sopra la soglia' : 'si calcola dalla prima verifica, a gennaio '+P('policy.soglia.prima_verifica'), 'POLICY §9');
+  const k = P('pensione.prelievo.mesi_per_10k');
+  return { passi, scoperto:r, mesi: k != null ? r/10000*k : null, necessita };
+}
+function calibrazione(){
+  const chiusi = lista('mesi').filter(m => m.stato === 'chiuso' && !m.senza_conteggio).sort((a,b) => a.id < b.id ? -1 : 1), n = chiusi.length, min = P('budget.calibrazione.chiusure') || 3;
+  const media = k => n ? r2(chiusi.reduce((s,m) => s + (m[k]||0), 0)/n) : null;
+  const buste = ordinati('buste').map(b => { let tot = 0; for (const m of chiusi) { const w = meseDaId(m.id); for (const x of confermati('movimenti')) if (x.busta === b.id && (x.tipo === 'spesa' || x.tipo === 'non_registrate') && nelMese(x.data, w)) tot += x.importo; }
+    const imp = P(b.param), med = n ? tot/n : null, rif = b.tipo === 'mensile' ? imp : (imp != null ? imp/12 : null);
+    return { b, importo:imp, mediaMese: med, riferimentoMese: rif, proposta: med == null ? null : (b.tipo === 'mensile' ? Math.round(med/10)*10 : Math.round(med*12/10)*10) }; });
+  return { n, min, pronto: n >= min, buste, spesaReale:media('spesa_reale'), nonRegistrate:media('non_registrate'), fisse:media('uscite_fisse'), fissePreviste: fisseMese(meseDi(oggi())).totale };
+}
+function fotografia(){ const p = patrimonio(); return { data:iso(oggi()), totale:p.totale, completo:p.completo, liquidita:p.liquidita.totale, portafoglio:p.portafoglio, etf_fineco: p.finecoEtf ? p.finecoEtf.importo : null, fondo_pensione: p.fondo ? p.fondo.posizione : null, credito_730:p.credito, casa:p.casa, mutuo:p.mutuo, creato:adesso() }; }
+async function registra(titolo, testo, documenti){ await aggiungi('decisioni', { data:iso(oggi()), titolo, testo, documenti:documenti||'', aggiornato:!documenti, origine:'app' }); }
+
+/* ---- Scadenze: archivio dentro l'elenco generato ---- */
+const _scadenze = scadenze;
+scadenze = function(n, giorni){ const t = oggi(), fine = piuGiorni(t, giorni||75); const out = _scadenze(500, giorni);
+  for (const x of lista('scadenze')) { if (x.fatta || !isData(x.data)) continue; const d = parse(x.data); if (d > fine) { if (!x.sempre) continue; } out.push({ data:d, nome:x.titolo, tono: d < t ? 'corallo' : 'ambra', arch:x.id, ritardo: d < t, lontana: d > piuGiorni(t,75) }); }
+  out.sort((a,b) => a.data - b.data); return out.slice(0, n||6); };
+
+/* ---- Viste ---- */
+const STATI = { ok:['in linea','verde'], att:['da seguire','ambra'], ko:['da recuperare','corallo'], nd:['dato mancante','grigio'] };
+function rigaScad(x){ return '<div class="scad"><div class="quando t-'+x.tono+'">'+(x.lontana ? '<b>'+MESI[x.data.getMonth()]+'</b><span>'+x.data.getFullYear()+'</span>' : '<b>'+x.data.getDate()+'</b><span>'+MESI[x.data.getMonth()]+'</span>')+'</div><span class="cresce">'+h(x.nome)+'</span>'+(x.importo != null ? '<strong>'+eur0(x.importo)+'</strong>' : '')+(x.arch ? '<button class="link" data-act="scad_fatta" data-id="'+h(x.arch)+'">Fatto</button>' : '')+'</div>'; }
+function vScadenze(){
+  const t = oggi(), tutte = scadenze(400, 400), lim = piuGiorni(t, 30);
+  let o = testa('Date certe, promemoria e verifiche aperte', 'Scadenze', ['oggi','Oggi']);
+  const rit = tutte.filter(x => x.ritardo), vic = tutte.filter(x => !x.ritardo && x.data <= lim), lon = tutte.filter(x => !x.ritardo && x.data > lim);
+  if (rit.length) o += '<section class="card nota-ambra"><h2>In ritardo</h2><div class="elenco">'+rit.map(rigaScad).join('')+'</div></section>';
+  o += '<section class="card"><h2>Prossimi 30 giorni</h2><div class="elenco">'+(vic.length ? vic.map(rigaScad).join('') : '<p class="sotto">Niente in scadenza.</p>')+'</div></section>';
+  o += '<section class="card"><h2>Più avanti</h2><div class="elenco">'+lon.slice(0,40).map(rigaScad).join('')+'</div></section>';
+  const senza = lista('scadenze').filter(x => !x.fatta && !isData(x.data)).sort((a,b) => (a.ordine||0)-(b.ordine||0));
+  o += '<section class="card"><h2>Verifiche senza data</h2>'+(senza.length ? senza.map(x => '<div class="voce"><div class="cresce"><p class="nome">'+h(x.titolo)+'</p><p class="sotto">'+h(fonteDoc(x))+(x.nota ? ' · '+h(x.nota) : '')+'</p></div><button class="link" data-act="scad_fatta" data-id="'+h(x.id)+'">Fatto</button></div>').join('') : '<p class="sotto">Nessuna verifica aperta.</p>')+'</section>';
+  const fatte = lista('scadenze').filter(x => x.fatta).sort((a,b) => (b.fatta_il||'') < (a.fatta_il||'') ? -1 : 1).slice(0,15);
+  if (fatte.length) o += '<section class="card"><h2>Fatte</h2>'+fatte.map(x => '<div class="voce"><div class="cresce"><p class="nome piccolo">'+h(x.titolo)+'</p><p class="sotto">'+dataMedia(x.fatta_il)+'</p></div><button class="link" data-act="scad_fatta" data-id="'+h(x.id)+'">Riapri</button></div>').join('')+'</section>';
+  o += '<div class="bottoni colonna"><button class="btn primario" data-act="sheet" data-sheet="scadenza">Aggiungi una scadenza</button></div>';
+  o += fonteRiga('Le date ricorrenti le calcola l’app da spese fisse, stipendio e piano di ingresso. Le verifiche vengono dai “punti da verificare” dei documenti. L’app non manda notifiche.');
+  return o;
+}
+function vDecisioni(){
+  let o = testa('Che cosa hai deciso, quando, e quale documento va aggiornato', 'Registro delle decisioni', ['oggi','Oggi']);
+  const ds = lista('decisioni').sort((a,b) => (b.data+(b.creato||'')) < (a.data+(a.creato||'')) ? -1 : 1);
+  const aperte = ds.filter(x => !x.aggiornato && x.documenti).length;
+  if (aperte) o += '<section class="card nota-ambra"><p class="titolino">'+aperte+(aperte === 1 ? ' decisione aspetta' : ' decisioni aspettano')+' l’aggiornamento di un documento</p><p class="sotto">Il documento è la fonte: finché non lo aggiorni, app e documenti dicono cose diverse.</p></section>';
+  o += '<div class="bottoni colonna"><button class="btn primario" data-act="sheet" data-sheet="decisione">Registra una decisione</button></div>';
+  for (const x of ds) o += '<section class="card"><div class="card-testa"><p class="titolino">'+h(x.titolo)+'</p><span class="sotto">'+dataMedia(x.data)+'</span></div>'+(x.testo ? '<p>'+h(x.testo)+'</p>' : '')+
+    (x.documenti ? '<div class="voce"><div class="cresce"><p class="sotto">Documento: '+h(x.documenti)+'</p></div>'+chip(x.aggiornato ? 'aggiornato' : 'da aggiornare', x.aggiornato ? 'verde' : 'corallo')+'<button class="link" data-act="dec_agg" data-id="'+h(x.id)+'">'+(x.aggiornato ? 'Riapri' : 'Fatto')+'</button></div>' : '')+
+    '<button class="link rosso" data-act="elimina" data-k="decisioni:'+h(x.id)+'">'+(ui.elimina === 'decisioni:'+x.id ? 'Confermi?' : 'Elimina')+'</button></section>';
+  if (!ds.length) o += '<section class="card"><p class="sotto">Nessuna decisione registrata.</p></section>';
+  o += fonteRiga('L’app registra da sola ricalcolo del target, importo da investire fissato, parametri modificati e correzioni delle buste.');
+  return o;
+}
+function vNote(){
+  const cause = (PS('policy.revisione.cause')||'').split(';').map(s => s.trim()).filter(Boolean);
+  let o = testa('Per non agire d’impulso', 'Note di mercato', ['oggi','Oggi']);
+  o += '<section class="card"><p>Scrivi qui notizie, previsioni e tentazioni di cambiare il portafoglio. L’allocazione si riapre solo per una causa strutturale.</p><button class="btn primario" data-act="sheet" data-sheet="nota">Scrivi una nota</button>'+fonteRiga('Non sono motivi di revisione: rendimenti dell’anno, notizie, previsioni macro, valutazioni di mercato, nuove opinioni sugli ETF, comprese quelle di strumenti di AI · POLICY §11.')+'</section>';
+  const ns = lista('note_mercato').sort((a,b) => (b.creato||'') < (a.creato||'') ? -1 : 1);
+  for (const x of ns) { const str = x.causa && cause.includes(x.causa); o += '<section class="card"><div class="card-testa"><span class="sotto">'+dataMedia(x.data)+'</span>'+chip(str ? 'possibile revisione straordinaria' : 'non è un motivo di revisione', str ? 'ambra' : 'verde')+'</div><p>'+h(x.testo)+'</p>'+(str ? '<p class="sotto">Causa indicata: '+h(x.causa)+'. Prima di toccare il portafoglio, aggiorna il POLICY STATEMENT con una revisione straordinaria.</p>' : '<p class="sotto">Nessuna azione sul portafoglio. Il piano può cambiare se cambia la tua vita, non perché cambia il mercato.</p>')+'<button class="link rosso" data-act="elimina" data-k="note_mercato:'+h(x.id)+'">'+(ui.elimina === 'note_mercato:'+x.id ? 'Confermi?' : 'Elimina')+'</button></section>'; }
+  return o;
+}
+function vFisco(){
+  const t = oggi(), anno = t.getFullYear(), lim = P('budget.fondo_pensione.limite_deducibile'), c = ultimaFP('contributi'), cOk = c && String(c.anno) === String(anno);
+  let o = testa('Promemoria e margini, non una dichiarazione', 'Fisco', ['oggi','Oggi']);
+  o += '<section class="card"><div class="card-testa"><h2>Fondo pensione '+anno+'</h2><strong class="gr">'+(cOk ? eur0(Math.max(0, lim - c.progressivo)) : '—')+'</strong></div><p class="sotto">Margine sul limite di deducibilità di '+eur0(lim)+'.</p>'+
+    (cOk ? barra(c.progressivo/lim*100, 'verde')+riga('Contributi deducibili al '+dataBreve(c.data), eur(c.progressivo)) : '<p class="sotto warn">Progressivo '+anno+' non registrato: è la voce 60450 del cedolino.</p>')+
+    '<button class="btn" data-act="sheet" data-sheet="fp">Registra il progressivo</button>'+fonteRiga('Se resta margine, bonifico integrativo entro il 31 dicembre. Il versamento volontario fatto con bonifico si deduce nel 730 dell’anno dopo (rigo E27, “non dedotti dal sostituto”) · BUDGET §5.')+'</section>';
+  const cr = credito730(), parti = [['budget.730.fondo','Fondo pensione, versamento volontario'],['budget.730.casa','Detrazioni casa'],['budget.730.altre','Altre voci minori']];
+  o += '<section class="card"><div class="card-testa"><h2>Rimborso del 730/'+PS('investimenti.credito_730.anno_destinato')+'</h2><strong class="gr">≈ '+eur0(P('budget.credito_730.importo'))+'</strong></div>'+parti.map(([k,n]) => riga(n, '≈ '+eur0(P(k)))).join('')+'<p class="sotto">'+(cr ? 'Non ancora incassato: arriva in busta paga tra luglio e agosto e va tutto al portafoglio.' : 'Incassato e registrato.')+'</p>'+fonteRiga('BUDGET §6 · INVESTIMENTI §2. Dall’anno successivo, con il versamento volontario in busta, il rimborso scende a circa '+h(PS('budget.730.dopo')||'')+'.')+'</section>';
+  const per = Object.entries(S.a.parametri).filter(([k]) => k.startsWith('budget.detrazioni_casa.')).sort((a,b) => a[0] < b[0] ? -1 : 1);
+  if (per.length) o += '<section class="card"><h2>Detrazioni casa per periodo</h2>'+per.map(([k,p]) => riga(h(p.nome), h(String(p.valore)))).join('')+fonteRiga('BUDGET §6 · alla vendita di Bologna serve la clausola per tenere le rate residue (PIANO CASA §1.5).')+'</section>';
+  const pf = portafoglio().totale, fin = ultimoSaldo('fineco_etf'), bollo = P('policy.fisco.bollo'), base = pf + (fin ? fin.importo : 0);
+  o += '<section class="card"><h2>Portafoglio</h2>'+riga('Guadagni sugli ETF', fmtNum(P('policy.fisco.aliquota_etf')||0, 0)+'%')+riga('Quota in titoli di Stato', fmtNum(P('policy.fisco.aliquota_titoli_stato')||0, 1)+'%')+riga('Bollo sul conto titoli', fmtNum(bollo||0, 1)+'% l’anno')+riga('Bollo stimato sui valori di oggi', eur(bollo != null ? base*bollo/100 : null))+
+    '<p class="sotto">Le perdite sugli ETF non si compensano con i guadagni sugli ETF, ma con guadagni su BTP, azioni ed ETC entro '+P('policy.fisco.anni_compensazione')+' anni. Non si realizzano perdite senza un uso previsto. Si ribilancia con i versamenti per rinviare le imposte.</p>'+fonteRiga('POLICY §8 e §10.')+'</section>';
+  o += '<section class="card"><h2>Premio di risultato</h2><p class="sotto">'+h(PS('budget.premio.regime')||'')+'</p>'+fonteRiga('BUDGET §9.')+'</section>';
+  o += fonteRiga('L’app riporta le regole dei documenti e non le aggiorna da sola: a ogni manovra vanno riverificate sulle fonti ufficiali.');
+  return o;
+}
+function vRotta(){
+  const r = rotta(), T = { ok:'Sei in rotta', att:'In rotta, con punti da seguire', ko:'C’è qualcosa da recuperare' };
+  let o = testa('Il piano rispetto alle sue regole, non al mercato', 'Sono in rotta?', ['oggi','Oggi']);
+  o += '<section class="card eroe"><div class="eroe-testa"><span>Verifica di oggi</span>'+chip(dataBreve(oggi()),'pieno')+'</div><div class="eroe-num"><strong class="medio">'+T[r.esito]+'</strong></div><p class="eroe-nota">'+r.voci.filter(v => v.stato === 'ok').length+' punti in linea su '+r.voci.length+'.</p></section>';
+  o += '<section class="card">'+r.voci.map(v => '<div class="voce"><div class="cresce"><p class="nome">'+h(v.nome)+'</p><p class="sotto">'+h(v.testo)+(v.nota ? ' '+h(v.nota) : '')+' · '+h(v.fonte)+'</p></div>'+chip(STATI[v.stato][0], STATI[v.stato][1])+'</div>').join('')+'</section>';
+  const s = r.soglia;
+  if (s && !s.attiva) o += '<section class="card"><div class="card-testa"><h2>Verso la prima verifica</h2><strong class="gr">'+eur0(s.prevista)+'</strong></div>'+s.righe.map(x => riga(h(x[0]), eur0(x[1]))).join('')+'<hr>'+riga('<b>Soglia al 1° gennaio '+P('policy.soglia.prima_verifica')+'</b>', '<b>'+eur0(s.soglia)+'</b>')+riga('Differenza', eur0(s.prevista - s.soglia), s.prevista < s.soglia ? 'rosso' : '')+
+    (s.prevista < s.soglia ? '<p class="sotto">Sotto la soglia non c’è jolly e i prelievi sono ammessi solo per necessità. La soglia è il percorso dello scenario prudente con '+eur0(P('investimenti.versamento.obiettivo'))+' al mese: con il minimo si parte sotto.</p>' : '')+fonteRiga('Somma senza rendimenti (Ipotesi dell’app). PIANO PENSIONE §7.4 · POLICY §9.')+'</section>';
+  if (s && s.attiva) o += '<section class="card"><div class="card-testa"><h2>Jolly</h2><strong class="gr">'+eur0(s.jolly)+'</strong></div><p class="sotto">Portafoglio meno soglia: '+eur0(s.margine)+'. Fino a '+eur0(P('policy.jolly.pieno'))+' sopra la soglia si spende tutto; oltre, metà.</p>'+(s.margine < 0 ? '<p class="sotto">Sotto la soglia per effetto del mercato: nessuna vendita e nessun recupero automatico. Alle verifiche dei 55 e 60 anni si sceglie tra più risparmio, uscita più tardi o spesa più bassa.</p>' : '')+fonteRiga('POLICY §9.')+'</section>';
+  o += '<div class="bottoni colonna"><a class="btn" href="#simula">Simula una spesa grossa</a></div>';
+  o += fonteRiga('Verifica semplice, senza simulazioni: confronta i dati con le regole. Le proiezioni restano nel PIANO PENSIONE.');
+  return o;
+}
+function vSimula(){
+  const imp = num(ui.campi.sim_imp||''), ok = imp > 0;
+  let o = testa('Da dove uscirebbero i soldi, e a quale costo', 'Simula una spesa grossa', ['oggi','Oggi']);
+  o += '<section class="card"><div class="form"><label>Importo<input id="q_sim" inputmode="decimal" data-campo="sim_imp" placeholder="Es. 3.000"></label><label>Busta di riferimento<select data-sim="busta">'+opzBuste(ui.sim.busta).replace('Nessuna busta (pesa sul mese)','Nessuna busta')+'</select></label></div><button class="btn'+(ui.sim.necessita ? ' scelto' : '')+'" data-act="sim_nec">'+(ui.sim.necessita ? 'È una necessità: salute, auto indispensabile, casa' : 'Non è una necessità')+'</button><p class="sotto">Tocca per cambiare. Non salva niente: è solo una prova.</p></section>';
+  if (ok) { const s = simulaSpesa(imp, ui.sim.necessita, ui.sim.busta);
+    o += '<section class="card"><h2>Da dove esce</h2>'+s.passi.map(p => '<div class="voce"><div class="cresce"><p class="nome">'+h(p.nome)+'</p><p class="sotto">'+(p.nota ? h(p.nota)+' · ' : '')+h(p.fonte)+'</p></div><strong>'+eur0(p.valore)+'</strong></div>').join('')+'<hr>'+riga('<b>Resta scoperto</b>', '<b>'+eur0(s.scoperto)+'</b>', s.scoperto > 0 ? 'rosso' : '')+'</section>';
+    if (s.scoperto > 0) o += '<section class="card nota-ambra"><p class="titolino">'+(s.necessita ? 'Prelievo dal portafoglio sotto la soglia' : 'Questa spesa non ha copertura')+'</p><p class="sotto">'+(s.necessita ? 'Ammesso solo per necessità, dopo fondo emergenza e residuo. Costo di riferimento nello scenario severo: circa '+fmtNum(s.mesi, 1)+' mesi di lavoro in più prima dell’uscita.' : 'Non è una necessità: niente fondo emergenza e niente prelievo sotto la soglia. Le strade sono rimandarla, alimentare una busta dedicata o aspettare il jolly.')+'</p>'+fonteRiga('POLICY §9 · PIANO PENSIONE §7.3.')+'</section>';
+    else o += '<section class="card"><p class="titolino">Spesa coperta</p><p class="sotto">Senza toccare il portafoglio di lungo periodo.</p></section>'; }
+  o += fonteRiga('Ordine applicato: busta, liquidità del mese, fondo emergenza, jolly. Per usi del jolly oltre € 10.000 con data certa vale l’obiettivo datato (POLICY §9).');
+  return o;
+}
+function vCalibrazione(){
+  const c = calibrazione();
+  let o = testa('Le stime del budget contro i mesi chiusi', 'Rapporto di calibrazione', ['budget','Budget']);
+  o += '<section class="card'+(c.pronto ? '' : ' nota-ambra')+'"><p class="titolino">'+c.n+(c.n === 1 ? ' chiusura' : ' chiusure')+' con conteggio su '+c.min+'</p><p class="sotto">'+(c.pronto ? 'Ci sono abbastanza mesi per ricalibrare gli importi.' : 'Le medie sono indicative: gli importi delle buste si ricalibrano dopo '+c.min+' chiusure mensili.')+'</p></section>';
+  if (c.n) {
+    o += '<section class="card"><h2>Il mese medio</h2>'+riga('Spesa reale', eur0(c.spesaReale))+riga('Uscite fisse', eur0(c.fisse)+' <span class="sotto">previste '+eur0(c.fissePreviste)+'</span>')+riga('Spese non registrate', eur0(c.nonRegistrate))+'</section>';
+    o += '<section class="card"><h2>Buste</h2>'+c.buste.map(x => '<div class="voce"><div class="cresce"><p class="nome">'+h(x.b.nome)+'</p><p class="sotto">media '+eur0(x.mediaMese)+' al mese contro '+eur0(x.riferimentoMese)+' previsti'+(x.b.tipo === 'annuale' ? ' ('+eur0(x.importo)+' l’anno)' : '')+'</p></div><strong>'+(c.pronto ? eur0(x.proposta)+(x.b.tipo === 'annuale' ? ' l’anno' : '') : '—')+'</strong></div>').join('')+fonteRiga('A destra l’importo che corrisponde alla media, arrotondato a € 10. Per le buste annuali pochi mesi non bastano: le spese sono concentrate.')+'</section>';
+  }
+  o += fonteRiga('Per cambiare un importo: aggiorna il BUDGET §10.2, poi il parametro in Dati e regole. Regola: BUDGET §8 e §10.2.');
+  return o;
+}
+function vStorico(){
+  const st = lista('storico').sort((a,b) => a.data < b.data ? 1 : -1), max = Math.max(1, ...st.map(x => x.totale||0));
+  let o = testa('Una fotografia a ogni chiusura', 'Storico del patrimonio', ['conti','Conti']);
+  o += '<div class="bottoni colonna"><button class="btn primario" data-act="foto_patrimonio">Salva la fotografia di oggi</button></div>';
+  if (!st.length) o += '<section class="card"><p class="sotto">Nessuna fotografia. L’app ne salva una a ogni chiusura del mese.</p></section>';
+  else o += '<section class="card">'+st.map((x,i) => { const prec = st[i+1]; const d = prec ? x.totale - prec.totale : null; return '<div class="storico"><div class="busta-testa"><span>'+dataMedia(x.data)+(x.completo === false ? ' <span class="sotto">(parziale)</span>' : '')+'</span><strong>'+eur0(x.totale)+'</strong></div>'+barra(x.totale/max*100, 'primario')+'<p class="sotto">liquidità '+eur0(x.liquidita)+' · portafoglio '+eur0(x.portafoglio)+' · fondo pensione '+eur0(x.fondo_pensione)+' · casa meno mutuo '+eur0((x.casa||0)-(x.mutuo||0))+(d != null ? ' · '+(d >= 0 ? '+' : '')+eur0(d).replace('− ','−')+' dalla precedente' : '')+'</p><button class="link rosso" data-act="elimina" data-k="storico:'+h(x.id)+'">'+(ui.elimina === 'storico:'+x.id ? 'Confermi?' : 'Elimina')+'</button></div>'; }).join('')+'</section>';
+  o += fonteRiga('Patrimonio netto: liquidità, investimenti, fondo pensione lordo, metà della casa meno metà del mutuo · PATRIMONIO §1. Nessun rendimento calcolato.');
+  return o;
+}
+Object.assign(VISTE, { scadenze:vScadenze, decisioni:vDecisioni, note:vNote, fisco:vFisco, rotta:vRotta, simula:vSimula, calibrazione:vCalibrazione, storico:vStorico });
+const _vOggi = VISTE.oggi;
+VISTE.oggi = function(){ const r = rotta(); const voci = [['rotta','Sono in rotta?'],['scadenze','Scadenze'],['simula','Simula una spesa'],['fisco','Fisco'],['decisioni','Decisioni'],['note','Note di mercato'],['calibrazione','Calibrazione'],['storico','Storico']];
+  const base = _vOggi(), hub = '<section class="card"><div class="card-testa"><h2>Il piano</h2>'+chip(STATI[r.esito][0], STATI[r.esito][1])+'</div><div class="griglia">'+voci.map(([k,n]) => '<a class="btn" href="#'+k+'">'+n+'</a>').join('')+'</div></section>'; const ix = base.lastIndexOf('<a class="pn"'); return ix < 0 ? base+hub : base.slice(0,ix)+hub+base.slice(ix); };
+
+/* ---- Fogli e azioni ---- */
+const _foglio = foglio;
+foglio = function(){
+  const s = ui.sheet; if (!s || !['scadenza','decisione','nota'].includes(s.tipo)) return _foglio();
+  let t = '', c = '';
+  if (s.tipo === 'scadenza') { t = 'Nuova scadenza'; c = '<label>Che cosa<input id="f_tit"></label><label>Data (vuota = verifica senza data)<input id="f_data" type="date"></label><label>Nota<input id="f_nota"></label>'; }
+  else if (s.tipo === 'decisione') { t = 'Registra una decisione'; c = '<label>Decisione<input id="f_tit"></label><label>Motivo e dettagli<input id="f_testo"></label><label>Documento e sezione da aggiornare (vuoto = nessuno)<input id="f_doc" placeholder="Es. BUDGET §10.2"></label><label>Data<input id="f_data" type="date" value="'+iso(oggi())+'"></label>'; }
+  else { const cause = (PS('policy.revisione.cause')||'').split(';').map(x => x.trim()).filter(Boolean); t = 'Nota di mercato'; c = '<label>Che cosa hai letto o pensato<input id="f_testo"></label><label>C’è una causa strutturale?<select id="f_causa"><option value="">No: notizia, rendimento, previsione, valutazione, opinione</option>'+cause.map(x => '<option>'+h(x)+'</option>').join('')+'</select></label><p class="sotto">Cause strutturali ammesse dal POLICY STATEMENT §11.</p>'; }
+  return '<div class="velo" data-act="chiudi_sheet"></div><div class="foglio" role="dialog" aria-modal="true" aria-label="'+h(t)+'"><h2>'+h(t)+'</h2><div class="form">'+c+'</div><div class="bottoni"><button class="btn primario" data-act="'+s.tipo+'_ok">Salva</button><button class="btn" data-act="chiudi_sheet">Annulla</button></div></div>';
+};
+Object.assign(AZ, {
+  async scadenza_ok(){ const tit = val('f_tit').trim(), d = val('f_data'); if (!tit) return avviso('Scrivi che cosa c’è da fare.'); if (await scrivi(() => aggiungi('scadenze', { titolo:tit.slice(0,160), data: isData(d) ? d : null, nota:val('f_nota').slice(0,200), origine:'manuale', fatta:false }))) chiudiSheet(); },
+  async scad_fatta(el){ const x = S.a.scadenze[el.dataset.id]; if (!x) return; await scrivi(() => aggiorna('scadenze', el.dataset.id, x.fatta ? { fatta:false, fatta_il:null } : { fatta:true, fatta_il:iso(oggi()) })); },
+  async decisione_ok(){ const tit = val('f_tit').trim(), d = val('f_data'), doc = val('f_doc').trim(); if (!tit || !isData(d)) return avviso('Servono decisione e data.'); if (await scrivi(() => aggiungi('decisioni', { data:d, titolo:tit.slice(0,160), testo:val('f_testo').slice(0,600), documenti:doc.slice(0,120), aggiornato:!doc, origine:'manuale' }))) chiudiSheet(); },
+  async dec_agg(el){ const x = S.a.decisioni[el.dataset.id]; if (x) await scrivi(() => aggiorna('decisioni', el.dataset.id, { aggiornato:!x.aggiornato })); },
+  async nota_ok(){ const te = val('f_testo').trim(); if (!te) return avviso('Scrivi la nota.'); if (await scrivi(() => aggiungi('note_mercato', { data:iso(oggi()), testo:te.slice(0,600), causa:val('f_causa') }))) chiudiSheet(); },
+  sim_nec(){ ui.sim.necessita = !ui.sim.necessita; },
+  async foto_patrimonio(){ const f = fotografia(); if (await scrivi(() => metti('storico', f.data, f))) avviso('Fotografia salvata.'); }
+});
+const dopo = (nome, fn) => { const orig = AZ[nome]; AZ[nome] = async function(el, ev){ const prima = fn.prima ? fn.prima(el) : null; const r = await orig.call(AZ, el, ev); try { await fn(el, prima); } catch (e) { console.error(e); } return r; }; };
+dopo('chiudi_mese', Object.assign(async (el, prima) => { const m = S.a.mesi[el.dataset.id]; if (!m || m.stato !== 'chiuso' || prima === 'chiuso') return; const f = fotografia(); await metti('storico', f.data, f); if (m.recupero === 'correggere_importo_busta') await registra('Correggere l’importo della busta delle uscite quotidiane', 'Chiusura '+etichettaMese(meseDaId(el.dataset.id))+': la busta ha chiuso a '+eur0(m.saldo_busta_quotidiana)+'.', 'BUDGET §10.2'); }, { prima: el => (S.a.mesi[el.dataset.id]||{}).stato }));
+dopo('ricalcolo_ok', Object.assign(async (el, prima) => { const p = S.a.parametri['policy.target.azioni']; if (p && p.valore !== prima.v || (p && p.anno !== prima.a)) await registra('Ricalcolo del target: azioni al '+p.valore+'%', p.nota||'', 'POLICY STATEMENT §1 e INVESTIMENTI §3 (pesi)'); }, { prima: () => { const p = S.a.parametri['policy.target.azioni']||{}; return { v:p.valore, a:p.anno }; } }));
+dopo('fissa_importo_ok', Object.assign(async (el, prima) => { const d = S.a.destinazioni.da_investire||{}; if (d.importo_fissato != null && d.importo_fissato !== prima) await registra('Importo da investire fissato a '+eur0(d.importo_fissato), 'Fotografia del '+dataMedia(d.data_fotografia)+'.', 'INVESTIMENTI §2 e PATRIMONIO §1.1'); }, { prima: () => (S.a.destinazioni.da_investire||{}).importo_fissato }));
+dopo('parametro_ok', Object.assign(async (el, prima) => { if (!prima) return; const p = S.a.parametri[prima.id]; if (p && p.valore !== prima.v) await registra('Parametro modificato: '+p.nome, 'Da '+prima.v+' a '+p.valore+'.', p.documento === 'APP' ? '' : p.documento+(p.sezione ? ' §'+p.sezione : '')); }, { prima: () => ui.sheet && ui.sheet.id ? { id:ui.sheet.id, v:(S.a.parametri[ui.sheet.id]||{}).valore } : null }));
+document.addEventListener('change', ev => { const e = ev.target; if (e.dataset.sim) { ui.sim[e.dataset.sim] = e.value; render(); } else if (e.dataset.campo === 'sim_imp') render(); });
+Object.assign(FUNZIONI, {
+  in_rotta: { d:'verifica se il piano è in rotta rispetto alle sue regole e alla soglia', f(){ const r = rotta(), T = { ok:'In rotta', att:'In rotta, con punti da seguire', ko:'Da recuperare' }; return { valore:T[r.esito], testo:'Verifica sulle regole del piano.', righe: r.voci.map(v => [v.nome, STATI[v.stato][0]+': '+v.testo]), fonte:'POLICY §9 · PIANO PENSIONE §7.4' }; } },
+  simula_spesa: { d:'simula una spesa grossa (argomento: importo in euro, solo il numero)', f(a){ const imp = num(String(a).replace(/[^\d.,]/g,'')); if (!(imp > 0)) return { testo:'Indica l’importo della spesa.' }; const s = simulaSpesa(imp, false, ''); return { valore:eur0(s.scoperto), testo:'È la parte senza copertura per una spesa di '+eur0(imp)+' che non è una necessità. Nella scheda “Simula una spesa” puoi indicare busta e necessità.', righe: s.passi.map(p => [p.nome, eur0(p.valore)]), fonte:'POLICY §9 · BUDGET §10.2' }; } },
+  margine_deducibile: { d:'margine residuo sul limite di deducibilità del fondo pensione', f(){ const lim = P('budget.fondo_pensione.limite_deducibile'), c = ultimaFP('contributi'); if (!c || String(c.anno) !== String(oggi().getFullYear())) return { testo:'Il progressivo dei contributi di quest’anno non è registrato: è la voce 60450 del cedolino.', fonte:'BUDGET §5' }; return { valore:eur0(Math.max(0, lim - c.progressivo)), testo:'Margine sui '+eur0(lim)+', con il progressivo al '+dataMedia(c.data)+'.', fonte:'BUDGET §5' }; } }
+});
+
+/* ================= IMPORTAZIONE ================= */
+ui.imp = null;
+function leggiImport(testo){
+  let j; try { j = JSON.parse(testo); } catch (e) { return { errore:'Il file non è un JSON valido.' }; }
+  const ar = j && j.archivi; if (!ar || typeof ar !== 'object') return { errore:'Il file non contiene gli archivi dell’app.' };
+  const ok = {}; let n = 0, scartati = 0;
+  for (const k of ARCHIVI) { const src = ar[k]; if (!src || typeof src !== 'object' || Array.isArray(src)) continue; ok[k] = {};
+    for (const [id, d] of Object.entries(src)) { if (!/^[A-Za-z0-9_.~:@+-]{1,200}$/.test(id) || !d || typeof d !== 'object' || Array.isArray(d)) { scartati++; continue; } ok[k][id] = d; n++; } }
+  if (!ok.parametri || !Object.keys(ok.parametri).length) return { errore:'Il file non contiene parametri: non lo importo.' };
+  return { archivi:ok, n, scartati, esportato: typeof j.esportato === 'string' ? j.esportato.slice(0,10) : null };
+}
+async function conRitento(fn){ for (let i = 0; i < 6; i++) { try { return await fn(); } catch (e) { if (e && e.code === 'resource_exhausted') { await new Promise(r => setTimeout(r, 900*(i+1))); continue; } throw e; } } throw { code:'resource_exhausted' }; }
+Object.assign(AZ, {
+  importa_no(){ ui.imp = null; },
+  async importa_ok(){ const im = ui.imp; if (!im || im.errore || im.inCorso) return; im.inCorso = true; im.fatti = 0; im.problema = null; render();
+    try { for (const k of ARCHIVI) { const nuovi = im.archivi[k]; if (!nuovi) continue;
+        for (const id of Object.keys(S.a[k])) if (!(id in nuovi)) await conRitento(() => col(k).doc(id).delete());
+        for (const [id, d] of Object.entries(nuovi)) { await conRitento(() => col(k).doc(id).set(d)); im.fatti++; if (im.fatti % 10 === 0) render(); } }
+      ui.imp = null; S.mancanti.clear(); avviso('Importazione completata.'); }
+    catch (e) { console.error(e); im.inCorso = false; im.problema = 'Importazione interrotta dopo '+im.fatti+' documenti su '+im.n+'. Puoi riprovare: riparte dall’inizio senza creare doppioni.'; } }
+});
+document.addEventListener('change', async ev => { const e = ev.target; if (!e.dataset || e.dataset.importa == null) return; const f = e.files && e.files[0]; e.value = ''; if (!f) return; if (f.size > 8e6) { ui.imp = { errore:'File troppo grande.' }; render(); return; } try { ui.imp = leggiImport(await f.text()); } catch (x) { ui.imp = { errore:'Non riesco a leggere il file.' }; } render(); });
+const _vDati = VISTE.dati;
+VISTE.dati = function(){ const im = ui.imp; const qui = ARCHIVI.reduce((s,k) => s + Object.keys(S.a[k]).length, 0);
+  let c = '<section class="card"><h2>Importazione</h2><p class="sotto">Sostituisce gli archivi di questo account con quelli di un file esportato dall’app. Serve per spostare i dati su un altro account o ripristinare una copia.</p>';
+  if (!im) c += '<label class="btn filebtn">Scegli il file esportato<input type="file" accept=".json,application/json" data-importa class="vh"></label>';
+  else if (im.errore) c += '<p class="sotto warn">'+h(im.errore)+'</p><button class="btn" data-act="importa_no">Chiudi</button>';
+  else if (im.inCorso) c += '<p class="titolino">Scrivo i dati: '+im.fatti+' su '+im.n+'</p>'+barra(im.fatti/im.n*100, 'verde')+'<p class="sotto">Non chiudere la pagina.</p>';
+  else c += '<p class="titolino">Il file contiene '+im.n+' documenti in '+Object.keys(im.archivi).length+' archivi'+(im.esportato ? ', esportati il '+dataMedia(im.esportato) : '')+'</p><p class="sotto warn">Qui ora ci sono '+qui+' documenti: quelli degli archivi presenti nel file vengono sostituiti e non si recuperano. Esporta prima una copia.'+(im.scartati ? ' Documenti non validi scartati: '+im.scartati+'.' : '')+'</p>'+(im.problema ? '<p class="sotto warn">'+h(im.problema)+'</p>' : '')+'<div class="bottoni"><button class="btn primario" data-act="importa_ok">Sostituisci i dati</button><button class="btn" data-act="importa_no">Annulla</button></div>';
+  c += '</section>';
+  return _vDati().replace('<section class="card"><h2>Parametri</h2>', c+'<section class="card"><h2>Parametri</h2>'); };
+
+avvia();
+</script>
+</body>
+</html>

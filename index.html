@@ -194,6 +194,7 @@ main{padding-top:36px}
 .azioni{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:10px} .azione{display:flex;align-items:center;gap:12px;padding:12px;border-radius:14px;background:var(--ambra-bg)} .azione.critica{background:var(--corallo-bg)} .azione .nome{font-weight:600} .azione .sotto{color:var(--ink);margin-top:2px} .btn.piccolo{flex:0 0 auto;min-height:44px;font-size:14px;padding:6px 12px} @media (max-width:360px){.azione{flex-direction:column;align-items:stretch}}
 .tre{display:grid;grid-template-columns:repeat(3,1fr);gap:8px} .tre div{display:flex;flex-direction:column;gap:2px} .tre span{font-size:12px;color:var(--muted)} .tre b{font-size:16px;font-weight:600} .voce-sp{display:flex;flex-direction:column;gap:8px;padding-bottom:12px;border-bottom:1px solid var(--line)} .voce-sp:last-of-type{border-bottom:0;padding-bottom:0} .mesi-nav{display:flex;align-items:center;justify-content:space-between;gap:12px;font-weight:600} .mesi-nav .btn{min-width:48px}
 .estr-gr,.estr-riga{display:flex;flex-wrap:wrap;align-items:center;gap:8px;padding:10px 0;border-bottom:1px solid var(--line)} .estr-gr .cresce,.estr-riga .cresce{flex:1 1 220px;min-width:0} .estr-gr select,.estr-riga select,.card label>select{flex:1 1 170px;min-height:42px;border:1.5px solid var(--border);border-radius:10px;background:var(--card);color:var(--ink);font-size:14px;padding:4px 8px;max-width:100%} .card>label{display:flex;flex-direction:column;gap:6px;font-size:13px;color:var(--muted)} .spunta{display:flex;align-items:center;gap:4px;font-size:12px;color:var(--muted);min-height:42px} .estr-voce{border-bottom:1px solid var(--line)} .estr-voce>.voce{min-height:46px;cursor:pointer} .tab-estr{display:grid;grid-template-columns:1fr auto auto;gap:6px 14px;font-size:14px;align-items:baseline} .tab-estr>span:nth-child(-n+3){font-size:12px;color:var(--muted)} .tab-estr b{font-weight:600;text-align:right} .tab-estr>span:nth-child(3n){text-align:right;color:var(--muted)} details summary{cursor:pointer;min-height:44px;display:flex;align-items:center}
+.tab-estr.tab4{grid-template-columns:1fr auto auto auto} .tab-estr.tab4>*{text-align:right} .tab-estr.tab4>span:nth-child(4n+1){text-align:left} .tab-estr.tab4>span:nth-child(-n+4){font-size:12px;color:var(--muted)}
 </style>
 </head>
 <body>
@@ -2100,6 +2101,155 @@ VISTE.calibrazione = function(){
 const _render3c = render;
 render = function(){ try { migraConti(); } catch (e) { console.error(e); } return _render3c(); };
 window.render = render;
+
+/* ================= FASE 3c bis: CARTA PREPAGATA E CHIUSURA CON GLI ESTRATTI ================= */
+const nomeConto = id => id === 'prepagata' ? 'Carta prepagata' : ((S.a.conti[id]||{}).nome || id);
+function copreCarta(dataIso){ const x = copertura().prepagata; return !!(x && dataIso >= x.da && dataIso <= x.a); }
+/* Una riga conta nell’analisi se non è una ricarica della prepagata già coperta dall’estratto della prepagata */
+const eRicaricaBpm = x => x.conto !== 'prepagata' && /ricarica carta/i.test(x.descrizione||'');
+const contaRiga = x => !(eRicaricaBpm(x) && copreCarta(x.data));
+
+/* Lettura dell’estratto della prepagata (Excel: Data operazione, Importo, Descrizione, Tipo operazione, Tipo addebito) */
+function righePrepagata(tab){
+  const ih = tab.findIndex(r => r && String(r[0]).trim() === 'Data operazione' && String(r[3]||'').trim() === 'Tipo operazione'); if (ih < 0) return null;
+  const visti = {};
+  const out = tab.slice(ih+1).filter(r => r && r[0]).map(r => {
+    const data = dataIt(r[0]), importo = numIt(r[1]), raw = String(r[2]||''), tipo = String(r[3]||'').toLowerCase();
+    const ricarica = /ricaric/.test(tipo) || /^ricarica/i.test(raw), storno = /storno/.test(tipo);
+    const fonte = ricarica ? ((raw.replace(/\s+/g, '').match(/conto(\d{6,})/i)||[])[1] || '') : '';
+    const desc = ricarica ? 'Ricarica dal conto …'+fonte.slice(-4) : pulisciBpm(raw.replace(/^storno scritture/i, 'pagamento storno'));
+    const base = 'p-'+data+'-'+Math.round(importo*100)+'-'+hashTesto(raw.toLowerCase()); visti[base] = (visti[base]||0)+1;
+    return { id:base+'-'+visti[base], fonte:'prepagata', data, data_op:data, importo, descrizione:(storno ? 'Storno: ' : '')+desc.slice(0,80), testo:raw+' '+desc, gruppo:gruppoDi(desc), mcc:null, ricarica, storno, conto_ricarica:fonte };
+  }).filter(x => x.data && isFinite(x.importo));
+  return { fonte:'Carta prepagata', conto:'prepagata', righe:out };
+}
+/* Quota di ogni acquisto = quota del conto dell’ultima ricarica (BUDGET §10.3) */
+function quoteRicariche(im){
+  const mappa = Object.assign({}, im.fontiRicarica||{});
+  const quotaDi = f => { const c = mappa[f]; return c ? (quotaConto(S.a.conti[c]||{}) || 1) : null; };
+  const ord = im.righe.slice().sort((a,b) => a.data === b.data ? (b.ricarica - a.ricarica) : (a.data < b.data ? -1 : 1));
+  let q = null; const primaRic = ord.find(r => r.ricarica); if (primaRic) q = quotaDi(primaRic.conto_ricarica);
+  for (const r of ord) { if (r.ricarica) { q = quotaDi(r.conto_ricarica); r.quota = q; continue; } if (!r.quotaManuale) r.quota = q; }
+}
+const _analizzaFile3e = analizzaFile;
+analizzaFile = async function(f){
+  if (/\.xlsx$/i.test(f.name)) { const tab = await leggiXlsx(await f.arrayBuffer()); const r = righeBpm(tab) || righePrepagata(tab); if (r) return r; throw new Error('formato'); }
+  return _analizzaFile3e(f);
+};
+const _prepara3e = preparaImport;
+preparaImport = function(ris, nomeFile){
+  if (ris.conto !== 'prepagata') return _prepara3e(ris, nomeFile);
+  const im = _prepara3e(ris, nomeFile);
+  for (const r of im.righe) {
+    if (r.ricarica) { r.scelta = 'escluso'; r.straordinaria = false; r.motivo = 'ricarica: movimento interno'; r.manuale = null; continue; }
+    if (r.storno) { const c = classifica(Object.assign({}, r, { importo:-r.importo }), r.testo); r.scelta = c.scelta; r.straordinaria = c.straordinaria; r.motivo = c.motivo ? c.motivo+' (storno)' : ''; }
+  }
+  im.fontiRicarica = {};
+  for (const r of im.righe) if (r.ricarica && r.conto_ricarica) { const reg = lista('regole').find(x => x.tipo === 'ricarica' && String(r.conto_ricarica).endsWith(String(x.testo))); im.fontiRicarica[r.conto_ricarica] = reg ? reg.conto : ''; }
+  quoteRicariche(im);
+  return im;
+};
+
+/* Import: scelta del conto di origine delle ricariche, quota per riga, salvataggio con la quota della riga */
+const _vEstratto3e = VISTE.estratto;
+VISTE.estratto = function(){
+  let o = _vEstratto3e(); const im = ui.estr;
+  o = o.replace('<option value="">Scegli il conto</option>', '<option value="">Scegli il conto</option><option value="prepagata"'+(im && im.conto === 'prepagata' ? ' selected' : '')+'>Carta prepagata</option>');
+  if (im && im.conto === 'prepagata' && im.righe) {
+    const fonti = Object.keys(im.fontiRicarica||{});
+    const card = '<section class="card"><h2>Da dove partono le ricariche</h2><p class="sotto">Ogni acquisto prende la quota del conto dell’ultima ricarica: 50% dal comune, 100% dal personale. Puoi cambiarla riga per riga.</p>'+
+      fonti.map(f => '<label>Ricariche dal conto …'+h(f.slice(-4))+'<select data-estr-fonte="'+h(f)+'"><option value="">Scegli</option>'+['conto_comune','conto_personale'].map(c => '<option value="'+c+'"'+(im.fontiRicarica[f] === c ? ' selected' : '')+'>'+h(nomeConto(c))+'</option>').join('')+'</select></label>').join('')+
+      (fonti.some(f => !im.fontiRicarica[f]) ? '<p class="sotto warn">Indica il conto di ogni ricarica prima di salvare.</p>' : '')+'</section>';
+    const k = o.indexOf('<section class="card"><div class="card-testa"><h2>Da assegnare</h2>'); const k2 = k >= 0 ? k : o.indexOf('<section class="card"><h2>Proposte</h2>');
+    o = k2 >= 0 ? o.slice(0,k2) + card + o.slice(k2) : o + card;
+    if (fonti.some(f => !im.fontiRicarica[f])) o = o.replace('data-act="estr_salva"', 'data-act="estr_salva" disabled');
+  }
+  if (!im || im.errore || im.inCorso) { const x = copertura().prepagata; const k = o.indexOf('<section class="card"><h2>Copertura</h2>'); if (k >= 0) { const fine = o.indexOf('</section>', k); o = o.slice(0,fine) + riga('Carta prepagata', x ? dataMedia(x.da)+' – '+dataMedia(x.a) : '<span class="sotto">facoltativa</span>') + o.slice(fine); } }
+  return o;
+};
+const _rigaEstr3e = rigaEstr;
+rigaEstr = function(r, ix){
+  let o = _rigaEstr3e(r, ix);
+  if (r.conto === 'prepagata' && !r.ricarica && !/^Ricarica dal conto/.test(r.descrizione||'')) { const attr = ix != null ? 'data-estr-q="'+ix+'"' : 'data-estr-qid="'+h(r.id)+'"';
+    o = o.replace('<label class="spunta">', '<label class="spunta"><input type="checkbox" '+attr+(r.quota === 0.5 ? ' checked' : '')+'>Comune</label><label class="spunta">'); }
+  return o;
+};
+const _salva3e = AZ.estr_salva;
+AZ.estr_salva = async function(){
+  const im = ui.estr; if (!im || im.conto !== 'prepagata') return _salva3e.apply(this, arguments);
+  if (im.salvo || Object.values(im.fontiRicarica||{}).some(v => !v)) return; im.salvo = true; render(); const t = adesso();
+  const ok = await scrivi(async () => {
+    for (const r of im.righe) { if (r.dup) continue; await metti('estratto', r.id, { conto:'prepagata', data:r.data, data_op:r.data, importo:r.importo, quota:r.quota != null ? r.quota : 1, scelta:r.scelta||'', straordinaria:!!r.straordinaria, descrizione:r.descrizione, mcc:null, fonte:'prepagata', importato_il:t }); }
+    for (const [f, c] of Object.entries(im.fontiRicarica)) if (c && !lista('regole').some(x => x.tipo === 'ricarica' && String(f).endsWith(String(x.testo)))) await aggiungi('regole', { tipo:'ricarica', testo:String(f).slice(-6), conto:c, origine:'app' });
+    for (const [g, sc] of Object.entries(im.gruppiScelti||{})) if (sc && im.ricorda[g] !== false && !lista('regole').some(x => x.tipo === 'classe' && x.testo === g)) await aggiungi('regole', { tipo:'classe', testo:g, scelta:sc, conto:null, origine:'app' });
+    await aggiungi('importazioni', { conto:'prepagata', fonte:im.fonte, file:String(im.file).slice(0,80), da:im.da, a:im.a, righe:im.righe.filter(r => !r.dup).length, data:iso(oggi()) });
+  });
+  if (ok) { avviso('Estratto della prepagata salvato.'); ui.estr = null; ui.estrAperti = {}; ui.estrMese = meseDi(parse(im.a)).id; } else im.salvo = false;
+};
+document.addEventListener('change', async ev => {
+  const e = ev.target, d = e.dataset || {}, im = ui.estr;
+  if (d.estrFonte != null && im) { im.fontiRicarica[d.estrFonte] = e.value; quoteRicariche(im); render(); return; }
+  if (d.estrQ != null && im) { const r = im.righe[Number(d.estrQ)]; if (r) { r.quota = e.checked ? 0.5 : 1; r.quotaManuale = true; } render(); return; }
+  if (d.estrQid != null) { const id = d.estrQid; if (S.a.estratto[id]) await scrivi(() => aggiorna('estratto', id, { quota: e.checked ? 0.5 : 1 })); render(); }
+});
+
+/* Analisi: le ricariche coperte dall’estratto della prepagata non contano due volte */
+const _aggrega3e = aggregaEstratto;
+aggregaEstratto = function(m){
+  const salva = S.a.estratto, filtrato = {}; for (const [k, x] of Object.entries(salva)) if (contaRiga(x)) filtrato[k] = x;
+  S.a.estratto = filtrato; try { return _aggrega3e(m); } finally { S.a.estratto = salva; }
+};
+
+/* ---- Chiusura: le righe importate scalano le voci di budget (BUDGET §10.3) ---- */
+function spesaVociEstratto(m){
+  const per = {};
+  for (const x of lista('estratto')) { if (!nelMese(x.data, m) || !contaRiga(x) || !x.scelta || !x.scelta.startsWith('b:')) continue;
+    const id = x.scelta.slice(2); per[id] = r2((per[id]||0) - x.importo*(x.quota != null ? x.quota : 1)); }
+  return per;
+}
+const _chiusuraCon3e = chiusuraCon;
+chiusuraCon = function(id){
+  const c = _chiusuraCon3e(id), m = c.mese; c.copertura = coperturaMese(m);
+  const scritte = confermati('movimenti').filter(x => x.tipo === 'non_registrate' && x.sottotipo === 'estratto' && x.mese === id);
+  if (scritte.length) { const tot = r2(scritte.reduce((s,x) => s + x.importo, 0)); c.nonRegistrate = r2(c.nonRegistrate - tot); c.saldoDopo = c.saldoBusta == null ? null : r2(c.saldoBusta - Math.max(0, c.nonRegistrate)); c.giaRipartito = tot; return c; }
+  if (!c.copertura.completo) return c;
+  const per = spesaVociEstratto(m), seg = {};
+  for (const x of confermati('movimenti')) if (x.tipo === 'spesa' && x.busta && nelMese(x.data, m)) seg[x.busta] = r2((seg[x.busta]||0) + x.importo);
+  const rip = {}; let tot = 0; for (const [b, v] of Object.entries(per)) { const d = r2(v - (seg[b]||0)); if (d > 0.5 && S.a.buste[b]) { rip[b] = d; tot += d; } }
+  c.ripartizione = rip; c.importato = per; c.segnalatePerVoce = seg; c.daEstratto = r2(tot); c.residuo = r2(c.nonRegistrate - tot);
+  if (c.busta && c.saldoBusta != null) c.saldoDopo = r2(c.saldoBusta - (rip[c.busta.id]||0) - Math.max(0, c.residuo));
+  return c;
+};
+const _chiudi3e = AZ.chiudi_mese;
+AZ.chiudi_mese = async function(el){
+  const id = el.dataset.id, c = chiusuraCon(id);
+  if (!c.pronta || !c.ripartizione || !Object.keys(c.ripartizione).length || (S.a.mesi[id]||{}).stato === 'chiuso') return _chiudi3e.apply(this, arguments);
+  const ok = await scrivi(async () => { for (const [b, v] of Object.entries(c.ripartizione)) await aggiungi('movimenti', { tipo:'non_registrate', sottotipo:'estratto', mese:id, busta:b, importo:v, data:c.d1, descrizione:'Dagli estratti conto, chiusura '+etichettaMese(c.mese), fonte:'estratto', stato:'confermato' }); });
+  if (!ok) return;
+  await _chiudi3e.apply(this, arguments);
+  if ((S.a.mesi[id]||{}).stato === 'chiuso') await scrivi(() => aggiorna('mesi', id, { non_registrate:c.nonRegistrate, da_estratto:c.daEstratto, ripartizione:c.ripartizione, residuo:c.residuo }));
+  else await scrivi(async () => { for (const x of lista('movimenti')) if (x.sottotipo === 'estratto' && x.mese === id) await togli('movimenti', x.id); });
+};
+function cardChiusuraEstratti(c){
+  if (c.giaRipartito) return '';
+  if (!c.copertura.completo) return '<section class="card nota-ambra"><p class="titolino">Estratti conto da importare</p><p class="sotto">'+c.copertura.manca.map(h).join(' · ')+'</p><p class="sotto">Con gli estratti fino al '+dataBreve(c.d1)+' le spese non registrate si ripartiscono sulle voci di budget; senza, vanno tutte in “'+h(c.busta ? c.busta.nome : 'Uscite quotidiane')+'” (BUDGET §10.3).</p><button class="btn" data-go="estratto">Importa gli estratti conto</button></section>';
+  const ids = Object.keys(Object.assign({}, c.importato, c.segnalatePerVoce)).filter(b => S.a.buste[b]);
+  return '<section class="card"><h2>Ripartizione dagli estratti conto</h2><div class="tab-estr tab4"><span></span><span>Importato</span><span>Segnalato</span><span>Si scala</span>'+
+    ids.map(b => '<span>'+h(S.a.buste[b].nome)+'</span><b>'+eur0(c.importato[b]||0)+'</b><span>'+eur0(c.segnalatePerVoce[b]||0)+'</span><b>'+eur0(c.ripartizione[b]||0)+'</b>').join('')+'</div>'+
+    riga('Totale dagli estratti', eur0(c.daEstratto))+riga(c.residuo >= 0 ? 'Resto non spiegato → “'+h(c.busta ? c.busta.nome : '')+'”' : 'Differenza non attribuita', eur0(Math.abs(c.residuo)), c.residuo > 0 ? 'rosso' : '')+
+    fonteRiga('Per ogni voce si scala la parte importata che supera le spese segnalate a mano. Il resto delle spese non registrate va alla voce predefinita; se è negativo non si attribuisce. Le spese fisse restano quelle preventivate (BUDGET §10.3).')+'</section>';
+}
+const _vChius3e = VISTE.chiusura;
+VISTE.chiusura = function(){ const o = _vChius3e(), daCh = meseDaChiudere(), id = daCh || meseDi(oggi()).id; if (!S.a.mesi[id]) return o;
+  const c = chiusuraCon(id), k = o.indexOf('<section class="card"><h2>Dove sono andati</h2>'); if (k < 0) return o; const fine = o.indexOf('</section>', k) + 10;
+  return o.slice(0, fine) + cardChiusuraEstratti(c) + o.slice(fine); };
+const _daFare3e = daFare;
+daFare = function(){
+  const l = _daFare3e(), mc = meseDaChiudere(); if (!mc) return l;
+  const cm = coperturaMese(meseDaId(mc)); if (cm.completo || S.a.mesi[mc] && S.a.mesi[mc].senza_conteggio) return l;
+  const k = l.findIndex(x => /^Fotografia/.test(x.titolo)); const it = { titolo:'Importa gli estratti conto fino al '+dataBreve(meseDaId(mc).fine), testo:'Prima della chiusura: così le spese non registrate si ripartiscono sulle voci.', fonte:'BUDGET §10.3', btn:['Importa','go','estratto'] };
+  l.splice(k < 0 ? l.length : k, 0, it); return l;
+};
 </script>
 </body>
 </html>

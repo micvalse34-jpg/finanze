@@ -3,6 +3,10 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0E4F47">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Finanze">
+<meta name="robots" content="noindex">
 <title>Finanze personali</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&display=swap">
 <style>
@@ -158,6 +162,11 @@ input.mini{width:108px;min-height:40px;border:1.5px solid var(--border);border-r
 .storico{display:flex;flex-direction:column;gap:6px;padding-bottom:6px}
 a.link{display:inline-flex;align-items:center;text-decoration:none}
 .scad .link,.voce .link{align-self:center;white-space:nowrap}
+.gh-badge{position:fixed;z-index:30;top:calc(env(safe-area-inset-top,0px) + 4px);right:12px;border:0;font:600 11px/1 var(--testo);padding:5px 9px;border-radius:999px;cursor:pointer}
+main{padding-top:36px}
+#gh-setup{position:fixed;inset:0;z-index:70;background:rgba(8,20,17,.5)}
+#gh-setup[hidden]{display:none}
+.gh-foglio{z-index:71}
 @media (min-width:900px){
   .app{display:grid;grid-template-columns:220px 1fr;gap:8px}
   nav{position:sticky;top:0;align-self:start;height:100vh;flex-direction:column;justify-content:flex-start;gap:6px;border-top:0;border-right:1px solid var(--line);padding:28px 12px;background:transparent}
@@ -182,6 +191,150 @@ a.link{display:inline-flex;align-items:center;text-decoration:none}
 <main id="main"></main>
 </div>
 <div id="strato"><div id="foglio"></div><div id="toast"></div></div>
+<script>
+"use strict";
+/* Versione GitHub: sostituisce i servizi di claude.ai con
+   - dati: un file JSON in un repository GitHub privato (API Contents), con token salvato solo sul dispositivo
+   - assistente: API Anthropic con chiave personale salvata solo sul dispositivo
+   - download: file scaricato dal browser
+   L'app usa la stessa interfaccia window.claude.use(), quindi il resto del codice non cambia. */
+(function(){
+const CFG_KEY = 'finanze.config';
+const cfg = (() => { try { return JSON.parse(localStorage.getItem(CFG_KEY) || '{}'); } catch (e) { return {}; } })();
+const salvaCfg = c => { try { localStorage.setItem(CFG_KEY, JSON.stringify(c)); } catch (e) {} };
+const MODELLI = { 'claude-haiku-5-5':'Haiku 5.5 (economico)', 'claude-sonnet-5-5':'Sonnet 5.5 (più preciso)' };
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+/* ---------- GitHub ---------- */
+const gh = {
+  url(){ return 'https://api.github.com/repos/'+encodeURIComponent(cfg.owner)+'/'+encodeURIComponent(cfg.repo)+'/contents/'+cfg.path.split('/').map(encodeURIComponent).join('/'); },
+  head(raw){ return { 'Authorization':'Bearer '+cfg.token, 'Accept': raw ? 'application/vnd.github.raw+json' : 'application/vnd.github+json', 'X-GitHub-Api-Version':'2022-11-28' }; },
+  async leggi(){
+    const r = await fetch(gh.url()+'?t='+Date.now(), { headers:gh.head(false), cache:'no-store' });
+    if (r.status === 404) return { manca:true };
+    if (!r.ok) throw { code: r.status === 401 || r.status === 403 ? 'auth' : 'rete', status:r.status };
+    const j = await r.json(); let testo;
+    if (j.content && j.encoding === 'base64') testo = new TextDecoder().decode(Uint8Array.from(atob(j.content.replace(/\s/g,'')), c => c.charCodeAt(0)));
+    else { const r2 = await fetch(gh.url()+'?t='+Date.now(), { headers:gh.head(true), cache:'no-store' }); if (!r2.ok) throw { code:'rete', status:r2.status }; testo = await r2.text(); }
+    return { sha:j.sha, dati:JSON.parse(testo) };
+  },
+  async scrivi(dati, sha){
+    const b = new TextEncoder().encode(JSON.stringify(dati, null, 1)); let bin = ''; for (let i = 0; i < b.length; i += 32768) bin += String.fromCharCode.apply(null, b.subarray(i, i+32768));
+    const body = { message:'Aggiornamento dati '+new Date().toISOString().slice(0,16).replace('T',' '), content:btoa(bin) }; if (sha) body.sha = sha;
+    const r = await fetch(gh.url(), { method:'PUT', headers:Object.assign({ 'Content-Type':'application/json' }, gh.head(false)), body:JSON.stringify(body) });
+    if (r.status === 409 || r.status === 422) throw { code:'conflitto' };
+    if (!r.ok) throw { code: r.status === 401 || r.status === 403 ? 'auth' : 'rete', status:r.status };
+    return (await r.json()).content.sha;
+  }
+};
+
+/* ---------- Archivio locale sincronizzato ---------- */
+const st = { dati:{ archivi:{} }, sha:null, coda:[], subs:{}, stato:'carico', msg:'', timer:null, inVolo:false };
+const copia = o => JSON.parse(JSON.stringify(o));
+const nomeCol = p => { const s = String(p).split('/'); if (s.length % 2 === 0) throw new TypeError('Percorso di collezione non valido'); return s[s.length-1]; };
+const arch = n => (st.dati.archivi[n] = st.dati.archivi[n] || {});
+function snap(n){ const a = arch(n); const docs = Object.keys(a).sort().map(id => ({ id, exists:true, data:() => copia(a[id]), metadata:{ fromCache:false, hasPendingWrites: st.coda.length > 0 } })); return { docs, size:docs.length, empty:!docs.length, metadata:{ fromCache:false, hasPendingWrites: st.coda.length > 0 }, docChanges:() => [] }; }
+function notifica(n){ const l = n ? [n] : Object.keys(st.subs); for (const k of l) for (const f of (st.subs[k]||[])) { try { f(snap(k)); } catch (e) { console.error(e); } } }
+function applica(op, base){ const a = base.archivi[op.n] = base.archivi[op.n] || {};
+  if (op.t === 'set') a[op.id] = copia(op.d); else if (op.t === 'update') a[op.id] = Object.assign({}, a[op.id] || {}, copia(op.d)); else if (op.t === 'delete') delete a[op.id]; }
+function scrittura(op){ if (st.stato === 'errore_auth') return Promise.reject({ code:'unauthenticated' }); applica(op, st.dati); st.coda.push(op); setTimeout(() => notifica(op.n), 0); programmaSalva(); return Promise.resolve(); }
+function programmaSalva(){ clearTimeout(st.timer); st.timer = setTimeout(salva, 1200); badge('salvo'); }
+async function salva(){
+  if (st.inVolo || !st.coda.length) return; st.inVolo = true; const inviati = st.coda.length;
+  try {
+    for (let tent = 0; tent < 4; tent++) {
+      try { st.sha = await gh.scrivi(st.dati, st.sha); st.coda.splice(0, inviati); badge(st.coda.length ? 'salvo' : 'ok'); break; }
+      catch (e) { if (e.code !== 'conflitto') throw e;
+        const r = await gh.leggi(); const base = r.manca ? { archivi:{} } : r.dati; base.archivi = base.archivi || {};
+        for (const op of st.coda) applica(op, base); st.dati = base; st.sha = r.manca ? null : r.sha; notifica(); if (tent === 3) throw { code:'conflitto' }; }
+    }
+  } catch (e) { console.error(e); st.stato = e.code === 'auth' ? 'errore_auth' : 'errore'; badge(e.code === 'auth' ? 'auth' : 'errore'); }
+  st.inVolo = false; if (st.coda.length && st.stato !== 'errore_auth') { if (st.stato === 'errore') { st.timer = setTimeout(() => { st.stato = 'ok'; salva(); }, 8000); } else programmaSalva(); }
+}
+async function ricarica(){ if (st.coda.length || st.inVolo || st.stato === 'carico') return; try { const r = await gh.leggi(); if (!r.manca && r.sha !== st.sha) { st.dati = r.dati; st.dati.archivi = st.dati.archivi || {}; st.sha = r.sha; notifica(); } badge('ok'); } catch (e) { badge(e.code === 'auth' ? 'auth' : 'offline'); } }
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') ricarica(); });
+window.addEventListener('focus', ricarica);
+window.addEventListener('beforeunload', e => { if (st.coda.length) { e.preventDefault(); e.returnValue = ''; } });
+
+const db = {
+  collection(p){ const n = nomeCol(p); return {
+    path:p,
+    doc(id){ return { id, path:p+'/'+id, set:d => scrittura({ t:'set', n, id, d }), update:d => (arch(n)[id] ? scrittura({ t:'update', n, id, d }) : Promise.reject({ code:'invalid_argument', message:'Documento inesistente' })), delete:() => scrittura({ t:'delete', n, id }), get: async () => ({ id, exists: !!arch(n)[id], data:() => arch(n)[id] ? copia(arch(n)[id]) : undefined }) }; },
+    onSnapshot(f, ferr){ (st.subs[n] = st.subs[n] || []).push(f); if (st.stato !== 'carico') setTimeout(() => f(snap(n)), 0); return () => { st.subs[n] = (st.subs[n]||[]).filter(x => x !== f); }; },
+    async get(){ return snap(n); }
+  }; }
+};
+
+/* ---------- Assistente: API Anthropic ---------- */
+async function immagine(file){
+  const bmp = await createImageBitmap(file); const lato = 1568, k = Math.min(1, lato/Math.max(bmp.width, bmp.height));
+  const c = document.createElement('canvas'); c.width = Math.round(bmp.width*k); c.height = Math.round(bmp.height*k); c.getContext('2d').drawImage(bmp, 0, 0, c.width, c.height);
+  return c.toDataURL('image/jpeg', 0.85).split(',')[1];
+}
+async function chiama(prompt, opt){
+  opt = opt || {}; const content = [];
+  for (const f of (opt.images || []).slice(0,4)) { let d; try { d = await immagine(f); } catch (e) { throw { code:'image_rejected' }; } content.push({ type:'image', source:{ type:'base64', media_type:'image/jpeg', data:d } }); }
+  content.push({ type:'text', text:prompt });
+  const modello = opt.modelTier === 'quick' ? 'claude-haiku-5-5' : (cfg.modello || 'claude-sonnet-5-5');
+  let r; try { r = await fetch('https://api.anthropic.com/v1/messages', { method:'POST', headers:{ 'content-type':'application/json', 'x-api-key':cfg.chiave, 'anthropic-version':'2023-06-01', 'anthropic-dangerous-direct-browser-access':'true' }, body:JSON.stringify({ model:modello, max_tokens:1500, system:'Rispondi solo con un oggetto JSON valido, senza testo prima o dopo e senza blocchi di codice.', messages:[{ role:'user', content }] }) }); }
+  catch (e) { throw { code:'unavailable' }; }
+  if (r.status === 401 || r.status === 403) throw { code:'not_granted' };
+  if (r.status === 429 || r.status === 529) throw { code:'rate_limited' };
+  if (!r.ok) throw { code:'unavailable', status:r.status };
+  const j = await r.json(); return (j.content || []).filter(b => b.type === 'text').map(b => b.text).join('\n');
+}
+const sample = Object.assign(async (p, o) => ({ text: await chiama(p, o) }), {
+  async json(p, o){ const t = await chiama(p, o); const s = t.replace(/```json|```/g, '').trim(); const a = s.indexOf('{'), b = s.lastIndexOf('}'); try { return JSON.parse(s.slice(a, b+1)); } catch (e) { throw { code:'invalid_json' }; } },
+  async limits(){ return { maxPromptBytes:200000, images:{ maxCount:4, maxInputBytes:20e6, mediaTypes:['image/jpeg','image/png','image/webp','image/heic'] } }; }
+});
+const downloads = { async save(r){ const blob = new Blob([r.data], { type:'application/json' }); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = r.filename || 'dati.json'; document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1000); return { status:'saved' }; } };
+
+/* ---------- Indicatore di sincronizzazione e impostazioni ---------- */
+const TESTI = { carico:['Carico…','grigio'], ok:['Salvato','verde'], salvo:['Salvo…','ambra'], errore:['Non salvato: riprovo','corallo'], offline:['Senza connessione','corallo'], auth:['Token non valido','corallo'] };
+function badge(s){ elementi(); const el = document.getElementById('gh-badge'); if (!el) return; const t = TESTI[s] || TESTI.ok; el.textContent = t[0]; el.className = 'gh-badge t-'+t[1]; }
+function pannello(msg, mancaFile){
+  elementi(); const p = document.getElementById('gh-setup'); p.hidden = false;
+  p.innerHTML = '<div class="foglio gh-foglio" role="dialog" aria-modal="true" aria-label="Impostazioni"><h2>Impostazioni</h2>'+(msg ? '<p class="sotto warn">'+esc(msg)+'</p>' : '')+
+  '<div class="form"><p class="titolino">Dati su GitHub</p><label>Utente GitHub<input id="gs_owner" autocomplete="off" value="'+esc(cfg.owner||'')+'"></label><label>Repository privato dei dati<input id="gs_repo" autocomplete="off" value="'+esc(cfg.repo||'')+'"></label><label>File dei dati<input id="gs_path" autocomplete="off" value="'+esc(cfg.path||'dati.json')+'"></label><label>Token (fine-grained, solo questo repository, Contents: Read and write)<input id="gs_token" type="password" autocomplete="off" value="'+esc(cfg.token||'')+'"></label>'+
+  (mancaFile ? '<label>Il file non esiste ancora: scegli il file esportato dall’app per crearlo<input id="gs_file" type="file" accept=".json,application/json"></label>' : '')+
+  '<p class="titolino">Assistente (facoltativo)</p><label>Chiave API Anthropic<input id="gs_key" type="password" autocomplete="off" value="'+esc(cfg.chiave||'')+'"></label><label>Modello per le foto<select id="gs_mod">'+Object.entries(MODELLI).map(([k,v]) => '<option value="'+k+'"'+((cfg.modello||'claude-sonnet-5-5') === k ? ' selected' : '')+'>'+v+'</option>').join('')+'</select></label><p class="sotto">Le frasi usano sempre Haiku 5.5. Token e chiave restano solo in questo browser.</p></div>'+
+  '<div class="bottoni"><button class="btn primario" id="gs_ok">Salva e collega</button>'+(st.stato !== 'carico' ? '<button class="btn" id="gs_no">Chiudi</button>' : '')+'</div>'+(cfg.token ? '<button class="link rosso" id="gs_esci">Scollega questo dispositivo</button>' : '')+'</div>';
+  document.getElementById('gs_ok').onclick = async () => {
+    const v = id => (document.getElementById(id)||{}).value || '';
+    Object.assign(cfg, { owner:v('gs_owner').trim(), repo:v('gs_repo').trim(), path:(v('gs_path').trim() || 'dati.json'), token:v('gs_token').trim(), chiave:v('gs_key').trim(), modello:v('gs_mod') });
+    if (!cfg.owner || !cfg.repo || !cfg.token) return pannello('Servono utente, repository e token.', mancaFile);
+    const f = document.getElementById('gs_file'); 
+    if (f && f.files && f.files[0]) { try { const j = JSON.parse(await f.files[0].text()); if (!j || !j.archivi || !j.archivi.parametri) throw 0; await gh.scrivi({ app:'Finanze personali', creato:new Date().toISOString(), archivi:j.archivi }, null); } catch (e) { return pannello(e && e.code === 'auth' ? 'Il token non può scrivere in questo repository.' : 'Il file scelto non è un’esportazione valida dell’app.', true); } }
+    salvaCfg(cfg); location.reload();
+  };
+  const no = document.getElementById('gs_no'); if (no) no.onclick = () => { p.hidden = true; };
+  const ex = document.getElementById('gs_esci'); if (ex) ex.onclick = () => { if (st.coda.length && !confirm('Ci sono modifiche non ancora salvate. Scollegare comunque?')) return; localStorage.removeItem(CFG_KEY); location.reload(); };
+}
+
+async function avviaDati(){
+  if (!cfg.owner || !cfg.repo || !cfg.token) { pannello(''); return new Promise(() => {}); }
+  cfg.path = cfg.path || 'dati.json';
+  try { const r = await gh.leggi(); if (r.manca) { pannello('Il file '+cfg.path+' non esiste nel repository.', true); return new Promise(() => {}); }
+    st.dati = r.dati; st.dati.archivi = st.dati.archivi || {}; st.sha = r.sha; st.stato = 'ok'; badge('ok'); notifica(); return true; }
+  catch (e) { pannello(e.code === 'auth' ? 'GitHub ha rifiutato il token: controlla scadenza e permessi.' : 'GitHub non risponde. Controlla la connessione e riprova.'); return new Promise(() => {}); }
+}
+let pronto = null;
+window.claude = { use(n){
+  if (n === 'db') return (pronto = pronto || avviaDati()).then(() => db);
+  if (n === 'user') return Promise.resolve({ id: async () => 'io' });
+  if (n === 'sample') return Promise.resolve(cfg.chiave ? sample : null);
+  if (n === 'downloads') return Promise.resolve(downloads);
+  return Promise.resolve(null);
+} };
+function elementi(){
+  if (!document.body) return;
+  if (!document.getElementById('gh-badge')) { const b = document.createElement('button'); b.id = 'gh-badge'; b.className = 'gh-badge t-grigio'; b.textContent = 'Carico…'; b.setAttribute('aria-label', 'Stato del salvataggio e impostazioni'); b.onclick = () => pannello(''); document.body.appendChild(b); }
+  if (!document.getElementById('gh-setup')) { const p = document.createElement('div'); p.id = 'gh-setup'; p.hidden = true; document.body.appendChild(p); }
+}
+document.addEventListener('DOMContentLoaded', elementi);
+})();
+
+</script>
 <script>
 "use strict";
 /* ===== Stato e archivi ===== */
@@ -899,7 +1052,7 @@ function vMensilita(){
 function vAssistente(){
   let o = testa('Scrivi, detta o fotografa', 'Assistente');
   o += '<div class="chips">'+[['quanto_resta','Quanto posso spendere?'],['fasce','Quale ETF è fuori fascia?'],['scadenze','Prossime scadenze'],['dati_vecchi','Dati da aggiornare']].map(([f,t]) => '<button class="pillola" data-act="funzione" data-f="'+f+'" data-t="'+h(t)+'">'+t+'</button>').join('')+'</div>';
-  if (!S.sample) o += '<section class="card nota-ambra"><p class="sotto">In questa vista l’assistente non può leggere testo e foto. Le domande rapide qui sopra funzionano lo stesso: le calcola l’app.</p></section>';
+  if (!S.sample) o += '<section class="card nota-ambra"><p class="sotto">Per leggere frasi e foto serve la tua chiave API Anthropic: inseriscila nelle impostazioni (pulsante in alto a destra). Le domande rapide qui sopra funzionano lo stesso: le calcola l’app.</p></section>';
   const viste = new Set();
   for (const c of ui.chat) {
     if (c.ruolo === 'utente') o += '<div class="bolla utente">'+(c.foto ? ico('foto',18)+' ' : '')+h(c.testo)+'</div>';
@@ -936,7 +1089,7 @@ function vDati(){
   o += '<section class="card"><h2>Ultimi saldi e letture</h2>'+(sd.length ? sd.map(x => rigaElim('saldi', x, dataBreve(x.data)+' · '+(x.oggetto === 'posizione' ? ((S.a.posizioni[x.etf]||{}).ticker||x.etf) : ((S.a.conti[x.conto]||{}).nome||x.conto))+' · '+(x.fonte||''), eur(x.oggetto === 'posizione' ? (x.valore != null ? x.valore : (x.quote||0)*(x.prezzo||0)) : x.importo))).join('') : '<p class="sotto">Nessun saldo.</p>')+'</section>';
   const op = lista('operazioni').sort((a,b) => b.data < a.data ? -1 : 1).slice(0,30);
   if (op.length) o += '<section class="card"><h2>Operazioni sul portafoglio</h2>'+op.map(x => rigaElim('operazioni', x, dataBreve(x.data)+' · '+({rata_ingresso:'rata di ingresso '+x.rata,versamento:'versamento mensile',risparmio_extra:'risparmio extra'}[x.tipo]||x.tipo), eur(x.importo))).join('')+fonteRiga('Eliminare un’operazione non modifica le posizioni: correggile a mano nel Portafoglio.')+'</section>';
-  o += fonteRiga('I dati stanno nel database privato dell’artefatto, legati al tuo account. Niente accesso al web, niente notifiche, niente uso senza connessione.');
+  o += fonteRiga('I dati stanno nel file del tuo repository GitHub privato. Token e chiave API restano solo in questo browser. Stato del salvataggio e impostazioni: pulsante in alto a destra.');
   return o;
 }
 function fmtPar(p){ if (typeof p.valore === 'number') { const dec = Math.abs(p.valore - Math.round(p.valore)) > 1e-9 ? (String(p.valore).split('.')[1]||'').length : 0; if (p.unita === '€' || String(p.unita).startsWith('€/')) return eur(p.valore)+(p.unita.length > 1 ? p.unita.slice(1) : ''); if (p.unita === 'anno' || p.unita === 'giorno' || p.unita === 'mese') return String(p.valore); return fmtNum(p.valore, Math.min(dec,3))+(p.unita === '%' ? '%' : ' '+p.unita); } if (p.unita === 'data' && isData(p.valore)) return dataMedia(p.valore); return String(p.valore); }

@@ -126,6 +126,8 @@ nav a[aria-current]{font-weight:600;color:var(--verde-fg);background:var(--verde
 .riga.rosso{color:var(--corallo-fg)}
 .voce,.etf{display:flex;align-items:center;gap:12px;text-align:left;text-decoration:none;color:inherit;width:100%}
 .voce strong,.etf strong{font-size:15px;font-weight:600;white-space:nowrap}
+main[data-vista="dati"] .voce strong{white-space:normal;max-width:45%;text-align:right;overflow-wrap:anywhere;font-size:14px}
+.voce .cresce,.etf .cresce{min-width:0;overflow-wrap:anywhere}
 .peso{width:48px;height:34px;border-radius:10px;font-size:13px;font-weight:600;display:flex;align-items:center;justify-content:center;flex-shrink:0}
 .nudo{background:none;border:0;padding:0;cursor:pointer;min-height:44px}
 .bottoni{display:flex;gap:10px}
@@ -180,7 +182,7 @@ main{padding-top:36px}
   main{max-width:none;margin:0;padding:28px 28px 60px;display:block;columns:2;column-gap:16px}
   main>*{break-inside:avoid;margin-bottom:16px}
   main>.indietro{margin-bottom:4px}
-  main[data-vista="assistente"],main[data-vista="chiusura"],main[data-vista="mensilita"],main[data-vista="simula"],main[data-vista="note"],main[data-vista="decisioni"],main[data-vista="rotta"]{columns:1;max-width:640px}
+  main[data-vista="dati"],main[data-vista="assistente"],main[data-vista="chiusura"],main[data-vista="mensilita"],main[data-vista="simula"],main[data-vista="note"],main[data-vista="decisioni"],main[data-vista="rotta"]{columns:1;max-width:640px}
   main>.testa,main>.indietro,main>.fonte,main>.pn,main>.chips,main>.bottoni,main>.centro{column-span:all}
   main>.bolla{width:fit-content;margin-left:auto}
   main>.bottoni{max-width:520px}
@@ -189,6 +191,9 @@ main{padding-top:36px}
   .toast{bottom:32px}
 }
 
+.azioni{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:10px} .azione{display:flex;align-items:center;gap:12px;padding:12px;border-radius:14px;background:var(--ambra-bg)} .azione.critica{background:var(--corallo-bg)} .azione .nome{font-weight:600} .azione .sotto{color:var(--ink);margin-top:2px} .btn.piccolo{flex:0 0 auto;min-height:44px;font-size:14px;padding:6px 12px} @media (max-width:360px){.azione{flex-direction:column;align-items:stretch}}
+.tre{display:grid;grid-template-columns:repeat(3,1fr);gap:8px} .tre div{display:flex;flex-direction:column;gap:2px} .tre span{font-size:12px;color:var(--muted)} .tre b{font-size:16px;font-weight:600} .voce-sp{display:flex;flex-direction:column;gap:8px;padding-bottom:12px;border-bottom:1px solid var(--line)} .voce-sp:last-of-type{border-bottom:0;padding-bottom:0} .mesi-nav{display:flex;align-items:center;justify-content:space-between;gap:12px;font-weight:600} .mesi-nav .btn{min-width:48px}
+.estr-gr,.estr-riga{display:flex;flex-wrap:wrap;align-items:center;gap:8px;padding:10px 0;border-bottom:1px solid var(--line)} .estr-gr .cresce,.estr-riga .cresce{flex:1 1 220px;min-width:0} .estr-gr select,.estr-riga select,.card label>select{flex:1 1 170px;min-height:42px;border:1.5px solid var(--border);border-radius:10px;background:var(--card);color:var(--ink);font-size:14px;padding:4px 8px;max-width:100%} .card>label{display:flex;flex-direction:column;gap:6px;font-size:13px;color:var(--muted)} .spunta{display:flex;align-items:center;gap:4px;font-size:12px;color:var(--muted);min-height:42px} .estr-voce{border-bottom:1px solid var(--line)} .estr-voce>.voce{min-height:46px;cursor:pointer} .tab-estr{display:grid;grid-template-columns:1fr auto auto;gap:6px 14px;font-size:14px;align-items:baseline} .tab-estr>span:nth-child(-n+3){font-size:12px;color:var(--muted)} .tab-estr b{font-weight:600;text-align:right} .tab-estr>span:nth-child(3n){text-align:right;color:var(--muted)} details summary{cursor:pointer;min-height:44px;display:flex;align-items:center}
 </style>
 </head>
 <body>
@@ -201,14 +206,14 @@ main{padding-top:36px}
 "use strict";
 /* Versione GitHub: sostituisce i servizi di claude.ai con
    - dati: un file JSON in un repository GitHub privato (API Contents), con token salvato solo sul dispositivo
-   - assistente: API Anthropic con chiave personale salvata solo sul dispositivo
+   - assistente: nessuna chiave API; le letture passano da Claude sul telefono con copia e incolla
    - download: file scaricato dal browser
    L'app usa la stessa interfaccia window.claude.use(), quindi il resto del codice non cambia. */
 (function(){
 const CFG_KEY = 'finanze.config';
 const cfg = (() => { try { return JSON.parse(localStorage.getItem(CFG_KEY) || '{}'); } catch (e) { return {}; } })();
 const salvaCfg = c => { try { localStorage.setItem(CFG_KEY, JSON.stringify(c)); } catch (e) {} };
-const MODELLI = { 'claude-haiku-5-5':'Haiku 5.5 (economico)', 'claude-sonnet-5-5':'Sonnet 5.5 (più preciso)' };
+if ('chiave' in cfg || 'modello' in cfg) { delete cfg.chiave; delete cfg.modello; salvaCfg(cfg); } // la chiave API non si usa più: la tolgo dal dispositivo
 const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 
 /* ---------- GitHub ---------- */
@@ -271,43 +276,22 @@ const db = {
   }; }
 };
 
-/* ---------- Assistente: API Anthropic ---------- */
-async function immagine(file){
-  const bmp = await createImageBitmap(file); const lato = 1568, k = Math.min(1, lato/Math.max(bmp.width, bmp.height));
-  const c = document.createElement('canvas'); c.width = Math.round(bmp.width*k); c.height = Math.round(bmp.height*k); c.getContext('2d').drawImage(bmp, 0, 0, c.width, c.height);
-  return c.toDataURL('image/jpeg', 0.85).split(',')[1];
-}
-async function chiama(prompt, opt){
-  opt = opt || {}; const content = [];
-  for (const f of (opt.images || []).slice(0,4)) { let d; try { d = await immagine(f); } catch (e) { throw { code:'image_rejected' }; } content.push({ type:'image', source:{ type:'base64', media_type:'image/jpeg', data:d } }); }
-  content.push({ type:'text', text:prompt });
-  const modello = opt.modelTier === 'quick' ? 'claude-haiku-5-5' : (cfg.modello || 'claude-sonnet-5-5');
-  let r; try { r = await fetch('https://api.anthropic.com/v1/messages', { method:'POST', headers:{ 'content-type':'application/json', 'x-api-key':cfg.chiave, 'anthropic-version':'2023-06-01', 'anthropic-dangerous-direct-browser-access':'true' }, body:JSON.stringify({ model:modello, max_tokens:1500, system:'Rispondi solo con un oggetto JSON valido, senza testo prima o dopo e senza blocchi di codice.', messages:[{ role:'user', content }] }) }); }
-  catch (e) { throw { code:'unavailable' }; }
-  if (r.status === 401 || r.status === 403) throw { code:'not_granted' };
-  if (r.status === 429 || r.status === 529) throw { code:'rate_limited' };
-  if (!r.ok) throw { code:'unavailable', status:r.status };
-  const j = await r.json(); return (j.content || []).filter(b => b.type === 'text').map(b => b.text).join('\n');
-}
-const sample = Object.assign(async (p, o) => ({ text: await chiama(p, o) }), {
-  async json(p, o){ const t = await chiama(p, o); const s = t.replace(/```json|```/g, '').trim(); const a = s.indexOf('{'), b = s.lastIndexOf('}'); try { return JSON.parse(s.slice(a, b+1)); } catch (e) { throw { code:'invalid_json' }; } },
-  async limits(){ return { maxPromptBytes:200000, images:{ maxCount:4, maxInputBytes:20e6, mediaTypes:['image/jpeg','image/png','image/webp','image/heic'] } }; }
-});
 const downloads = { async save(r){ const blob = new Blob([r.data], { type:'application/json' }); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = r.filename || 'dati.json'; document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1000); return { status:'saved' }; } };
 
 /* ---------- Indicatore di sincronizzazione e impostazioni ---------- */
 const TESTI = { carico:['Carico…','grigio'], ok:['Salvato','verde'], salvo:['Salvo…','ambra'], errore:['Non salvato: riprovo','corallo'], offline:['Senza connessione','corallo'], auth:['Token non valido','corallo'] };
-function badge(s){ elementi(); const el = document.getElementById('gh-badge'); if (!el) return; const t = TESTI[s] || TESTI.ok; el.textContent = t[0]; el.className = 'gh-badge t-'+t[1]; }
+function badge(s){ const grave = x => x === 'errore' || x === 'auth'; const prima = window.__sync; window.__sync = s; if (grave(prima) !== grave(s) && typeof window.render === 'function') setTimeout(window.render, 0);
+  elementi(); const el = document.getElementById('gh-badge'); if (!el) return; const t = TESTI[s] || TESTI.ok; el.textContent = t[0]; el.className = 'gh-badge t-'+t[1]; }
 function pannello(msg, mancaFile){
   elementi(); const p = document.getElementById('gh-setup'); p.hidden = false;
   p.innerHTML = '<div class="foglio gh-foglio" role="dialog" aria-modal="true" aria-label="Impostazioni"><h2>Impostazioni</h2>'+(msg ? '<p class="sotto warn">'+esc(msg)+'</p>' : '')+
   '<div class="form"><p class="titolino">Dati su GitHub</p><label>Utente GitHub<input id="gs_owner" autocomplete="off" value="'+esc(cfg.owner||'')+'"></label><label>Repository privato dei dati<input id="gs_repo" autocomplete="off" value="'+esc(cfg.repo||'')+'"></label><label>File dei dati<input id="gs_path" autocomplete="off" value="'+esc(cfg.path||'dati.json')+'"></label><label>Token (fine-grained, solo questo repository, Contents: Read and write)<input id="gs_token" type="password" autocomplete="off" value="'+esc(cfg.token||'')+'"></label>'+
   (mancaFile ? '<label>Il file non esiste ancora: scegli il file esportato dall’app per crearlo<input id="gs_file" type="file" accept=".json,application/json"></label>' : '')+
-  '<p class="titolino">Assistente (facoltativo)</p><label>Chiave API Anthropic<input id="gs_key" type="password" autocomplete="off" value="'+esc(cfg.chiave||'')+'"></label><label>Modello per le foto<select id="gs_mod">'+Object.entries(MODELLI).map(([k,v]) => '<option value="'+k+'"'+((cfg.modello||'claude-sonnet-5-5') === k ? ' selected' : '')+'>'+v+'</option>').join('')+'</select></label><p class="sotto">Le frasi usano sempre Haiku 5.5. Token e chiave restano solo in questo browser.</p></div>'+
+  '<p class="sotto">Il token resta solo in questo browser.</p></div>'+
   '<div class="bottoni"><button class="btn primario" id="gs_ok">Salva e collega</button>'+(st.stato !== 'carico' ? '<button class="btn" id="gs_no">Chiudi</button>' : '')+'</div>'+(cfg.token ? '<button class="link rosso" id="gs_esci">Scollega questo dispositivo</button>' : '')+'</div>';
   document.getElementById('gs_ok').onclick = async () => {
     const v = id => (document.getElementById(id)||{}).value || '';
-    Object.assign(cfg, { owner:v('gs_owner').trim(), repo:v('gs_repo').trim(), path:(v('gs_path').trim() || 'dati.json'), token:v('gs_token').trim(), chiave:v('gs_key').trim(), modello:v('gs_mod') });
+    Object.assign(cfg, { owner:v('gs_owner').trim(), repo:v('gs_repo').trim(), path:(v('gs_path').trim() || 'dati.json'), token:v('gs_token').trim() });
     if (!cfg.owner || !cfg.repo || !cfg.token) return pannello('Servono utente, repository e token.', mancaFile);
     const f = document.getElementById('gs_file'); 
     if (f && f.files && f.files[0]) { try { const j = JSON.parse(await f.files[0].text()); if (!j || !j.archivi || !j.archivi.parametri) throw 0; await gh.scrivi({ app:'Finanze personali', creato:new Date().toISOString(), archivi:j.archivi }, null); } catch (e) { return pannello(e && e.code === 'auth' ? 'Il token non può scrivere in questo repository.' : 'Il file scelto non è un’esportazione valida dell’app.', true); } }
@@ -328,7 +312,7 @@ let pronto = null;
 window.claude = { use(n){
   if (n === 'db') return (pronto = pronto || avviaDati()).then(() => db);
   if (n === 'user') return Promise.resolve({ id: async () => 'io' });
-  if (n === 'sample') return Promise.resolve(cfg.chiave ? sample : null);
+  if (n === 'sample') return Promise.resolve(null);
   if (n === 'downloads') return Promise.resolve(downloads);
   return Promise.resolve(null);
 } };
@@ -481,7 +465,7 @@ function destinazioni(){
   const D = S.a.destinazioni;
   const prendi = (id, voluto, extra) => {
     const v = r2(clamp(voluto, 0, Math.max(0, resto))); if (v < voluto - 0.005) scoperto = true; resto = r2(resto - v);
-    righe.push(Object.assign({ id, nome:(D[id]||{}).nome || id, colore:(D[id]||{}).colore, valore:v, obiettivo:voluto, pieno: v >= voluto - 0.005, fonte: fonteDoc(D[id]) }, extra||{}));
+    righe.push(Object.assign({ id, nome: id === 'buste' ? 'Budget per voce' : ((D[id]||{}).nome || id), colore:(D[id]||{}).colore, valore:v, obiettivo:voluto, pieno: v >= voluto - 0.005, fonte: fonteDoc(D[id]) }, extra||{}));
   };
   const fe = P('investimenti.fondo_emergenza.importo'), rc = P('investimenti.riserva_casa.importo'), go = P('budget.giacenza_operativa');
   const usato = (D.fondo_emergenza||{}).utilizzato || 0;
@@ -709,7 +693,7 @@ function proponiMensilita(tipo, importo, dataIso){
   for (const b of ordinati('buste')) { if (b.tipo !== 'annuale') continue; const imp = importoBusta(b); if (imp == null) continue; const n = Math.max(0, r2(imp - alimentatoAnno(b.id, anno))); bisogni[b.id] = n; totB += n; }
   if (totB > 0) {
     if (r >= totB) { for (const k in bisogni) out.buste[k] = bisogni[k]; r = r2(r - totB); }
-    else { const sp = ripartisci(Math.floor(r), bisogni); for (const k in bisogni) out.buste[k] = sp[k] || 0; const usato = Object.values(out.buste).reduce((s,v) => s+v, 0); r = r2(r - usato); note.push('La mensilità non copre tutte le buste: ripartizione proporzionale a quanto manca a ciascuna (criterio dell’app, modificabile).'); }
+    else { const sp = ripartisci(Math.floor(r), bisogni); for (const k in bisogni) out.buste[k] = sp[k] || 0; const usato = Object.values(out.buste).reduce((s,v) => s+v, 0); r = r2(r - usato); note.push('La mensilità non copre tutte le voci annuali: ripartizione proporzionale a quanto manca a ciascuna (criterio dell’app, modificabile).'); }
   }
   const usatoFE = (S.a.destinazioni.fondo_emergenza||{}).utilizzato || 0;
   if (usatoFE > 0 && r > 0) { out.fe = Math.min(usatoFE, r); r = r2(r - out.fe); }
@@ -794,8 +778,8 @@ async function togli(arch, id){ delete S.a[arch][id]; await col(arch).doc(id).de
 function avviso(t){ ui.toast = t; render(); clearTimeout(avviso.t); avviso.t = setTimeout(() => { ui.toast = null; render(); }, 4200); }
 
 /* ===== Intestazione comune ===== */
-function testa(sopra, titolo, indietro){
-  const att = numInAttesa();
+function testa(sopra, titolo, indietro, senzaAvvisi){
+  const att = senzaAvvisi ? 0 : numInAttesa();
   return (indietro ? '<a class="indietro" href="#'+indietro[0]+'">‹ '+h(indietro[1])+'</a>' : '') +
   '<header class="testa"><div><p class="sopra">'+sopra+'</p><h1>'+titolo+'</h1></div><div class="testa-az">'+
   (att ? '<a class="chip t-ambra chip-link" href="#assistente">'+att+' da confermare</a>' : '')+
@@ -814,8 +798,8 @@ function cardAttesa(arch, x){
   if (arch === 'movimenti') {
     if (x.tipo === 'spesa') {
       const b = x.busta ? S.a.buste[x.busta] : null;
-      if (b) { const imp = P(b.param), s = saldoBusta(x.busta); titolo = 'Scalo '+eur(x.importo)+' da “'+h(b.nome)+'”?'; corpo = '<p class="sotto">Nella busta restano '+eur(s - x.importo)+' di '+eur(imp)+'.</p>'; }
-      else { titolo = 'Registro '+eur(x.importo)+' come spesa non a budget?'; corpo = '<p class="sotto">Non rientra in nessuna busta: pesa sul mese (BUDGET §10.2).</p>'; }
+      if (b) { const imp = P(b.param), s = saldoBusta(x.busta); titolo = 'Scalo '+eur(x.importo)+' da “'+h(b.nome)+'”?'; corpo = '<p class="sotto">Su questa voce restano '+eur(s - x.importo)+' di '+eur(imp)+'.</p>'; }
+      else { titolo = 'Registro '+eur(x.importo)+' come spesa non a budget?'; corpo = '<p class="sotto">Non rientra in nessuna voce di budget: pesa sul mese (BUDGET §10.2).</p>'; }
       corpo += '<p class="sotto">'+h(x.descrizione||'Spesa')+' · '+dataMedia(x.data)+(x.nota_lettura ? ' · '+h(x.nota_lettura) : '')+'</p>';
     } else { titolo = 'Registro un’entrata di '+eur(x.importo)+'?'; corpo = '<p class="sotto">'+h(x.descrizione||'Entrata')+' · '+dataMedia(x.data)+'</p>'; }
   } else if (arch === 'saldi') {
@@ -833,11 +817,11 @@ const attese = arch => inAttesa(arch).sort((a,b) => (a.creato||'') < (b.creato||
 /* ===== Vista: Oggi ===== */
 function vOggi(){
   const m = meseDi(oggi()), g = giorniAlloStipendio(), aperto = S.a.mesi[m.id];
-  let o = testa('Mese di budget '+etichettaMese(m), 'Ciao Michele');
-  o += avvisiGenerali();
+  let o = testa('Mese di budget '+etichettaMese(m), 'Ciao Michele', null, true);
+  o += cardDaFare();
   const bq = bustaQuotidiana();
   if (!aperto) {
-    o += '<section class="card eroe"><div class="eroe-testa"><span>Mese di budget '+etichettaMese(m)+'</span>'+chip(gg(g)+' allo stipendio','pieno')+'</div><p class="eroe-testo">Il mese non è ancora aperto: le buste mensili non sono state alimentate.</p><button class="btn primario" data-act="sheet" data-sheet="apri_mese">Apri il mese</button></section>';
+    o += '<section class="card eroe"><div class="eroe-testa"><span>Mese di budget '+etichettaMese(m)+'</span>'+chip(gg(g)+' allo stipendio','pieno')+'</div><p class="eroe-testo">Il mese non è ancora aperto: le voci mensili non sono ancora ricaricate.</p></section>';
   } else if (bq) {
     const imp = P(bq.param), s = saldoBusta(bq.id), f = fisseMese(m), corr = liquidita(null, true), go = P('budget.giacenza_operativa');
     let cop = '';
@@ -897,8 +881,8 @@ function rigaBusta(b){
 }
 function vBudget(){
   const m = meseDi(oggi()), g = giorniAlloStipendio();
-  let o = testa(etichettaMese(m)+' · '+gg(g)+' allo stipendio', 'Le tue buste');
-  if (!S.a.mesi[m.id]) o += '<section class="card nota-ambra"><p class="titolino">Il mese non è ancora aperto</p><p class="sotto">Aprendolo registri lo stipendio e alimenti le buste mensili.</p><button class="btn primario" data-act="sheet" data-sheet="apri_mese">Apri il mese</button></section>';
+  let o = testa(etichettaMese(m)+' · '+gg(g)+' allo stipendio', 'Budget per voce');
+  if (!S.a.mesi[m.id]) o += '<section class="card nota-ambra"><p class="titolino">Il mese non è ancora aperto</p><p class="sotto">Aprendolo registri lo stipendio e ricarichi le voci mensili.</p><button class="btn primario" data-act="sheet" data-sheet="apri_mese">Apri il mese</button></section>';
   o += '<section class="card"><h2>Segna una spesa</h2>'+(ui.ultimaSpesa ? '<div class="bolla utente">'+h(ui.ultimaSpesa)+'</div>' : '')+
     '<div class="scrivi"><label class="vh" for="q_spesa">Spesa a parole</label><input id="q_spesa" type="text" data-campo="spesa" data-invio="spesa_parole" placeholder="Es. ho speso 800 € per le vacanze" autocomplete="off">'+
     (S.dett ? '<button class="quadro t-ambra-p" data-act="mic" data-campo="spesa" aria-label="'+(ui.mic.attivo ? 'Ferma la dettatura' : 'Detta')+'">'+ico(ui.mic.attivo && ui.mic.campo === 'spesa' ? 'stop' : 'mic')+'</button>' : '')+
@@ -906,9 +890,10 @@ function vBudget(){
     (ui.occupato === 'spesa' ? '<p class="sotto">Leggo la spesa…</p>' : '')+
     '<button class="link" data-act="sheet" data-sheet="spesa">Inserisci a mano</button></section>';
   o += attese('movimenti');
+  o += '<section class="card"><div class="card-testa"><h2>Spese del mese per voce</h2><span class="sotto">'+etichettaMese(m)+'</span></div><p class="sotto">Budget, speso e residuo di ogni voce, con spese fisse e spese fuori budget.</p><div class="bottoni"><button class="btn" data-act="apri_spese">Spese del mese</button><button class="btn" data-go="estratto">Estratti conto</button></div></section>';
   const bs = statoBuste();
-  o += '<section class="card"><div><h2>Ogni mese</h2><p class="sotto">Si riempiono con lo stipendio del 10</p></div>'+bs.filter(b => b.tipo === 'mensile').map(rigaBusta).join('')+'</section>';
-  o += '<section class="card"><div><h2>Durante l’anno</h2><p class="sotto">Si riempiono con tredicesima, quattordicesima e premio</p></div>'+bs.filter(b => b.tipo === 'annuale').map(rigaBusta).join('')+(bs.some(b => b.tipo === 'annuale') && bs.filter(b => b.tipo === 'annuale').every(b => !b.saldo) ? '<p class="sotto">Sono vuote finché non destini la prima mensilità aggiuntiva. Fino ad allora una spesa di queste voci manda la busta sotto zero e si recupera all’alimentazione.</p>' : '')+
+  o += '<section class="card"><div><h2>Voci mensili</h2><p class="sotto">Si ricaricano con lo stipendio</p></div>'+bs.filter(b => b.tipo === 'mensile').map(rigaBusta).join('')+'</section>';
+  o += '<section class="card"><div><h2>Voci annuali</h2><p class="sotto">Si ricaricano con tredicesima, quattordicesima e premio</p></div>'+bs.filter(b => b.tipo === 'annuale').map(rigaBusta).join('')+notaVociAnnuali(bs)+
     '<button class="btn" data-go="mensilita">Destina una mensilità aggiuntiva</button></section>';
   const f = fisseMese(m);
   o += '<section class="card"><div class="card-testa"><h2>Spese fisse del mese</h2><strong class="gr">'+eur0(f.totale)+'</strong></div><div class="elenco">'+
@@ -917,7 +902,7 @@ function vBudget(){
     f.senzaData.map(x => '<button class="riga nudo" data-act="sheet" data-sheet="fissa" data-id="'+h(x.sf.id)+'"><span>'+h(x.sf.nome)+'</span><span class="imp">'+(x.segno < 0 ? '+ ' : '')+eur(x.importo)+'</span></button>').join('')+
     '</div>'+fonteRiga('Importi dal BUDGET §2–4 e PATRIMONIO §2. Tocca una voce per indicare giorno e importo reali.')+'</section>';
   o += '<section class="card"><h2>Chiusura del mese</h2><p class="sotto">Spesa reale, spese non registrate e saldo delle buste, con la fotografia dei saldi del 9.</p><div class="bottoni"><button class="btn" data-go="chiusura">Apri la chiusura</button><button class="btn" data-go="calibrazione">Calibrazione</button></div></section>';
-  o += fonteRiga('Regole: BUDGET §10.2 (buste), §10.3 (chiusura), §10.4 (mensilità aggiuntive).');
+  o += fonteRiga('Regole: BUDGET §10.2 (budget per voce: “buste” nei documenti), §10.3 (chiusura), §10.4 (mensilità aggiuntive).');
   return o;
 }
 
@@ -1010,11 +995,11 @@ function vChiusura(){
   o += '<section class="card"><h2>Il conto</h2>'+riga('Liquidità il '+dataBreve(c.d0), c.completi || c.L0 ? eur0(c.L0) : '—')+riga('+ Entrate del mese', inp('entrate', c.entrate))+riga('− Investito o versato al fondo', inp('investito', c.investito))+riga('− Liquidità il '+dataBreve(c.d1), c.scaduta ? eur0(c.L1) : '<span class="sotto">'+eur0(c.L1)+' a oggi</span>')+'<hr>'+riga('<b>Spesa reale</b>', '<b>'+eur0(c.spesaReale)+'</b>')+'</section>';
   o += '<section class="card"><h2>Dove sono andati</h2>'+riga('Uscite fisse', inp('fisse', c.fisse))+riga('Spese che mi hai segnalato', eur0(c.segnalate))+riga('<b>Spese non registrate</b>', '<b>'+eur0(c.nonRegistrate)+'</b>', c.nonRegistrate > 0 ? 'rosso' : '')+'</section>';
   if (c.busta) {
-    if (c.nonRegistrate < 0) o += '<section class="card"><p class="titolino">Avanzo di '+eur0(-c.nonRegistrate)+'</p><p class="sotto">La spesa reale è più bassa di uscite fisse e spese segnalate. I documenti non dicono dove va l’avanzo: l’app non lo attribuisce a nessuna busta.</p></section>';
-    else if (c.saldoDopo < 0) o += '<section class="card nota-ambra"><p class="titolino">“'+h(c.busta.nome)+'” chiude a '+eur0(c.saldoDopo)+'</p><p class="sotto">Le spese non registrate finiscono in questa busta. Come vuoi recuperare?</p><div class="bottoni colonna"><button class="btn'+(ui.chius.recupero !== 'importo' ? ' scelto' : '')+'" data-act="recupero" data-v="mese">Scalo '+eur0(-c.saldoDopo)+' dal mese prossimo</button><button class="btn'+(ui.chius.recupero === 'importo' ? ' scelto' : '')+'" data-act="recupero" data-v="importo">Correggo l’importo della busta</button></div>'+(ui.chius.recupero === 'importo' ? '<p class="sotto">L’importo è una regola del BUDGET §10.2: aggiorna prima il documento, poi il parametro in Dati e regole. La chiusura registra la decisione.</p>' : '')+'</section>';
+    if (c.nonRegistrate < 0) o += '<section class="card"><p class="titolino">Avanzo di '+eur0(-c.nonRegistrate)+'</p><p class="sotto">La spesa reale è più bassa di uscite fisse e spese segnalate. I documenti non dicono dove va l’avanzo: l’app non lo attribuisce a nessuna voce.</p></section>';
+    else if (c.saldoDopo < 0) o += '<section class="card nota-ambra"><p class="titolino">“'+h(c.busta.nome)+'” chiude a '+eur0(c.saldoDopo)+'</p><p class="sotto">Le spese non registrate finiscono in questa voce. Come vuoi recuperare?</p><div class="bottoni colonna"><button class="btn'+(ui.chius.recupero !== 'importo' ? ' scelto' : '')+'" data-act="recupero" data-v="mese">Scalo '+eur0(-c.saldoDopo)+' dal mese prossimo</button><button class="btn'+(ui.chius.recupero === 'importo' ? ' scelto' : '')+'" data-act="recupero" data-v="importo">Correggo il budget della voce</button></div>'+(ui.chius.recupero === 'importo' ? '<p class="sotto">L’importo è una regola del BUDGET §10.2: aggiorna prima il documento, poi il parametro in Dati e regole. La chiusura registra la decisione.</p>' : '')+'</section>';
     else o += '<section class="card"><p class="titolino">“'+h(c.busta.nome)+'” chiude a '+eur0(c.saldoDopo)+'</p><p class="sotto">Quello che avanza passa al mese successivo.</p></section>';
   }
-  o += '<div class="bottoni colonna"><button class="btn primario" data-act="chiudi_mese" data-id="'+id+'"'+(c.pronta ? '' : ' disabled')+'>Conferma la chiusura</button></div>'+(c.pronta ? '' : '<p class="sotto centro">'+(c.scaduta ? 'Servono i saldi di tutti i conti alle due date.' : 'Si può confermare dal '+dataBreve(m.fine)+'.')+'</p>')+(c.scaduta && !c.completi ? '<div class="bottoni colonna"><button class="btn" data-act="chiudi_senza" data-id="'+id+'">Chiudi senza conteggio</button></div><p class="sotto centro">Per il primo mese, se manca la fotografia del 9 precedente: il mese si chiude senza spesa reale e senza scalare le buste.</p>' : '');
+  o += '<div class="bottoni colonna"><button class="btn primario" data-act="chiudi_mese" data-id="'+id+'"'+(c.pronta ? '' : ' disabled')+'>Conferma la chiusura</button></div>'+(c.pronta ? '' : '<p class="sotto centro">'+(c.scaduta ? 'Servono i saldi di tutti i conti alle due date.' : 'Si può confermare dal '+dataBreve(m.fine)+'.')+'</p>')+(c.scaduta && !c.completi ? '<div class="bottoni colonna"><button class="btn" data-act="chiudi_senza" data-id="'+id+'">Chiudi senza conteggio</button></div><p class="sotto centro">Per il primo mese, se manca la fotografia del 9 precedente: il mese si chiude senza spesa reale e senza scalare le voci.</p>' : '');
   o += fonteRiga('Spesa reale = liquidità del 9 precedente + entrate − importi investiti o versati al fondo − liquidità del 9. Giroconti esclusi. Regola: BUDGET §10.3.');
   const chiusi = lista('mesi').filter(x => x.stato === 'chiuso').sort((a,b) => a.id < b.id ? 1 : -1).slice(0,6);
   if (chiusi.length) o += '<section class="card"><h2>Mesi chiusi</h2>'+chiusi.map(x => riga(etichettaMese(meseDaId(x.id)), x.senza_conteggio ? 'chiuso senza conteggio' : 'spesa reale '+eur0(x.spesa_reale)+' · non registrate '+eur0(x.non_registrate))).join('')+'</section>';
@@ -1040,7 +1025,7 @@ function vMensilita(){
   if (M.tipo === 'rimborso_730') o += passo(1, 'Portafoglio di lungo periodo', p.portafoglio, '') + (p.libera ? passo(2, 'Liquidità', p.libera, '') : '');
   else {
     const totB = Object.values(p.buste).reduce((s,v) => s+v, 0);
-    o += passo(1, 'Buste dell’anno', totB, ordinati('buste').filter(b => b.tipo === 'annuale').map(b => riga(h(b.nome)+' <span class="sotto">· già alimentata '+eur0(alimentatoAnno(b.id, x.data.slice(0,4)))+' di '+eur0(P(b.param))+'</span>', campo('b_'+b.id, p.buste[b.id] || 0))).join(''));
+    o += passo(1, 'Voci annuali', totB, ordinati('buste').filter(b => b.tipo === 'annuale').map(b => riga(h(b.nome)+' <span class="sotto">· già alimentata '+eur0(alimentatoAnno(b.id, x.data.slice(0,4)))+' di '+eur0(P(b.param))+'</span>', campo('b_'+b.id, p.buste[b.id] || 0))).join(''));
     const usato = (S.a.destinazioni.fondo_emergenza||{}).utilizzato || 0;
     o += passo(2, 'Fondo emergenza', p.fe, usato > 0 ? riga('Reintegro (usati '+eur0(usato)+')', campo('fe', p.fe)) : '<p class="sotto">È pieno: niente da reintegrare.</p>');
     let n = 3;
@@ -1102,12 +1087,12 @@ function fmtPar(p){ if (typeof p.valore === 'number') { const dec = Math.abs(p.v
 function rigaElim(arch, x, testo, imp){ const k = arch+':'+x.id; return '<div class="voce"><div class="cresce"><p class="nome piccolo">'+h(testo)+(x.stato === 'non_confermato' ? ' '+chip('non confermato','ambra') : '')+'</p></div><strong>'+imp+'</strong><button class="link rosso" data-act="elimina" data-k="'+h(k)+'">'+(ui.elimina === k ? 'Confermi?' : 'Elimina')+'</button></div>'; }
 
 /* ===== Fogli (moduli) ===== */
-const opzBuste = sel => '<option value="">Nessuna busta (pesa sul mese)</option>'+ordinati('buste').map(b => '<option value="'+b.id+'"'+(sel === b.id ? ' selected' : '')+'>'+h(b.nome)+'</option>').join('');
+const opzBuste = sel => '<option value="">Nessuna voce (pesa sul mese)</option>'+ordinati('buste').map(b => '<option value="'+b.id+'"'+(sel === b.id ? ' selected' : '')+'>'+h(b.nome)+'</option>').join('');
 function foglio(){
   const s = ui.sheet; if (!s) return '';
   let t = '', c = '', ok = 'Salva', act = s.tipo+'_ok';
   if (s.tipo === 'spesa') { const x = s.id ? S.a.movimenti[s.id] : {}; t = s.id ? 'Modifica la spesa' : 'Segna una spesa';
-    c = '<label>Importo<input id="f_imp" inputmode="decimal" value="'+h(x.importo != null ? fmtNum(x.importo, 2) : '')+'"></label><label>Busta<select id="f_busta">'+opzBuste(x.busta)+'</select></label><label>Descrizione<input id="f_desc" value="'+h(x.descrizione||'')+'"></label><label>Data<input id="f_data" type="date" value="'+h(x.data||iso(oggi()))+'"></label>'; ok = 'Conferma e scala'; }
+    c = '<label>Importo<input id="f_imp" inputmode="decimal" value="'+h(x.importo != null ? fmtNum(x.importo, 2) : '')+'"></label><label>Voce di budget<select id="f_busta">'+opzBuste(x.busta)+'</select></label><label>Descrizione<input id="f_desc" value="'+h(x.descrizione||'')+'"></label><label>Data<input id="f_data" type="date" value="'+h(x.data||iso(oggi()))+'"></label>'; ok = 'Conferma e scala'; }
   else if (s.tipo === 'saldo') { const x = s.pend ? S.a.saldi[s.pend] : {}; const sel = x.conto || s.id; t = 'Saldo di un conto';
     c = '<label>Conto<select id="f_conto">'+ordinati('conti').map(k => '<option value="'+k.id+'"'+(sel === k.id ? ' selected' : '')+'>'+h(k.nome)+'</option>').join('')+'</select></label><label>Saldo (per il conto comune, il saldo intero)<input id="f_imp" inputmode="decimal" value="'+h(x.importo != null ? fmtNum(x.importo, 2) : '')+'"></label><label>Data del saldo<input id="f_data" type="date" value="'+h(x.data||iso(oggi()))+'"></label>'; }
   else if (s.tipo === 'posizione') { const e = S.a.posizioni[s.id] || {}; const x = s.pend ? S.a.saldi[s.pend] : e; t = e.ticker+' · '+e.nome;
@@ -1120,7 +1105,7 @@ function foglio(){
     c = '<label>Stipendio netto accreditato il '+dataBreve(accredito(m.inizio.getFullYear(), m.inizio.getMonth()))+'<input id="f_imp" inputmode="decimal" value="'+h(st ? fmtNum(st.importo, 0) : '')+'"></label><p class="sotto">Stima dal '+(st ? fonte(st.chiave) : 'BUDGET §1')+': sostituiscila con il netto reale. Mensilità aggiuntive e premio si registrano a parte.</p>'+
       ordinati('buste').filter(b => b.tipo === 'mensile').map(b => riga('Alimento “'+h(b.nome)+'”', eur(P(b.param)))).join('')+'<p class="sotto">Se parti a mese iniziato, la prima chiusura non è calcolabile: manca la fotografia del 9 precedente.</p>'; ok = 'Apri il mese'; }
   else if (s.tipo === 'fissa_importo') { const pr = proponiImportoDaInvestire(), d = destinazioni(); t = 'Importo da investire';
-    c = '<p class="sotto">Liquidità − fondo emergenza − riserva casa − giacenza operativa − saldo delle buste, alla fotografia del 9 che precede l’avvio (INVESTIMENTI §2).</p>'+d.righe.map(r => riga(h(r.nome), eur0(r.valore))).join('')+(pr == null ? '<p class="sotto warn">Mancano dei saldi: completa i conti prima di fissare l’importo.</p>' : '')+'<label>Importo fissato<input id="f_imp" inputmode="decimal" value="'+h(pr != null ? fmtNum(pr, 0) : '')+'"></label>'; ok = 'Fissa l’importo'; }
+    c = '<p class="sotto">Liquidità − fondo emergenza − riserva casa − giacenza operativa − saldo delle voci di budget, alla fotografia del 9 che precede l’avvio (INVESTIMENTI §2).</p>'+d.righe.map(r => riga(h(r.nome), eur0(r.valore))).join('')+(pr == null ? '<p class="sotto warn">Mancano dei saldi: completa i conti prima di fissare l’importo.</p>' : '')+'<label>Importo fissato<input id="f_imp" inputmode="decimal" value="'+h(pr != null ? fmtNum(pr, 0) : '')+'"></label>'; ok = 'Fissa l’importo'; }
   else if (s.tipo === 'acquisto') { const pi = pianoIngresso(), vm = versamentoMensile(); let imp = 0, pesi = {};
     if (s.sub === 'rata_ingresso' && pi && pi.prossima) { imp = pi.rata; pesi = pi.pesi; t = 'Rata di ingresso '+pi.prossima.n+' di '+pi.n; }
     else if (s.sub === 'versamento' && vm) { imp = vm.importo; pesi = vm.pesi; t = 'Versamento mensile'; }
@@ -1138,9 +1123,9 @@ function foglio(){
 
 /* ===== Funzioni richiamabili dall’assistente (calcola l’app) ===== */
 const FUNZIONI = {
-  quanto_resta: { d:'quanto resta da spendere fino allo stipendio', f(){ const b = bustaQuotidiana(); if (!b) return { testo:'Manca la busta delle uscite quotidiane.' }; const m = meseDi(oggi()), fx = fisseMese(m); return { valore:eur0(saldoBusta(b.id)), testo:'È quello che resta in “'+b.nome+'” per '+gg(giorniAlloStipendio())+'. Uscite fisse con data ancora da pagare: '+eur0(fx.daPagare)+'.'+(S.a.mesi[m.id] ? '' : ' Il mese non è ancora aperto: la busta non è stata alimentata.'), fonte:'BUDGET §10.2' }; } },
-  buste: { d:'saldo di tutte le buste', f(){ return { testo:'Saldo delle buste a oggi.', righe: statoBuste().map(b => [b.nome, eur0(b.saldo)+' di '+eur0(b.importo)]), fonte:'BUDGET §10.2' }; } },
-  busta: { d:'saldo di una busta (argomento: id della busta)', f(a){ const b = statoBuste().find(x => x.id === a); if (!b) return FUNZIONI.buste.f(); return { valore:eur0(b.saldo), testo:'Resta in “'+b.nome+'”, su '+eur(b.importo)+(b.tipo === 'annuale' ? ' l’anno' : ' al mese')+'.', fonte:'BUDGET §10.2' }; } },
+  quanto_resta: { d:'quanto resta da spendere fino allo stipendio', f(){ const b = bustaQuotidiana(); if (!b) return { testo:'Manca la busta delle uscite quotidiane.' }; const m = meseDi(oggi()), fx = fisseMese(m); return { valore:eur0(saldoBusta(b.id)), testo:'È quello che resta in “'+b.nome+'” per '+gg(giorniAlloStipendio())+'. Uscite fisse con data ancora da pagare: '+eur0(fx.daPagare)+'.'+(S.a.mesi[m.id] ? '' : ' Il mese non è ancora aperto: la voce non è ancora ricaricata.'), fonte:'BUDGET §10.2' }; } },
+  buste: { d:'saldo di tutte le voci di budget', f(){ return { testo:'Saldo delle voci di budget a oggi.', righe: statoBuste().map(b => [b.nome, eur0(b.saldo)+' di '+eur0(b.importo)]), fonte:'BUDGET §10.2' }; } },
+  busta: { d:'saldo di una voce di budget (argomento: id della voce)', f(a){ const b = statoBuste().find(x => x.id === a); if (!b) return FUNZIONI.buste.f(); return { valore:eur0(b.saldo), testo:'Resta in “'+b.nome+'”, su '+eur(b.importo)+(b.tipo === 'annuale' ? ' l’anno' : ' al mese')+'.', fonte:'BUDGET §10.2' }; } },
   destinazioni: { d:'liquidità divisa per destinazione (fondo emergenza, riserva casa, da investire…)', f(){ const d = destinazioni(); return { valore:eur0(d.totale), testo:'Liquidità per destinazione'+(d.completo ? '.' : ' (parziale: mancano dei saldi).'), righe: d.righe.map(r => [r.nome, eur0(r.valore)]), fonte:'INVESTIMENTI §1–2' }; } },
   giacenze: { d:'giacenze minime dei conti correnti', f(){ return { testo:'Giacenze minime, misurate il 9.', righe: giacenze().map(x => [x.c.nome, x.s ? eur0(x.s.importo)+' (minimo '+eur0(x.min)+')' : 'saldo mancante']), fonte:'BUDGET §10.1' }; } },
   target: { d:'target di azioni, obbligazioni e managed futures', f(){ const t = target(); if (!t) return { testo:'Target non disponibile.' }; const s = b => b.azioni+' / '+b.obbligazioni+' / '+b.managed_futures; return { valore:s(t.attivo), testo:'Azioni / obbligazioni / managed futures '+(t.attivoProbabile ? 'secondo la formula (ricalcolo da confermare).' : 'in vigore.')+(t.probabile && !t.attivoProbabile ? ' Probabile dal '+dataMedia(t.ricalcolo)+': '+s(t.probabile)+'.' : ''), fonte:'POLICY §6' }; } },
@@ -1156,7 +1141,7 @@ const FUNZIONI = {
 
 /* ===== Assistente: lettura di testo e foto ===== */
 function prompt(testo, conFoto){
-  return 'Sei il lettore di dati di un’app di finanza personale in italiano. NON fai calcoli e NON dai consigli: estrai i dati dal messaggio'+(conFoto ? ' e dall’immagine allegata (uno screenshot di banca, broker o fondo pensione)' : '')+' e scegli quali funzioni dell’app richiamare. Rispondi solo con un oggetto JSON, senza altro testo.\n\nOggi è '+iso(oggi())+'.\n\nBUSTE (id: nome – contenuto):\n'+ordinati('buste').map(b => b.id+': '+b.nome+' – '+b.contenuto).join('\n')+
+  return 'Sei il lettore di dati di un’app di finanza personale in italiano. NON fai calcoli e NON dai consigli: estrai i dati dal messaggio'+(conFoto ? ' e dall’immagine allegata (uno screenshot di banca, broker o fondo pensione)' : '')+' e scegli quali funzioni dell’app richiamare. Rispondi solo con un oggetto JSON, senza altro testo.\n\nOggi è '+iso(oggi())+'.\n\nVOCI DI BUDGET (id da usare nel campo busta: nome – contenuto):\n'+ordinati('buste').map(b => b.id+': '+b.nome+' – '+b.contenuto).join('\n')+
   '\n\nCONTI (id: nome):\n'+ordinati('conti').map(c => c.id+': '+c.nome).join('\n')+'\n\nETF DEL PORTAFOGLIO (id: sigla – nome – ISIN):\n'+ordinati('posizioni').map(e => e.id+': '+e.ticker+' – '+e.nome+' – '+e.isin).join('\n')+
   '\n\nFUNZIONI (nome: che cosa calcola l’app):\n'+Object.entries(FUNZIONI).map(([k,v]) => k+': '+v.d).join('\n')+
   '\n\nFormato: {"azioni":[...],"nota":""}\nTipi di azione ammessi:\n{"tipo":"spesa","importo":numero,"busta":"id" oppure null,"descrizione":"breve","data":"AAAA-MM-GG"}\n{"tipo":"entrata","importo":numero,"descrizione":"breve","data":"AAAA-MM-GG"}\n{"tipo":"saldo","conto":"id","importo":numero,"data":"AAAA-MM-GG"}\n{"tipo":"posizione","etf":"id","quote":numero oppure null,"prezzo":numero oppure null,"valore":numero oppure null,"data":"AAAA-MM-GG"}\n{"tipo":"fondo_pensione","posizione":numero,"data":"AAAA-MM-GG"}\n{"tipo":"domanda","funzione":"nome","argomento":"testo o id, anche vuoto"}\n\nRegole:\n- Copia i numeri come li leggi, senza somme, conversioni, stime o arrotondamenti. Usa il punto come separatore decimale.\n- Se un dato non è leggibile o non è certo, non inventarlo: lascialo fuori e dillo in "nota".\n- Se la data non è indicata usa quella di oggi; per uno screenshot usa la data che compare nell’immagine, se c’è.\n- Per una spesa scegli la busta dal contenuto; se non rientra in nessuna, "busta": null.\n- Mutuo, nido, bollette, spesa alimentare e le altre spese fisse non si registrano come spese: mettilo in "nota".\n- Per il conto comune riporta il saldo intero del conto, non la metà.\n- Per una domanda scegli una sola funzione dell’elenco; se nessuna risponde, azioni vuoto e una frase in "nota".\n- "nota" è una frase breve in italiano, senza numeri calcolati da te.\n\nMessaggio dell’utente: «'+String(testo||'').slice(0,2000)+'»';
@@ -1266,7 +1251,7 @@ const VISTE = { oggi:vOggi, budget:vBudget, conti:vConti, portafoglio:vPortafogl
 function render(){
   const main = document.getElementById('main'); if (!main) return;
   const att = document.activeElement, fid = att && att.id, sel = att && att.selectionStart;
-  document.getElementById('nav').innerHTML = VISTE_NAV.map(([k,n,i]) => '<a href="#'+k+'"'+((ui.vista === k || (k === 'budget' && (ui.vista === 'chiusura' || ui.vista === 'mensilita'))) ? ' aria-current="page"' : '')+'>'+ico(i)+'<span>'+n+'</span></a>').join('');
+  document.getElementById('nav').innerHTML = VISTE_NAV.map(([k,n,i]) => '<a href="#'+k+'"'+((ui.vista === k || (k === 'budget' && (ui.vista === 'chiusura' || ui.vista === 'mensilita' || ui.vista === 'spese' || ui.vista === 'estratto'))) ? ' aria-current="page"' : '')+'>'+ico(i)+'<span>'+n+'</span></a>').join('');
   let o = '';
   if (S.errore) o = '<header class="testa"><div><p class="sopra">Finanze personali</p><h1>Dati non disponibili</h1></div></header><section class="card nota-ambra"><p class="sotto">'+(S.errore === 'fuori' ? 'Apri l’app dalla sua pagina su claude.ai, con il tuo account: fuori da lì il database privato non è raggiungibile.' : 'In questa vista il database privato non è raggiungibile (accesso non effettuato o permesso revocato). Ricarica la pagina dal tuo account.')+'</p></section>';
   else if (!S.pronto) o = '<header class="testa"><div><p class="sopra">Finanze personali</p><h1>Carico i tuoi dati…</h1></div></header>'+(S.lento ? '<section class="card nota-ambra"><p class="sotto">I dati non sono ancora raggiungibili. L’app non funziona senza connessione: resta in attesa, riprova da sola.</p></section>' : '');
@@ -1366,7 +1351,7 @@ function rotta(){
 }
 function simulaSpesa(imp, necessita, bustaId){
   let r = imp; const passi = []; const usa = (nome, disp, nota, fonteT, ammesso) => { const v = ammesso === false ? 0 : r2(Math.max(0, Math.min(disp, r))); r = r2(r - v); passi.push({ nome, valore:v, disponibile:disp, nota, fonte:fonteT }); return v; };
-  if (bustaId && S.a.buste[bustaId]) { const s = Math.max(0, saldoBusta(bustaId)); const v = usa('Busta “'+S.a.buste[bustaId].nome+'”', s, '', 'BUDGET §10.2'); passi[passi.length-1].nota = 'nella busta restano '+eur0(s - v); }
+  if (bustaId && S.a.buste[bustaId]) { const s = Math.max(0, saldoBusta(bustaId)); const v = usa('Voce “'+S.a.buste[bustaId].nome+'”', s, '', 'BUDGET §10.2'); passi[passi.length-1].nota = 'sulla voce restano '+eur0(s - v); }
   const d = destinazioni(), corr = d.righe.find(x => x.id === 'corrente');
   usa('Liquidità del mese', corr ? Math.max(0, corr.valore) : 0, corr ? 'le spese non a budget pesano sul mese' : 'non misurabile finché l’importo da investire non è fissato', 'BUDGET §10.2');
   const fe = P('investimenti.fondo_emergenza.importo'), us = (S.a.destinazioni.fondo_emergenza||{}).utilizzato || 0;
@@ -1421,7 +1406,7 @@ function vDecisioni(){
     (x.documenti ? '<div class="voce"><div class="cresce"><p class="sotto">Documento: '+h(x.documenti)+'</p></div>'+chip(x.aggiornato ? 'aggiornato' : 'da aggiornare', x.aggiornato ? 'verde' : 'corallo')+'<button class="link" data-act="dec_agg" data-id="'+h(x.id)+'">'+(x.aggiornato ? 'Riapri' : 'Fatto')+'</button></div>' : '')+
     '<button class="link rosso" data-act="elimina" data-k="decisioni:'+h(x.id)+'">'+(ui.elimina === 'decisioni:'+x.id ? 'Confermi?' : 'Elimina')+'</button></section>';
   if (!ds.length) o += '<section class="card"><p class="sotto">Nessuna decisione registrata.</p></section>';
-  o += fonteRiga('L’app registra da sola ricalcolo del target, importo da investire fissato, parametri modificati e correzioni delle buste.');
+  o += fonteRiga('L’app registra da sola ricalcolo del target, importo da investire fissato, parametri modificati e correzioni dei budget per voce.');
   return o;
 }
 function vNote(){
@@ -1465,21 +1450,21 @@ function vRotta(){
 function vSimula(){
   const imp = num(ui.campi.sim_imp||''), ok = imp > 0;
   let o = testa('Da dove uscirebbero i soldi, e a quale costo', 'Simula una spesa grossa', ['oggi','Oggi']);
-  o += '<section class="card"><div class="form"><label>Importo<input id="q_sim" inputmode="decimal" data-campo="sim_imp" placeholder="Es. 3.000"></label><label>Busta di riferimento<select data-sim="busta">'+opzBuste(ui.sim.busta).replace('Nessuna busta (pesa sul mese)','Nessuna busta')+'</select></label></div><button class="btn'+(ui.sim.necessita ? ' scelto' : '')+'" data-act="sim_nec">'+(ui.sim.necessita ? 'È una necessità: salute, auto indispensabile, casa' : 'Non è una necessità')+'</button><p class="sotto">Tocca per cambiare. Non salva niente: è solo una prova.</p></section>';
+  o += '<section class="card"><div class="form"><label>Importo<input id="q_sim" inputmode="decimal" data-campo="sim_imp" placeholder="Es. 3.000"></label><label>Voce di riferimento<select data-sim="busta">'+opzBuste(ui.sim.busta).replace('Nessuna voce (pesa sul mese)','Nessuna voce')+'</select></label></div><button class="btn'+(ui.sim.necessita ? ' scelto' : '')+'" data-act="sim_nec">'+(ui.sim.necessita ? 'È una necessità: salute, auto indispensabile, casa' : 'Non è una necessità')+'</button><p class="sotto">Tocca per cambiare. Non salva niente: è solo una prova.</p></section>';
   if (ok) { const s = simulaSpesa(imp, ui.sim.necessita, ui.sim.busta);
     o += '<section class="card"><h2>Da dove esce</h2>'+s.passi.map(p => '<div class="voce"><div class="cresce"><p class="nome">'+h(p.nome)+'</p><p class="sotto">'+(p.nota ? h(p.nota)+' · ' : '')+h(p.fonte)+'</p></div><strong>'+eur0(p.valore)+'</strong></div>').join('')+'<hr>'+riga('<b>Resta scoperto</b>', '<b>'+eur0(s.scoperto)+'</b>', s.scoperto > 0 ? 'rosso' : '')+'</section>';
-    if (s.scoperto > 0) o += '<section class="card nota-ambra"><p class="titolino">'+(s.necessita ? 'Prelievo dal portafoglio sotto la soglia' : 'Questa spesa non ha copertura')+'</p><p class="sotto">'+(s.necessita ? 'Ammesso solo per necessità, dopo fondo emergenza e residuo. Costo di riferimento nello scenario severo: circa '+fmtNum(s.mesi, 1)+' mesi di lavoro in più prima dell’uscita.' : 'Non è una necessità: niente fondo emergenza e niente prelievo sotto la soglia. Le strade sono rimandarla, alimentare una busta dedicata o aspettare il jolly.')+'</p>'+fonteRiga('POLICY §9 · PIANO PENSIONE §7.3.')+'</section>';
+    if (s.scoperto > 0) o += '<section class="card nota-ambra"><p class="titolino">'+(s.necessita ? 'Prelievo dal portafoglio sotto la soglia' : 'Questa spesa non ha copertura')+'</p><p class="sotto">'+(s.necessita ? 'Ammesso solo per necessità, dopo fondo emergenza e residuo. Costo di riferimento nello scenario severo: circa '+fmtNum(s.mesi, 1)+' mesi di lavoro in più prima dell’uscita.' : 'Non è una necessità: niente fondo emergenza e niente prelievo sotto la soglia. Le strade sono rimandarla, dedicarle una voce di budget o aspettare il jolly.')+'</p>'+fonteRiga('POLICY §9 · PIANO PENSIONE §7.3.')+'</section>';
     else o += '<section class="card"><p class="titolino">Spesa coperta</p><p class="sotto">Senza toccare il portafoglio di lungo periodo.</p></section>'; }
-  o += fonteRiga('Ordine applicato: busta, liquidità del mese, fondo emergenza, jolly. Per usi del jolly oltre € 10.000 con data certa vale l’obiettivo datato (POLICY §9).');
+  o += fonteRiga('Ordine applicato: voce di budget, liquidità del mese, fondo emergenza, jolly. Per usi del jolly oltre € 10.000 con data certa vale l’obiettivo datato (POLICY §9).');
   return o;
 }
 function vCalibrazione(){
   const c = calibrazione();
   let o = testa('Le stime del budget contro i mesi chiusi', 'Rapporto di calibrazione', ['budget','Budget']);
-  o += '<section class="card'+(c.pronto ? '' : ' nota-ambra')+'"><p class="titolino">'+c.n+(c.n === 1 ? ' chiusura' : ' chiusure')+' con conteggio su '+c.min+'</p><p class="sotto">'+(c.pronto ? 'Ci sono abbastanza mesi per ricalibrare gli importi.' : 'Le medie sono indicative: gli importi delle buste si ricalibrano dopo '+c.min+' chiusure mensili.')+'</p></section>';
+  o += '<section class="card'+(c.pronto ? '' : ' nota-ambra')+'"><p class="titolino">'+c.n+(c.n === 1 ? ' chiusura' : ' chiusure')+' con conteggio su '+c.min+'</p><p class="sotto">'+(c.pronto ? 'Ci sono abbastanza mesi per ricalibrare gli importi.' : 'Le medie sono indicative: i budget delle voci si ricalibrano dopo '+c.min+' chiusure mensili.')+'</p></section>';
   if (c.n) {
     o += '<section class="card"><h2>Il mese medio</h2>'+riga('Spesa reale', eur0(c.spesaReale))+riga('Uscite fisse', eur0(c.fisse)+' <span class="sotto">previste '+eur0(c.fissePreviste)+'</span>')+riga('Spese non registrate', eur0(c.nonRegistrate))+'</section>';
-    o += '<section class="card"><h2>Buste</h2>'+c.buste.map(x => '<div class="voce"><div class="cresce"><p class="nome">'+h(x.b.nome)+'</p><p class="sotto">media '+eur0(x.mediaMese)+' al mese contro '+eur0(x.riferimentoMese)+' previsti'+(x.b.tipo === 'annuale' ? ' ('+eur0(x.importo)+' l’anno)' : '')+'</p></div><strong>'+(c.pronto ? eur0(x.proposta)+(x.b.tipo === 'annuale' ? ' l’anno' : '') : '—')+'</strong></div>').join('')+fonteRiga('A destra l’importo che corrisponde alla media, arrotondato a € 10. Per le buste annuali pochi mesi non bastano: le spese sono concentrate.')+'</section>';
+    o += '<section class="card"><h2>Budget per voce</h2>'+c.buste.map(x => '<div class="voce"><div class="cresce"><p class="nome">'+h(x.b.nome)+'</p><p class="sotto">media '+eur0(x.mediaMese)+' al mese contro '+eur0(x.riferimentoMese)+' previsti'+(x.b.tipo === 'annuale' ? ' ('+eur0(x.importo)+' l’anno)' : '')+'</p></div><strong>'+(c.pronto ? eur0(x.proposta)+(x.b.tipo === 'annuale' ? ' l’anno' : '') : '—')+'</strong></div>').join('')+fonteRiga('A destra l’importo che corrisponde alla media, arrotondato a € 10. Per le voci annuali pochi mesi non bastano: le spese sono concentrate.')+'</section>';
   }
   o += fonteRiga('Per cambiare un importo: aggiorna il BUDGET §10.2, poi il parametro in Dati e regole. Regola: BUDGET §8 e §10.2.');
   return o;
@@ -1495,7 +1480,7 @@ function vStorico(){
 }
 Object.assign(VISTE, { scadenze:vScadenze, decisioni:vDecisioni, note:vNote, fisco:vFisco, rotta:vRotta, simula:vSimula, calibrazione:vCalibrazione, storico:vStorico });
 const _vOggi = VISTE.oggi;
-VISTE.oggi = function(){ const r = rotta(); const voci = [['rotta','Sono in rotta?'],['scadenze','Scadenze'],['simula','Simula una spesa'],['fisco','Fisco'],['decisioni','Decisioni'],['note','Note di mercato'],['calibrazione','Calibrazione'],['storico','Storico']];
+VISTE.oggi = function(){ const r = rotta(); const voci = [['spese','Spese del mese'],['rotta','Sono in rotta?'],['scadenze','Scadenze'],['simula','Simula una spesa'],['fisco','Fisco'],['decisioni','Decisioni'],['note','Note di mercato'],['calibrazione','Calibrazione'],['storico','Storico']];
   const base = _vOggi(), hub = '<section class="card"><div class="card-testa"><h2>Il piano</h2>'+chip(STATI[r.esito][0], STATI[r.esito][1])+'</div><div class="griglia">'+voci.map(([k,n]) => '<a class="btn" href="#'+k+'">'+n+'</a>').join('')+'</div></section>'; const ix = base.lastIndexOf('<a class="pn"'); return ix < 0 ? base+hub : base.slice(0,ix)+hub+base.slice(ix); };
 
 /* ---- Fogli e azioni ---- */
@@ -1518,14 +1503,14 @@ Object.assign(AZ, {
   async foto_patrimonio(){ const f = fotografia(); if (await scrivi(() => metti('storico', f.data, f))) avviso('Fotografia salvata.'); }
 });
 const dopo = (nome, fn) => { const orig = AZ[nome]; AZ[nome] = async function(el, ev){ const prima = fn.prima ? fn.prima(el) : null; const r = await orig.call(AZ, el, ev); try { await fn(el, prima); } catch (e) { console.error(e); } return r; }; };
-dopo('chiudi_mese', Object.assign(async (el, prima) => { const m = S.a.mesi[el.dataset.id]; if (!m || m.stato !== 'chiuso' || prima === 'chiuso') return; const f = fotografia(); await metti('storico', f.data, f); if (m.recupero === 'correggere_importo_busta') await registra('Correggere l’importo della busta delle uscite quotidiane', 'Chiusura '+etichettaMese(meseDaId(el.dataset.id))+': la busta ha chiuso a '+eur0(m.saldo_busta_quotidiana)+'.', 'BUDGET §10.2'); }, { prima: el => (S.a.mesi[el.dataset.id]||{}).stato }));
+dopo('chiudi_mese', Object.assign(async (el, prima) => { const m = S.a.mesi[el.dataset.id]; if (!m || m.stato !== 'chiuso' || prima === 'chiuso') return; const f = fotografia(); await metti('storico', f.data, f); if (m.recupero === 'correggere_importo_busta') await registra('Correggere il budget della voce “Uscite quotidiane”', 'Chiusura '+etichettaMese(meseDaId(el.dataset.id))+': la voce ha chiuso a '+eur0(m.saldo_busta_quotidiana)+'.', 'BUDGET §10.2'); }, { prima: el => (S.a.mesi[el.dataset.id]||{}).stato }));
 dopo('ricalcolo_ok', Object.assign(async (el, prima) => { const p = S.a.parametri['policy.target.azioni']; if (p && p.valore !== prima.v || (p && p.anno !== prima.a)) await registra('Ricalcolo del target: azioni al '+p.valore+'%', p.nota||'', 'POLICY STATEMENT §1 e INVESTIMENTI §3 (pesi)'); }, { prima: () => { const p = S.a.parametri['policy.target.azioni']||{}; return { v:p.valore, a:p.anno }; } }));
 dopo('fissa_importo_ok', Object.assign(async (el, prima) => { const d = S.a.destinazioni.da_investire||{}; if (d.importo_fissato != null && d.importo_fissato !== prima) await registra('Importo da investire fissato a '+eur0(d.importo_fissato), 'Fotografia del '+dataMedia(d.data_fotografia)+'.', 'INVESTIMENTI §2 e PATRIMONIO §1.1'); }, { prima: () => (S.a.destinazioni.da_investire||{}).importo_fissato }));
 dopo('parametro_ok', Object.assign(async (el, prima) => { if (!prima) return; const p = S.a.parametri[prima.id]; if (p && p.valore !== prima.v) await registra('Parametro modificato: '+p.nome, 'Da '+prima.v+' a '+p.valore+'.', p.documento === 'APP' ? '' : p.documento+(p.sezione ? ' §'+p.sezione : '')); }, { prima: () => ui.sheet && ui.sheet.id ? { id:ui.sheet.id, v:(S.a.parametri[ui.sheet.id]||{}).valore } : null }));
 document.addEventListener('change', ev => { const e = ev.target; if (e.dataset.sim) { ui.sim[e.dataset.sim] = e.value; render(); } else if (e.dataset.campo === 'sim_imp') render(); });
 Object.assign(FUNZIONI, {
   in_rotta: { d:'verifica se il piano è in rotta rispetto alle sue regole e alla soglia', f(){ const r = rotta(), T = { ok:'In rotta', att:'In rotta, con punti da seguire', ko:'Da recuperare' }; return { valore:T[r.esito], testo:'Verifica sulle regole del piano.', righe: r.voci.map(v => [v.nome, STATI[v.stato][0]+': '+v.testo]), fonte:'POLICY §9 · PIANO PENSIONE §7.4' }; } },
-  simula_spesa: { d:'simula una spesa grossa (argomento: importo in euro, solo il numero)', f(a){ const imp = num(String(a).replace(/[^\d.,]/g,'')); if (!(imp > 0)) return { testo:'Indica l’importo della spesa.' }; const s = simulaSpesa(imp, false, ''); return { valore:eur0(s.scoperto), testo:'È la parte senza copertura per una spesa di '+eur0(imp)+' che non è una necessità. Nella scheda “Simula una spesa” puoi indicare busta e necessità.', righe: s.passi.map(p => [p.nome, eur0(p.valore)]), fonte:'POLICY §9 · BUDGET §10.2' }; } },
+  simula_spesa: { d:'simula una spesa grossa (argomento: importo in euro, solo il numero)', f(a){ const imp = num(String(a).replace(/[^\d.,]/g,'')); if (!(imp > 0)) return { testo:'Indica l’importo della spesa.' }; const s = simulaSpesa(imp, false, ''); return { valore:eur0(s.scoperto), testo:'È la parte senza copertura per una spesa di '+eur0(imp)+' che non è una necessità. Nella scheda “Simula una spesa” puoi indicare voce di budget e necessità.', righe: s.passi.map(p => [p.nome, eur0(p.valore)]), fonte:'POLICY §9 · BUDGET §10.2' }; } },
   margine_deducibile: { d:'margine residuo sul limite di deducibilità del fondo pensione', f(){ const lim = P('budget.fondo_pensione.limite_deducibile'), c = ultimaFP('contributi'); if (!c || String(c.anno) !== String(oggi().getFullYear())) return { testo:'Il progressivo dei contributi di quest’anno non è registrato: è la voce 60450 del cedolino.', fonte:'BUDGET §5' }; return { valore:eur0(Math.max(0, lim - c.progressivo)), testo:'Margine sui '+eur0(lim)+', con il progressivo al '+dataMedia(c.data)+'.', fonte:'BUDGET §5' }; } }
 });
 
@@ -1581,7 +1566,7 @@ VISTE.assistente = function(){ let o = _vAss(); if (S.sample) return o;
     '<ol class="passi"><li><button class="btn" data-act="copia_istr">Copia le istruzioni per Claude</button></li><li>Nell’app di Claude incollale, allega lo screenshot o scrivi la spesa dopo “Testo:”, e invia.</li><li>Copia il blocco di codice della risposta e incollalo qui.</li></ol>'+
     (ui.mostraIstr ? '<textarea class="export" readonly>'+h(istruzioniClaude())+'</textarea><p class="sotto">Copia il testo a mano: il browser non consente la copia automatica.</p>' : '')+
     '<label class="vh" for="q_incolla">Risposta di Claude</label><textarea id="q_incolla" class="incolla" placeholder="Incolla qui la risposta di Claude">'+h(ui.incolla)+'</textarea><button class="btn primario" data-act="leggi_incolla">Leggi la risposta</button>'+
-    fonteRiga('Ogni dato letto resta “non confermato” finché non lo approvi. Le istruzioni contengono buste, conti ed ETF aggiornati: ricopiale se li cambi.')+'</section>';
+    fonteRiga('Ogni dato letto resta “non confermato” finché non lo approvi. Le istruzioni contengono voci di budget, conti ed ETF aggiornati: ricopiale se li cambi.')+'</section>';
   const i = o.indexOf('</div>', o.indexOf('<div class="chips">')); return o.slice(0, i+6) + c + o.slice(i+6); };
 
 /* ================= SPESA A PAROLE SENZA AI ================= */
@@ -1592,14 +1577,15 @@ const PAROLE_BUSTE = [
   ['casa', ['idraulico','elettricista','riparazione','lavatrice','lavastoviglie','frigo','elettrodomestico','ferramenta','caldaia','manutenzione']],
   ['regali', ['regalo','regali','compleanno','natale','matrimonio','battesimo']],
   ['abbonamenti', ['amazon prime','prime','google one','appblock','abbonamento']],
-  ['', ['dentista','revisione','bollo','multa']]
+  ['', ['dentista','revisione','bollo','multa']],
+  ['uscite_quotidiane', ['vestiti','abbigliamento','scarpe','ristorante','pizza','bar','caffè','aperitivo','cena','pranzo','cinema','libro','libri','parrucchiere']]
 ];
 function leggiSpesaLocale(t){
   const testo = String(t||'').trim(), basso = testo.toLowerCase();
   const m = basso.match(/(\d{1,3}(?:\.\d{3})+(?:,\d{1,2})?|\d+(?:[.,]\d{1,2})?)\s*(?:€|euro|eur)?/);
   const importo = m ? num(m[1].includes(',') || /\.\d{3}/.test(m[1]) ? m[1] : m[1].replace('.', ',')) : NaN;
   let data = iso(oggi()); if (/\bieri\b/.test(basso)) data = iso(piuGiorni(oggi(), -1)); else if (/\bl'altro ieri\b|\baltroieri\b/.test(basso)) data = iso(piuGiorni(oggi(), -2));
-  let busta = bustaQuotidiana() ? bustaQuotidiana().id : null, motivo = 'busta predefinita delle piccole spese';
+  let busta = bustaQuotidiana() ? bustaQuotidiana().id : null, motivo = 'voce predefinita delle piccole spese';
   for (const [id, ps] of PAROLE_BUSTE) { const p = ps.find(w => basso.includes(w)); if (p) { busta = id || null; motivo = id ? 'riconosciuta da “'+p+'”' : '“'+p+'” è una spesa non a budget (BUDGET §10.2)'; break; } }
   if (busta && !S.a.buste[busta]) busta = null;
   let desc = testo.replace(m ? m[0] : '', ' ').replace(/\b(ho speso|speso|spesi|pagato|per|di|la|il|lo|le|i|gli|un|una|euro|eur|ieri|oggi)\b|€/gi, ' ').replace(/\s+/g, ' ').trim();
@@ -1612,12 +1598,508 @@ AZ.spesa_parole = async function(){
   const r = leggiSpesaLocale(t);
   if (!(r.importo > 0)) { ui.sheet = { tipo:'spesa' }; ui.prefill = r.descrizione; avviso('Non trovo l’importo: completalo nel modulo.'); return; }
   ui.ultimaSpesa = t; ui.campi.spesa = '';
-  if (await scrivi(() => aggiungi('movimenti', { tipo:'spesa', importo:r2(r.importo), busta:r.busta, descrizione:r.descrizione, data:r.data, stato:'non_confermato', fonte:'testo', nota_lettura:r.motivo }))) avviso('Controlla busta e importo, poi conferma.');
+  if (await scrivi(() => aggiungi('movimenti', { tipo:'spesa', importo:r2(r.importo), busta:r.busta, descrizione:r.descrizione, data:r.data, stato:'non_confermato', fonte:'testo', nota_lettura:r.motivo }))) avviso('Controlla voce e importo, poi conferma.');
 };
 const _fogSp = foglio;
 foglio = function(){ const o = _fogSp(); if (ui.sheet && ui.sheet.tipo === 'spesa' && !ui.sheet.id && ui.prefill) { const d = ui.prefill; ui.prefill = null; return o.replace('<input id="f_desc" value=""', '<input id="f_desc" value="'+h(d)+'"'); } return o; };
 
 avvia();
+
+/* ================= FASE 3a: DA FARE E VOCI ANNUALI ================= */
+ui.dafareTutte = false;
+const NOMI_BLOCCO = { azioni:'azioni', obbligazioni:'obbligazioni', managed_futures:'managed futures' };
+const conArticolo = (tipo, nome) => tipo === 'premio' ? 'il premio di risultato' : 'la '+String(nome).toLowerCase();
+const alArticolo = (tipo, nome) => tipo === 'premio' ? 'al premio di risultato' : 'alla '+String(nome).toLowerCase();
+function prossimaMensilita(){
+  const t = oggi();
+  for (let i = 0; i < 14; i++) { const d0 = new Date(t.getFullYear(), t.getMonth()+i, 1); const ms = mensilitaDelMese(d0.getMonth()+1); if (!ms.length) continue;
+    const d = accredito(d0.getFullYear(), d0.getMonth()); if (d > t) return Object.assign({ data:d }, ms[0]); }
+  return null;
+}
+function mensilitaDaDestinare(){
+  const t = oggi(), out = [];
+  for (let i = 0; i < 2; i++) { const d0 = new Date(t.getFullYear(), t.getMonth()-i, 1); const d = accredito(d0.getFullYear(), d0.getMonth());
+    if (d > t || giorniTra(d, t) > 40) continue; const ym = iso(d).slice(0,7);
+    for (const ms of mensilitaDelMese(d0.getMonth()+1)) if (!lista('destinazioni').some(x => x.tipo === 'mensilita' && x.sottotipo === ms.tipo && String(x.data).slice(0,7) === ym)) out.push(Object.assign({ data:d }, ms)); }
+  return out;
+}
+/* Voci annuali a zero o sotto zero: regola di BUDGET §10.2 (versione del 17/11/2026) */
+function notaVociAnnuali(bs){
+  const ann = bs.filter(b => b.tipo === 'annuale'), giu = ann.filter(b => b.saldo <= 0); if (!giu.length) return '';
+  const pm = prossimaMensilita();
+  const chi = giu.length === ann.length ? 'Le voci annuali sono vuote' : (giu.length === 1 ? '“'+h(giu[0].nome)+'” è a zero o sotto zero' : giu.map(b => '“'+h(b.nome)+'”').join(', ')+' sono a zero o sotto zero');
+  const fino = pm ? alArticolo(pm.tipo, pm.nome)+' del '+dataBreve(pm.data) : 'alla prossima mensilità aggiuntiva';
+  return '<p class="sotto">'+chi+': una spesa di queste voci è anticipata dalla liquidità del mese fino '+fino+', che le ricarica. Se dopo la ricarica una voce resta sotto zero, se ne corregge il budget. BUDGET §10.2.</p>';
+}
+/* Azioni della home: prima i segnali critici, poi l’ordine di priorità concordato */
+function daFare(){
+  const t = oggi(), crit = [], norm = [];
+  const sy = window.__sync;
+  if (sy === 'auth') crit.push({ titolo:'GitHub non accetta il token', testo:'Le modifiche restano solo su questo dispositivo finché non inserisci un token valido.', btn:['Impostazioni','act','impostazioni'] });
+  else if (sy === 'errore') crit.push({ titolo:'Modifiche non ancora salvate su GitHub', testo:'L’app riprova da sola: non chiudere la pagina finché in basso non compare “Salvato”.', btn:['Impostazioni','act','impostazioni'] });
+  if (S.pronto && !Object.keys(S.a.parametri).length) crit.push({ titolo:'Archivio dei parametri vuoto', testo:'Senza parametri l’app non applica nessuna regola: importa il file dei parametri.', btn:['Dati e regole','go','dati'] });
+  else if (S.mancanti.size) { const l = [...S.mancanti]; crit.push({ titolo:'Parametri mancanti', testo:l.slice(0,3).join(', ')+(l.length > 3 ? ' e altri '+(l.length-3) : ''), btn:['Dati e regole','go','dati'] }); }
+  const pf = portafoglio();
+  for (const b of pf.blocchi) if (b.eccezione) crit.push({ titolo:'Ribilancia subito: '+NOMI_BLOCCO[b.nome]+' fuori di oltre '+P('policy.fasce.eccezione')+' punti', testo:'Peso attuale '+fmtNum(b.attuale,1)+'% contro un target del '+b.target+'%: si vende il blocco sovrappesato.', fonte:'POLICY §8', btn:['Portafoglio','go','portafoglio'] });
+  for (const g of giacenze()) if (g.stato === 'sotto') crit.push({ titolo:g.c.nome+' sotto il minimo', testo:'Saldo di '+eur0(g.s.importo)+' al '+dataBreve(g.s.data)+', minimo '+eur0(g.min)+'.', fonte:'BUDGET §10.1', btn:['Conti','go','conti'] });
+  for (const b of statoBuste()) if (b.tipo === 'mensile' && b.saldo < 0) crit.push({ titolo:'“'+b.nome+'” sotto zero di '+eur0(-b.saldo), testo:'La differenza pesa sul mese e si recupera dal mese successivo.', fonte:'BUDGET §10.2', btn:['Budget','go','budget'] });
+
+  const att = numInAttesa();
+  if (att) norm.push({ titolo: att === 1 ? '1 dato letto da confermare' : att+' dati letti da confermare', testo:'Finché non li confermi non entrano nei conti.', btn:['Rivedi','go','assistente'] });
+  const m = meseDi(t);
+  if (!S.a.mesi[m.id]) norm.push({ titolo:'Apri il mese '+etichettaMese(m), testo:'Registri lo stipendio e ricarichi le voci mensili.', fonte:'BUDGET §10.1', btn:['Apri il mese','sheet','apri_mese'] });
+  const mc = meseDaChiudere();
+  if (mc) { const mm = meseDaId(mc); norm.push({ titolo:'Fotografia del '+dataBreve(mm.fine)+' e chiusura', testo:'Inserisci i saldi del '+dataBreve(mm.fine)+' e chiudi il mese '+etichettaMese(mm)+'.', fonte:'BUDGET §10.3', btn:['Chiudi il mese','go','chiusura'] }); }
+  const pi = pianoIngresso(), primo = PS('investimenti.ingresso.primo_mese');
+  if (pi && !pi.fissato && primo) { const p0 = parse(primo+'-01'), d9 = new Date(p0.getFullYear(), p0.getMonth()-1, (P('budget.mese.giorno_inizio')||10)-1);
+    if (t >= d9) norm.push({ titolo:'Fissa l’importo da investire', testo:'Dalla fotografia del '+dataBreve(d9)+': liquidità meno fondo emergenza, riserva casa, giacenza e voci di budget.', fonte:'INVESTIMENTI §2', btn:['Fissa l’importo','sheet','fissa_importo'] }); }
+  for (const x of mensilitaDaDestinare()) norm.push({ titolo:'Destina '+conArticolo(x.tipo, x.nome), testo:'Accredito del '+dataBreve(x.data)+(x.importo ? ', circa '+eur0(x.importo) : '')+': prima le voci annuali, poi il resto.', fonte:'BUDGET §10.4', btn:['Destina','mens',x.tipo] });
+  const tg = target();
+  if (tg && tg.daConfermare) norm.push({ titolo:'Ricalcolo del target di gennaio', testo:'Conferma i Fed Funds e i pesi'+(tg.probabile ? ' (probabile '+tg.probabile.azioni+' / '+tg.probabile.obbligazioni+' / '+tg.probabile.managed_futures+')' : '')+': va fatto prima della rata di gennaio.', fonte:'POLICY §6', btn:['Ricalcola','go','portafoglio'] });
+  const entro = piuGiorni(t, 3);
+  if (pi && pi.prossima && pi.prossima.data <= entro) norm.push({ titolo:'Rata di ingresso '+pi.prossima.n+' di '+pi.n+(pi.rata ? ': '+eur0(pi.rata) : ''), testo: pi.prossima.data < t ? 'In ritardo: era il '+dataBreve(pi.prossima.data)+'. Date fisse, nessuna condizione.' : 'Il '+dataBreve(pi.prossima.data)+', ripartita secondo i pesi target.', fonte:'INVESTIMENTI §2', btn:['Registra la rata','sheet','acquisto','rata_ingresso'] });
+  const min = P('investimenti.versamento.minimo');
+  if (min != null) { const dovute = dateVersamento(new Date(2000,0,1), entro); let v = 0; for (const o of confermati('operazioni')) if (o.tipo === 'versamento') v += o.importo;
+    const manca = r2(dovute.length*min - v);
+    if (manca > 0.5) { const prima = dovute[Math.min(dovute.length-1, Math.floor(v/min))]; norm.push({ titolo:'Versamento mensile nel portafoglio: '+eur0(manca), testo: prima < t ? 'In ritardo dal '+dataBreve(prima)+'. Versare meno del minimo equivale a un prelievo.' : 'Il '+dataBreve(prima)+', il giorno dopo lo stipendio.', fonte:'INVESTIMENTI §3 · POLICY §9', btn:['Registra','sheet','acquisto','versamento'] }); } }
+  const dv = datiVecchi().filter(x => x.stato === 'vecchio' || x.stato === 'manca');
+  if (dv.length) norm.push({ titolo: dv.length === 1 ? 'Saldo da aggiornare: '+dv[0].nome : dv.length+' saldi da aggiornare', testo: dv.map(x => x.nome+(x.data ? ' ('+dataBreve(x.data)+')' : ' (manca)')).join(', '), fonte:'BUDGET §10.1', btn:['Aggiorna','go','conti'] });
+  const rit = lista('scadenze').filter(x => !x.fatta && isData(x.data) && parse(x.data) < t).sort((a,b) => a.data < b.data ? -1 : 1);
+  if (rit.length) norm.push({ titolo: rit.length === 1 ? 'Verifica in ritardo' : rit.length+' verifiche in ritardo', testo: rit.slice(0,2).map(x => x.titolo).join(' · ')+(rit.length > 2 ? ' …' : ''), btn:['Scadenze','go','scadenze'] });
+  crit.forEach(x => x.critico = true);
+  return crit.concat(norm);
+}
+function bottoneAzione(b, primo){
+  const [lab, tipo, x, y] = b, cls = 'btn piccolo'+(primo ? ' primario' : '');
+  if (tipo === 'go') return '<button class="'+cls+'" data-go="'+h(x)+'">'+h(lab)+'</button>';
+  if (tipo === 'sheet') return '<button class="'+cls+'" data-act="sheet" data-sheet="'+h(x)+'"'+(y ? ' data-tipo="'+h(y)+'"' : '')+'>'+h(lab)+'</button>';
+  if (tipo === 'mens') return '<button class="'+cls+'" data-act="vai_mens" data-tipo="'+h(x)+'">'+h(lab)+'</button>';
+  return '<button class="'+cls+'" data-act="'+h(x)+'">'+h(lab)+'</button>';
+}
+function cardDaFare(){
+  const tutte = daFare();
+  if (!tutte.length) { const sc = scadenze(1)[0]; return '<section class="card dafare"><div class="card-testa"><h2>Da fare</h2>'+chip('niente adesso','verde')+'</div><p class="sotto">'+(sc ? 'Prossima scadenza: '+h(sc.nome)+', '+dataLunga(sc.data)+'.' : 'Nessuna scadenza in vista.')+'</p></section>'; }
+  const vis = ui.dafareTutte ? tutte : tutte.slice(0,3), altre = tutte.length - 3, crit = tutte.some(x => x.critico);
+  let o = '<section class="card dafare"><div class="card-testa"><h2>Da fare</h2>'+chip(tutte.length === 1 ? '1 azione' : tutte.length+' azioni', crit ? 'corallo' : 'ambra')+'</div><ol class="azioni">';
+  vis.forEach((a, k) => { o += '<li class="azione'+(a.critico ? ' critica' : '')+'"><div class="cresce"><p class="nome">'+h(a.titolo)+'</p><p class="sotto">'+h(a.testo)+(a.fonte ? ' · '+h(a.fonte) : '')+'</p></div>'+bottoneAzione(a.btn, k === 0)+'</li>'; });
+  o += '</ol>';
+  if (altre > 0) o += '<button class="link" data-act="dafare_tutte">'+(ui.dafareTutte ? 'Mostra solo le prime 3' : (altre === 1 ? 'Mostra l’altra azione' : 'Mostra le altre '+altre))+'</button>';
+  return o+'</section>';
+}
+Object.assign(AZ, {
+  dafare_tutte(){ ui.dafareTutte = !ui.dafareTutte; },
+  vai_mens(el){ ui.mens = Object.assign({}, ui.mens, { tipo:el.dataset.tipo, modifica:false, mod:null }); location.hash = 'mensilita'; },
+  impostazioni(){ const b = document.getElementById('gh-badge'); if (b) b.click(); }
+});
+
+function mesiSpese(corr){ const s = new Set(Object.keys(S.a.mesi).concat([corr])); for (const x of Object.values(S.a.estratto||{})) if (x.data) s.add(meseDi(parse(x.data)).id); return [...s].sort(); }
+/* ================= FASE 3b: SPESE DEL MESE PER VOCE E RIEPILOGO DI CHIUSURA ================= */
+TUTTE.push('spese');
+ui.speseMese = null;
+function saldoBustaAl(id, dataIso){ let s = 0; for (const m of confermati('movimenti')) { if (m.busta !== id || String(m.data) > dataIso) continue; if (m.tipo === 'alimentazione' || m.tipo === 'rettifica') s += m.importo; else if (m.tipo === 'spesa' || m.tipo === 'non_registrate') s -= m.importo; } return r2(s); }
+/* Calcolo per un mese di budget. Voci mensili: budget del mese. Voci annuali: anno solare dell’inizio del mese, con un dodicesimo come riferimento (BUDGET §10.2 e §10.4). */
+function calcoloSpese(id){
+  const m = meseDaId(id), md = S.a.mesi[id] || null, d1 = iso(m.fine), anno = m.inizio.getFullYear(), a0 = anno+'-01-01';
+  const mov = confermati('movimenti').filter(x => x.tipo === 'spesa' || x.tipo === 'non_registrate');
+  const voci = ordinati('buste').map(b => {
+    const imp = P(b.param), nelM = mov.filter(x => x.busta === b.id && nelMese(x.data, m));
+    const speso = r2(nelM.reduce((s,x) => s+x.importo, 0)), nonReg = r2(nelM.filter(x => x.tipo === 'non_registrate').reduce((s,x) => s+x.importo, 0));
+    const v = { id:b.id, nome:b.nome, tipo:b.tipo, colore:b.colore, icona:b.icona, speso, nonReg, disponibile: saldoBustaAl(b.id, d1) };
+    if (b.tipo === 'mensile') { v.budget = imp; v.residuo = imp == null ? null : r2(imp - speso); }
+    else { const sa = r2(mov.filter(x => x.busta === b.id && String(x.data) >= a0 && String(x.data) <= d1 && String(x.data).slice(0,4) === String(anno)).reduce((s,x) => s+x.importo, 0));
+      let ric = 0; for (const x of confermati('movimenti')) if (x.busta === b.id && x.tipo === 'alimentazione' && String(x.data).slice(0,4) === String(anno) && String(x.data) <= d1) ric += x.importo;
+      v.budgetAnno = imp; v.budget = imp == null ? null : r2(imp/12); v.spesoAnno = sa; v.residuoAnno = imp == null ? null : r2(imp - sa); v.ricaricatoAnno = r2(ric); v.anno = anno; }
+    return v; });
+  const f = fisseMese(m);
+  const fisse = f.datate.map(x => ({ nome:x.sf.nome, importo:x.importo, entrata:x.segno < 0, data:iso(x.data) })).concat(f.senzaData.map(x => ({ nome:x.sf.nome, importo:x.importo, entrata:x.segno < 0, data:null })));
+  const fuori = confermati('movimenti').filter(x => x.tipo === 'spesa' && !x.busta && nelMese(x.data, m)).map(x => ({ descrizione:x.descrizione||'Spesa', importo:x.importo, data:x.data })).sort((a,b) => a.data < b.data ? -1 : 1);
+  const chiuso = !!(md && md.stato === 'chiuso'), conteggio = chiuso && !md.senza_conteggio;
+  const fisseUsate = conteggio && md.uscite_fisse != null ? md.uscite_fisse : f.totale;
+  const budgetVoci = r2(voci.reduce((s,v) => s + (v.budget||0), 0)), spesoVoci = r2(voci.reduce((s,v) => s + v.speso, 0)), fuoriTot = r2(fuori.reduce((s,x) => s+x.importo, 0));
+  return { id, inizio:iso(m.inizio), fine:d1, stato: md ? md.stato : 'non_aperto', conteggio, voci, fisse, fissePreviste:f.totale, fisseChiusura: conteggio ? md.uscite_fisse : null, fuori, fuoriTot,
+    budget: r2(f.totale + budgetVoci), speso: r2(fisseUsate + spesoVoci + fuoriTot), spesaReale: conteggio ? md.spesa_reale : null, nonRegistrate: conteggio ? md.non_registrate : null };
+}
+function datiSpese(id){ const md = S.a.mesi[id]; return md && md.stato === 'chiuso' && md.riepilogo ? Object.assign({ salvato:true }, md.riepilogo) : calcoloSpese(id); }
+const treNumeri = (a, b, c, neg) => '<div class="tre"><div><span>Budget</span><b>'+a+'</b></div><div><span>Speso</span><b>'+b+'</b></div><div><span>Residuo</span><b class="'+(neg ? 'rosso' : '')+'">'+c+'</b></div></div>';
+function vSpese(){
+  const corr = meseDi(oggi()).id, ids = mesiSpese(corr), id = ui.speseMese && ids.includes(ui.speseMese) ? ui.speseMese : corr, k = ids.indexOf(id), m = meseDaId(id);
+  const r = datiSpese(id);
+  let o = testa(etichettaMese(m), 'Spese del mese', ['budget','Budget']);
+  o += '<div class="mesi-nav"><button class="btn piccolo" data-act="spese_mese" data-id="'+(ids[k-1]||'')+'"'+(k > 0 ? '' : ' disabled')+' aria-label="Mese precedente">‹</button><span>'+etichettaMese(m)+'</span><button class="btn piccolo" data-act="spese_mese" data-id="'+(ids[k+1]||'')+'"'+(k < ids.length-1 ? '' : ' disabled')+' aria-label="Mese successivo">›</button></div>';
+  const stato = r.stato === 'chiuso' ? chip(r.conteggio ? 'chiuso' : 'chiuso senza conteggio','verde') : (r.stato === 'aperto' ? chip('in corso fino al '+dataBreve(m.fine),'ambra') : chip('non aperto','grigio'));
+  o += '<section class="card"><div class="card-testa"><h2>Il mese</h2>'+stato+'</div>'+treNumeri(eur0(r.budget), eur0(r.speso), eur0(r.budget - r.speso), r.speso > r.budget)+barra(r.budget ? r.speso/r.budget*100 : 0, r.speso > r.budget ? 'corallo' : 'verde')+
+    (r.spesaReale != null ? riga('Spesa reale dalla chiusura', eur0(r.spesaReale)) + (r.nonRegistrate ? riga(r.nonRegistrate > 0 ? 'Di cui spese non registrate' : 'Avanzo non attribuito', eur0(Math.abs(r.nonRegistrate))) : '') : '')+
+    '<p class="sotto">'+(r.stato === 'aperto' ? 'Le spese non registrate si conoscono alla chiusura del '+dataBreve(m.fine)+'. ' : '')+'Il budget del mese somma spese fisse, voci mensili e un dodicesimo delle voci annuali.</p>'+
+    (r.salvato ? '<p class="sotto">Riepilogo salvato alla chiusura del '+dataMedia(String(r.creato).slice(0,10))+': non cambia se poi cambiano i parametri.</p>' : '')+'</section>';
+  const mens = r.voci.filter(v => v.tipo === 'mensile'), ann = r.voci.filter(v => v.tipo === 'annuale');
+  o += '<section class="card"><h2>Voci mensili</h2>'+mens.map(v => '<div class="voce-sp"><div class="busta-testa"><span>'+h(v.nome)+'</span></div>'+treNumeri(v.budget == null ? '—' : eur0(v.budget), eur0(v.speso), v.residuo == null ? '—' : eur0(v.residuo), v.residuo < 0)+barra(v.budget ? v.speso/v.budget*100 : 0, v.residuo < 0 ? 'corallo' : (v.colore||'verde'))+
+    '<p class="sotto">'+(v.nonReg ? 'Di cui '+eur0(v.nonReg)+' di spese non registrate. ' : '')+'Disponibile con il riporto: '+eur0(v.disponibile)+'.</p></div>').join('')+'</section>';
+  o += '<section class="card"><h2>Voci annuali</h2>'+ann.map(v => '<div class="voce-sp"><div class="busta-testa"><span>'+h(v.nome)+'</span></div>'+treNumeri(v.budget == null ? '—' : eur0(v.budget), eur0(v.speso), v.budget == null ? '—' : eur0(v.budget - v.speso), false)+
+    '<p class="sotto">Nel '+v.anno+': speso '+eur0(v.spesoAnno)+' su '+(v.budgetAnno == null ? '—' : eur0(v.budgetAnno))+', residuo '+(v.residuoAnno == null ? '—' : '<span class="'+(v.residuoAnno < 0 ? 'rosso' : '')+'">'+eur0(v.residuoAnno)+'</span>')+'. Ricaricato '+eur0(v.ricaricatoAnno)+', disponibile '+'<span class="'+(v.disponibile < 0 ? 'rosso' : '')+'">'+eur0(v.disponibile)+'</span>.</p></div>').join('')+
+    fonteRiga('Budget del mese = un dodicesimo dell’importo annuo, solo come riferimento: le spese annuali sono concentrate in pochi mesi.')+'</section>';
+  const usc = r.fisse.filter(x => !x.entrata), ent = r.fisse.filter(x => x.entrata);
+  o += '<section class="card"><div class="card-testa"><h2>Spese fisse</h2><strong class="gr">'+eur0(r.fisseChiusura != null ? r.fisseChiusura : r.fissePreviste)+'</strong></div><div class="elenco fitto">'+
+    usc.map(x => riga(h(x.nome)+(x.data ? ' <span class="sotto">'+dataBreve(x.data)+'</span>' : ' <span class="sotto">media</span>'), eur(x.importo))).join('')+ent.map(x => riga(h(x.nome), '+ '+eur(x.importo))).join('')+'</div>'+
+    (r.fisseChiusura != null && Math.abs(r.fisseChiusura - r.fissePreviste) > 0.5 ? riga('Correzione in chiusura', (r.fisseChiusura > r.fissePreviste ? '+ ' : '− ')+eur0(Math.abs(r.fisseChiusura - r.fissePreviste))) : '')+
+    fonteRiga('Importi preventivati (BUDGET §2–4) finché non indichi quelli reali; le entrate INPS riducono le spese.')+'</section>';
+  o += '<section class="card"><div class="card-testa"><h2>Fuori budget</h2><strong class="gr">'+eur0(r.fuoriTot)+'</strong></div>'+(r.fuori.length ? '<div class="elenco fitto">'+r.fuori.map(x => riga(h(x.descrizione)+' <span class="sotto">'+dataBreve(x.data)+'</span>', eur(x.importo))).join('')+'</div>' : '<p class="sotto">Nessuna spesa fuori budget.</p>')+fonteRiga('Spese senza voce: pesano sul mese; oltre la capienza, sul fondo emergenza (BUDGET §10.2).')+'</section>';
+  o += fonteRiga('Regole: BUDGET §2–4 (spese fisse), §10.2 (budget per voce), §10.3 (chiusura).');
+  return o;
+}
+VISTE.spese = vSpese;
+Object.assign(AZ, {
+  apri_spese(el){ ui.speseMese = (el && el.dataset.id) || null; location.hash = 'spese'; },
+  spese_mese(el){ if (el.dataset.id) ui.speseMese = el.dataset.id; }
+});
+/* Riepilogo automatico a ogni chiusura (anche senza conteggio): spesa per voce contro budget, salvato nel mese */
+async function salvaRiepilogo(id){ const r = calcoloSpese(id); await aggiorna('mesi', id, { riepilogo: Object.assign(r, { creato:adesso() }) }); ui.speseMese = id; location.hash = 'spese'; }
+dopo('chiudi_mese', Object.assign(async (el, prima) => { const m = S.a.mesi[el.dataset.id]; if (m && m.stato === 'chiuso' && prima !== 'chiuso') await salvaRiepilogo(el.dataset.id); }, { prima: el => (S.a.mesi[el.dataset.id]||{}).stato }));
+dopo('chiudi_senza', Object.assign(async (el, prima) => { const m = S.a.mesi[el.dataset.id]; if (m && m.stato === 'chiuso' && prima !== 'chiuso') await salvaRiepilogo(el.dataset.id); }, { prima: el => (S.a.mesi[el.dataset.id]||{}).stato }));
+
+/* ================= FASE 3c: ESTRATTI CONTO (analisi per voce, separata dalle buste) ================= */
+for (const n of ['estratto','regole','importazioni']) { ARCHIVI.push(n); S.a[n] = {}; }
+TUTTE.push('estratto');
+ui.estr = null; ui.estrMese = null; ui.estrAperti = {};
+
+/* ---- Lettura dei file, senza librerie esterne ---- */
+async function leggiZip(buf){
+  const dv = new DataView(buf), u8 = new Uint8Array(buf); let e = -1;
+  for (let i = u8.length-22; i >= Math.max(0, u8.length-65558); i--) if (dv.getUint32(i, true) === 0x06054b50) { e = i; break; }
+  if (e < 0) throw new Error('zip');
+  const n = dv.getUint16(e+10, true); let p = dv.getUint32(e+16, true); const voci = {};
+  for (let k = 0; k < n; k++) {
+    if (dv.getUint32(p, true) !== 0x02014b50) throw new Error('zip');
+    const metodo = dv.getUint16(p+10, true), csize = dv.getUint32(p+20, true), nl = dv.getUint16(p+28, true), el = dv.getUint16(p+30, true), cl = dv.getUint16(p+32, true), lo = dv.getUint32(p+42, true);
+    voci[new TextDecoder().decode(u8.subarray(p+46, p+46+nl))] = { metodo, csize, lo }; p += 46+nl+el+cl;
+  }
+  return { nomi:Object.keys(voci), async estrai(nome){ const x = voci[nome]; if (!x) return null; const inizio = x.lo+30+dv.getUint16(x.lo+26, true)+dv.getUint16(x.lo+28, true), dati = u8.subarray(inizio, inizio+x.csize);
+    if (x.metodo === 0) return new TextDecoder().decode(dati); if (x.metodo !== 8) throw new Error('zip');
+    return await new Response(new Blob([dati]).stream().pipeThrough(new DecompressionStream('deflate-raw'))).text(); } };
+}
+async function leggiXlsx(buf){
+  const z = await leggiZip(buf), dp = new DOMParser(), ss = [];
+  const sx = await z.estrai('xl/sharedStrings.xml');
+  if (sx) for (const si of dp.parseFromString(sx, 'application/xml').getElementsByTagName('si')) ss.push(Array.from(si.getElementsByTagName('t')).map(t => t.textContent).join(''));
+  const foglio = z.nomi.filter(x => /^xl\/worksheets\/sheet\d+\.xml$/.test(x)).sort()[0]; if (!foglio) throw new Error('foglio');
+  const righe = [];
+  for (const r of dp.parseFromString(await z.estrai(foglio), 'application/xml').getElementsByTagName('row')) {
+    const riga = [];
+    for (const c of r.getElementsByTagName('c')) {
+      const col = (c.getAttribute('r') || '').replace(/\d+/g, ''); let ci = -1; for (const ch of col) ci = (ci+1)*26 + ch.charCodeAt(0)-65;
+      const t = c.getAttribute('t'), vv = c.getElementsByTagName('v')[0]; let v = '';
+      if (t === 's') v = vv ? (ss[Number(vv.textContent)] || '') : '';
+      else if (t === 'inlineStr') v = Array.from(c.getElementsByTagName('t')).map(x => x.textContent).join('');
+      else { v = vv ? vv.textContent : ''; if (t !== 'str' && v !== '' && isFinite(v)) v = Number(v); }
+      riga[ci >= 0 ? ci : riga.length] = v;
+    }
+    righe.push(riga);
+  }
+  return righe;
+}
+function leggiCsv(testo){
+  testo = testo.replace(/^\uFEFF/, ''); const prima = testo.split(/\r?\n/)[0] || '';
+  const sep = (prima.match(/;/g)||[]).length > (prima.match(/,/g)||[]).length ? ';' : ',';
+  const righe = []; let riga = [], campo = '', q = false;
+  for (let i = 0; i < testo.length; i++) { const ch = testo[i];
+    if (q) { if (ch === '"') { if (testo[i+1] === '"') { campo += '"'; i++; } else q = false; } else campo += ch; }
+    else if (ch === '"') q = true; else if (ch === sep) { riga.push(campo); campo = ''; }
+    else if (ch === '\n' || ch === '\r') { if (ch === '\r' && testo[i+1] === '\n') i++; riga.push(campo); campo = ''; if (riga.some(x => x !== '')) righe.push(riga); riga = []; }
+    else campo += ch; }
+  riga.push(campo); if (riga.some(x => x !== '')) righe.push(riga);
+  return righe;
+}
+
+/* ---- Normalizzazione ---- */
+const hashTesto = s => { let a = 5381; for (let i = 0; i < s.length; i++) a = ((a << 5) + a + s.charCodeAt(i)) | 0; return (a >>> 0).toString(36); };
+function dataIt(v){ if (typeof v === 'number' && v > 20000 && v < 80000) { const d = new Date(Date.UTC(1899, 11, 30) + v*864e5); return d.toISOString().slice(0,10); } const m = String(v).trim().match(/^(\d{1,2})[\/.-](\d{1,2})[\/.-](\d{4})$/); return m ? m[3]+'-'+pad(Number(m[2]))+'-'+pad(Number(m[1])) : null; }
+const numIt = v => typeof v === 'number' ? v : Number(String(v).replace(/\s/g,'').replace(/\.(?=\d{3}(\D|$))/g,'').replace(',', '.'));
+function pulisciBpm(d){
+  let s = String(d).replace(/\s+/g, ' ').trim();
+  const carta = s.match(/(?:digit|visa|maestro|carta ?\*?\d+)\s*-(?:\d\d:\d\d-)?(.+)$/i);
+  if (/^(pagamento|spesa pagobancomat|pag\.pos)/i.test(s) && carta) return carta[1].replace(/\s+-da contab.*$/i, '').replace(/\s+(ita|esp|fra|deu|gbr|usa|che|aut|nld|bel|prt|grc|irl|hrv|svn)\b.*$/i, '').trim();
+  s = s.replace(/VS\.DISP\. RIF\. \S+/i, 'Bonifico a').replace(/NR\. BONIFICO SEPA:.*?(?=CAUSALE:|$)/i, '').replace(/RIF\. BANCA ORDINANTE:\s*\S*/i, '').replace(/END TO END ID:\s*\S*/i, '').replace(/IBAN:\s*\S*/i, '').replace(/NOTPROVIDE\S*/ig, '')
+    .replace(/cbill \d+/ig, '').replace(/rif\.mb\w+/ig, '').replace(/sdd core:\s*\S+/i, '').replace(/\bn\. \*\d[\d ]*/i, '').replace(/carta\s*\*+\d+/ig, '').replace(/\s+/g, ' ').trim();
+  return s;
+}
+const gruppoDi = d => String(d).toLowerCase().replace(/[0-9*#.,:;'"()\/-]+/g, ' ').replace(/\b(srl|spa|snc|sas|srls|s r l|di|bologna|bologn|bolo)\b/g, ' ').trim().split(/\s+/).slice(0,3).join(' ') || 'altro';
+
+/* Regole generali (senza dati personali). Le regole personali stanno nell’archivio privato “regole”. */
+const REGOLE_BASE = [
+  ['trasferim.tra conti','escluso'], ['previdenza cooperativa','x:fondo_pensione'], ['stipendio','e:stipendio','+'],
+  ['inps assegno unico','f:assegno_unico','+'], ['bon.da inps','f:bonus_nido','+'], ['coopersalute','e:coopersalute','+'],
+  ['ricarica carta conto','b:uscite_quotidiane','-'], ['carta di credito','','-'],
+  ['rimborso finanz','f:mutuo','-'], ['mutuo n.','f:mutuo','-'], ['fastweb','f:internet','-'], ['eni spa','f:luce_gas','-'], ['hera','f:luce_gas','-'],
+  ['canone conto','x:costi_bancari'], ['comm.su bonifici','x:costi_bancari'], ['commissioni','x:costi_bancari'], ['imposta di bollo','x:costi_bancari'], ['int. e comp','x:costi_bancari'], ['canone carta','x:costi_bancari'], ['emissione carta','x:costi_bancari'],
+  ['prel.','b:uscite_quotidiane','-'], ['autostr','b:uscite_quotidiane','-'], ['condominio','f:condominio','-'],
+  ['regalo','e:entrata','+',1], ['nozze','e:entrata','+',1], ['matrimonio','e:entrata','+',1], ['auguri','e:entrata','+',1], ['presente per','e:entrata','+',1], ['affetto','e:entrata','+',1], ['netflix','b:abbonamenti','+']
+];
+const PAROLE_VOCI = [
+  ['f:alimentari', ['iper lame','ipercoop','coop ','conad','esselunga','crf exp','carrefour','pam local','pam ','aspiag','despar','lidl','eurospin','naturasi','famila','bennet','neg 0','ipmk','superstore','market','supermercad','consum ','forno','panific','macelleria','ortofrutta','bottega']],
+  ['b:salute', ['farmacia','parafarm','fisioter','cardio','dott.','dott ','medic','dentist','dental','ottic','analisi','poliambul','d-lab','studio f v']],
+  ['f:benzina', ['eni ','q8','esso','tamoil','agip','repsol','shell','totalerg','benzin','carburant',' ip ']],
+  ['f:parcheggio', ['parch','easypark','garage','parking']],
+  ['b:vacanze', ['ryanair','easyjet','wizz','vueling','ita airways','booking','airbnb','hotel','b&b','agriturismo','expedia','cars on']],
+  ['b:casa', ['leroy','brico','ikea','mediaworld','unieuro','euronics','ferramenta','materassi']],
+  ['b:abbonamenti', ['amazon prime','google one','appblock','spotify','disney']],
+  ['b:auto', ['tagliando','gomme','pneumatic','meccanic','carrozz','revisione','autoricambi','assicura']],
+  ['b:regali', ['smartbox','fiori','fiorist']],
+  ['b:uscite_quotidiane', ['pizzeria','ristor','trattoria','osteria','bar ','caff','gelat','geltrade','birr','brau','kfc','mcdonald','burger','sushi','tper','metro ','tmb ','trenitalia','italo','taxi','cinema','libr','mondadori','feltrinelli','ovs','kiabi','pittarello','zara','decathlon','parrucch','barbier','tabacch','autogrill','aspit','lavasecco','wash','minimark','tea shop','relay','chicco','poste italiane']]
+];
+const MCC_VOCI = [
+  ['f:alimentari', [5411,5422,5451,5462,5499,5300,5331]], ['b:uscite_quotidiane', [5812,5813,5814,4111,4112,4121,4131,4784,4789,5651,5691,5699,5611,5621,5631,5641,5661,5311,5310,5948,5942,5945,5999,5399,7230,7299,7542,7832,7922,7929,7996,5994]],
+  ['f:benzina', [5541,5542,5983]], ['f:parcheggio', [7523]], ['b:salute', [5912,8011,8021,8031,8041,8042,8043,8049,8050,8062,8071,8099,5122,5975,5976]],
+  ['b:casa', [5200,5211,5231,5251,5261,5712,5719,5722,1520,1711,1731,1740,1750,1799,7623,7629]], ['b:regali', [5992,5947]], ['b:auto', [7538,7531,5532,5533]],
+  ['f:telefono', [4814]], ['b:abbonamenti', [4899,5815,5816,5817,5818]], ['x:fuori', [9311,9399,9222]]
+];
+const mccVoce = m => { m = Number(m); if (!m) return ''; if ((m >= 3000 && m <= 3299) || (m >= 3501 && m <= 3999) || (m >= 3351 && m <= 3441) || [4511,4722,7011,7012,7512,7513,4411,7991].includes(m)) return 'b:vacanze'; for (const [v, l] of MCC_VOCI) if (l.includes(m)) return v; return ''; };
+function sceltaValida(sc){ if (!sc || sc === 'escluso') return sc || ''; const [k, id] = sc.split(':'); if (k === 'b') return S.a.buste[id] ? sc : ''; if (k === 'f') return S.a.spese_fisse[id] ? sc : ''; return sc; }
+function classifica(r, testo){
+  const t = testo.toLowerCase(), segno = r.importo < 0 ? '-' : '+';
+  const regole = lista('regole').filter(x => x.tipo === 'classe').sort((a,b) => (b.testo||'').length - (a.testo||'').length);
+  for (const x of regole) { if (!x.testo || !t.includes(String(x.testo).toLowerCase())) continue; if (x.conto && x.conto !== r.conto) continue; if (x.segno && x.segno !== segno) continue; if (x.dal && r.data < x.dal) continue; if (x.al && r.data > x.al) continue;
+    return { scelta:sceltaValida(x.scelta), straordinaria:!!x.straordinaria, motivo:'regola tua: “'+x.testo+'”' }; }
+  for (const [p, sc, sg, st] of REGOLE_BASE) { if (!t.includes(p)) continue; if (sg && sg !== segno) continue; return { scelta:sceltaValida(sc), straordinaria:!!st, motivo:'regola generale: “'+p+'”' }; }
+  if (segno === '-') for (const [sc, parole] of PAROLE_VOCI) for (const p of parole) if ((' '+t+' ').includes(p)) return { scelta:sceltaValida(sc), straordinaria:false, motivo:'esercente: “'+p.trim()+'”' };
+  if (r.mcc) { const sc = sceltaValida(mccVoce(r.mcc)); if (sc) return { scelta:sc, straordinaria:false, motivo:'categoria dell’esercente '+r.mcc }; }
+  return { scelta:'', straordinaria:false, motivo:'' };
+}
+
+/* ---- Riconoscimento del file ---- */
+function contoBpm(righe){
+  const punti = {}; const conti = lista('regole').filter(x => x.tipo === 'conto' && x.fonte === 'bpm');
+  for (const r of righe) { const d = String(r[4]||'').toLowerCase(); for (const x of conti) if (d.includes(String(x.testo).toLowerCase())) punti[x.conto] = (punti[x.conto]||0)+1; }
+  const best = Object.entries(punti).sort((a,b) => b[1]-a[1])[0]; return best ? best[0] : '';
+}
+function righeBpm(tab){
+  const ih = tab.findIndex(r => r && String(r[0]).trim() === 'Data Contabile' && String(r[4]||'').indexOf('Causale') === 0); if (ih < 0) return null;
+  const corpo = tab.slice(ih+1).filter(r => r && r[0]); const conto = contoBpm(corpo), visti = {};
+  const out = corpo.filter(r => !r[5] || /^cont/i.test(String(r[5]).trim())).map(r => {
+    const data = dataIt(r[0]), importo = numIt(r[2]), raw = String(r[4]||''), desc = pulisciBpm(raw);
+    const base = 'b-'+data+'-'+Math.round(importo*100)+'-'+hashTesto(raw.toLowerCase()); visti[base] = (visti[base]||0)+1;
+    return { id: base+'-'+visti[base], fonte:'bpm', data, data_op:dataIt(r[1]), importo, descrizione:desc.slice(0,90), testo:raw+' '+desc, gruppo:gruppoDi(desc), mcc:null };
+  }).filter(x => x.data && isFinite(x.importo));
+  return { fonte:'Banco BPM', conto, righe:out };
+}
+function righeTr(tab){
+  const hd = tab[0] || []; const ix = n => hd.indexOf(n); if (ix('transaction_id') < 0 || ix('amount') < 0 || ix('type') < 0) return null;
+  const v = (r, n) => r[ix(n)] == null ? '' : r[ix(n)];
+  const out = tab.slice(1).map(r => {
+    const tipo = String(v(r,'type')), imp = (Number(v(r,'amount'))||0) + (Number(v(r,'fee'))||0) + (Number(v(r,'tax'))||0);
+    const nome = String(v(r,'name') || v(r,'description')), cp = String(v(r,'counterparty_name')||'')+' '+String(v(r,'counterparty_iban')||'');
+    let desc = nome; if (tipo === 'BUY') desc = 'Acquisto ETF '+String(v(r,'symbol')); else if (/TRANSFER/.test(tipo)) desc = 'Bonifico da '+String(v(r,'counterparty_name')||'').slice(0,40); else if (tipo === 'INTEREST_PAYMENT') desc = 'Interessi netti'; else if (tipo === 'BENEFITS_SAVEBACK') desc = 'Saveback';
+    let pre = null; if (tipo === 'BUY' || tipo === 'BENEFITS_SAVEBACK') pre = S.a.spese_fisse.pac_emma ? 'f:pac_emma' : ''; else if (tipo === 'INTEREST_PAYMENT') pre = 'e:entrata'; else if (/FEE/.test(tipo)) pre = 'x:costi_bancari';
+    return { id:'tr-'+String(v(r,'transaction_id')), fonte:'tr', data:String(v(r,'date')).slice(0,10), data_op:String(v(r,'date')).slice(0,10), importo:r2(imp), descrizione:desc.slice(0,90), testo:desc+' '+String(v(r,'description'))+' '+cp, gruppo:gruppoDi(desc), mcc: v(r,'mcc_code') ? Number(v(r,'mcc_code')) : null, pre };
+  }).filter(x => x.data && x.importo !== 0);
+  return { fonte:'Trade Republic', conto:'trade_republic', righe:out };
+}
+async function analizzaFile(f){
+  let tab;
+  if (/\.xlsx$/i.test(f.name)) tab = await leggiXlsx(await f.arrayBuffer()); else tab = leggiCsv(await f.text());
+  const ris = righeBpm(tab) || righeTr(tab); if (!ris) throw new Error('formato');
+  return ris;
+}
+function preparaImport(ris, nomeFile){
+  const manuali = confermati('movimenti').filter(x => x.tipo === 'spesa');
+  const righe = ris.righe.map(r => { r.conto = ris.conto; const c = r.pre != null && !lista('regole').some(x => x.tipo === 'classe' && r.testo.toLowerCase().includes(String(x.testo).toLowerCase())) ? { scelta:sceltaValida(r.pre), straordinaria:false, motivo:'tipo di operazione' } : classifica(r, r.testo);
+    r.scelta = c.scelta; r.straordinaria = c.straordinaria; r.motivo = c.motivo; r.dup = !!S.a.estratto[r.id];
+    if (r.importo < 0 && r.scelta !== 'escluso' && ris.conto) { const q = quotaConto(S.a.conti[ris.conto]||{}) || 1, imp = r2(-r.importo*q); const m = manuali.find(x => Math.abs(x.importo - imp) < 0.01 && Math.abs(giorniTra(parse(x.data), parse(r.data_op || r.data))) <= 7); if (m) r.manuale = (m.descrizione||'Spesa')+' del '+dataBreve(m.data); }
+    return r; });
+  const date = righe.map(r => r.data).sort();
+  return { file:nomeFile, fonte:ris.fonte, conto:ris.conto, righe, da:date[0], a:date[date.length-1], ricorda:{} };
+}
+
+/* ---- Etichette delle scelte ---- */
+const EXTRA = [['x:costi_bancari','Costi bancari (fuori budget)'],['x:rimborsabile','Sanitaria rimborsabile (fuori budget)'],['x:fuori','Altro fuori budget'],['x:fondo_pensione','Fondo pensione'],['e:stipendio','Entrata: stipendio'],['e:mensilita','Entrata: mensilità aggiuntiva o premio'],['e:coopersalute','Entrata: rimborso Coopersalute'],['e:entrata','Entrata: altro']];
+function nomeScelta(sc){ if (!sc) return 'Da assegnare'; if (sc === 'escluso') return 'Tra i tuoi conti (escluso)'; const [k, id] = sc.split(':');
+  if (k === 'b') return (S.a.buste[id]||{}).nome || id; if (k === 'f') return (S.a.spese_fisse[id]||{}).nome || id; const e = EXTRA.find(x => x[0] === sc); return e ? e[1] : sc; }
+function opzioniScelta(sel){
+  const o = (v, t) => '<option value="'+h(v)+'"'+(v === sel ? ' selected' : '')+'>'+h(t)+'</option>';
+  return o('', 'Da assegnare')+o('escluso','Tra i tuoi conti (escluso)')+
+    '<optgroup label="Budget per voce">'+ordinati('buste').map(b => o('b:'+b.id, b.nome)).join('')+'</optgroup>'+
+    '<optgroup label="Spese fisse">'+ordinati('spese_fisse').map(s => o('f:'+s.id, s.nome)).join('')+'</optgroup>'+
+    '<optgroup label="Altro">'+EXTRA.map(([v,t]) => o(v, t)).join('')+'</optgroup>';
+}
+
+/* ---- Copertura e aggregati ---- */
+const CONTI_ESTRATTO = () => ordinati('conti').filter(c => c.classe === 'liquidita' && c.tipo === 'corrente');
+function copertura(){ const out = {}; for (const x of lista('importazioni')) { const o = out[x.conto] = out[x.conto] || { da:x.da, a:x.a }; if (x.da < o.da) o.da = x.da; if (x.a > o.a) o.a = x.a; } return out; }
+function coperturaMese(m){
+  const cop = copertura(), i0 = iso(m.inizio), i1 = iso(m.fine), manca = [];
+  for (const c of CONTI_ESTRATTO()) { if (c.aperto_il && c.aperto_il > i1) continue; const x = cop[c.id];
+    const da0 = c.aperto_il && c.aperto_il > i0 ? c.aperto_il : i0; if (!x) manca.push(c.nome+': mai importato'); else if (x.da > da0 || x.a < i1) manca.push(c.nome+': importato dal '+dataMedia(x.da)+' al '+dataMedia(x.a)); }
+  return { completo: !manca.length, manca };
+}
+function aggregaEstratto(m){
+  const per = {}, entr = {}; let str = 0, strN = 0, da = 0, daN = 0;
+  for (const x of lista('estratto')) { if (!nelMese(x.data, m) || x.scelta === 'escluso') continue; const q = x.quota != null ? x.quota : 1, v = r2(-x.importo*q);
+    if (x.straordinaria) { str += v; strN++; continue; }
+    if (!x.scelta) { da += v; daN++; continue; }
+    if (x.scelta.startsWith('e:')) entr[x.scelta] = r2((entr[x.scelta]||0) - v); else per[x.scelta] = r2((per[x.scelta]||0) + v); }
+  return { per, entr, straord:r2(str), straordN:strN, daAss:r2(da), daAssN:daN };
+}
+function riferimentoScelta(sc){ const [k, id] = sc.split(':');
+  if (k === 'b') { const b = S.a.buste[id]; if (!b) return null; const imp = P(b.param); return imp == null ? null : (b.tipo === 'annuale' ? r2(imp/12) : imp); }
+  if (k === 'f') { const sf = S.a.spese_fisse[id]; if (!sf) return null; return (sf.entrata ? -1 : 1) * mediaMensile(sf); }
+  return null; }
+const ordineScelta = sc => sc.startsWith('b:') ? 0 : (sc.startsWith('f:') ? 1 : 2);
+
+/* ---- Conto Trade Republic e gruppo del conto comune (BUDGET §10.1, PATRIMONIO §1) ---- */
+function migraConti(){
+  if (S.migrato || !S.pronto || !S.a.conti.conto_comune || S.a.conti.trade_republic) return; S.migrato = true;
+  scrivi(async () => {
+    await metti('conti', 'trade_republic', { nome:'Trade Republic (comune)', classe:'liquidita', tipo:'corrente', gruppo:'comune', param_quota:'budget.quota.conto_comune', ordine:3.5, aperto_il:'2026-09-01', documento:'PATRIMONIO', sezione:'1', nota:'Solo la liquidità: l’ETF di Emma è escluso. L’app ne conta la metà', versione:'2026-11-17' });
+    await aggiorna('conti', 'conto_comune', { nome:'Conto comune BPM', gruppo:'comune', nota:'Inserisci il saldo intero del conto: l’app ne conta la metà. Minimo e pieno valgono per il totale con Trade Republic' });
+  });
+}
+/* Minimo e pieno del conto comune si misurano sul totale del gruppo (BPM comune + Trade Republic) */
+giacenze = function(){
+  const out = [];
+  for (const c of ordinati('conti')) { if (!c.param_minimo) continue;
+    const membri = c.gruppo ? ordinati('conti').filter(x => x.gruppo === c.gruppo) : [c], saldi = membri.map(x => ultimoSaldo(x.id));
+    const min = P(c.param_minimo), pieno = c.param_pieno ? P(c.param_pieno) : null; let s = null, stato = 'manca';
+    if (saldi.every(Boolean)) { s = { importo:r2(saldi.reduce((a,x) => a + x.importo, 0)), data:saldi.map(x => x.data).sort()[0] }; if (min != null) stato = s.importo < min ? 'sotto' : (pieno != null && s.importo >= pieno ? 'pieno' : 'ok'); }
+    out.push({ c: c.gruppo ? Object.assign({}, c, { nome:'Conto comune (BPM + Trade Republic)' }) : c, s, min, pieno, stato }); }
+  return out;
+};
+const _daFare3c = daFare;
+daFare = function(){
+  const l = _daFare3c();
+  if (S.a.conti.trade_republic && !ultimoSaldo('trade_republic')) { const it = { titolo:'Dividi il saldo del conto comune', testo:'Il conto comune ora è BPM comune più Trade Republic: indica i due saldi separati.', fonte:'PATRIMONIO §1 · BUDGET §10.1', btn:['Dividi','sheet','dividi_comune'] };
+    const k = l.findIndex(x => !x.critico); l.splice(k < 0 ? l.length : k, 0, it); }
+  return l;
+};
+
+/* ---- Vista: Estratti conto ---- */
+function vEstratto(){
+  let o = testa('Analisi delle spese reali: non scala le voci di budget', 'Estratti conto', ['budget','Budget']);
+  const im = ui.estr;
+  if (!im || im.errore || im.inCorso) {
+    o += '<section class="card"><h2>Importa un file</h2><p class="sotto">Excel di Banco BPM (conto personale o comune) oppure CSV di Trade Republic. Il file resta sul dispositivo: salvo solo data, importo, esercente e voce.</p><label class="btn primario filebtn">Scegli il file<input type="file" accept=".xlsx,.csv,text/csv" data-estratto class="vh"></label>'+(im && im.errore ? '<p class="sotto warn">'+h(im.errore)+'</p>' : '')+(im && im.inCorso ? '<p class="sotto">Leggo il file…</p>' : '')+'</section>';
+  } else {
+    const nuove = im.righe.filter(r => !r.dup), q = quotaConto(S.a.conti[im.conto]||{});
+    o += '<section class="card"><div class="card-testa"><h2>'+h(im.fonte)+'</h2>'+chip(nuove.length+' nuove', 'ambra')+'</div>'+
+      riga('File', h(im.file))+riga('Periodo', dataBreve(im.da)+' – '+dataMedia(im.a))+riga('Righe', im.righe.length+(im.righe.length > nuove.length ? ' ('+(im.righe.length-nuove.length)+' già importate)' : ''))+
+      '<label>Conto<select data-estr-conto>'+'<option value="">Scegli il conto</option>'+CONTI_ESTRATTO().map(c => '<option value="'+h(c.id)+'"'+(c.id === im.conto ? ' selected' : '')+'>'+h(c.nome)+'</option>').join('')+'</select></label>'+
+      (im.conto ? '<p class="sotto">Quota personale: '+Math.round((q||1)*100)+'% di ogni importo.</p>' : '<p class="sotto warn">Non ho riconosciuto il conto: sceglilo prima di salvare.</p>')+'</section>';
+    const daAss = nuove.filter(r => !r.scelta), grp = {};
+    for (const r of daAss.slice().sort((x,y) => x.data < y.data ? -1 : 1)) (grp[r.gruppo] = grp[r.gruppo] || []).push(r);
+    const gl = Object.entries(grp).sort((a,b) => b[1].length - a[1].length);
+    if (gl.length) o += '<section class="card"><div class="card-testa"><h2>Da assegnare</h2>'+chip(daAss.length+' righe','corallo')+'</div><p class="sotto">Una scelta vale per tutte le righe dello stesso esercente. “Ricorda” la salva come regola per le prossime importazioni.</p>'+
+      gl.map(([g, rr]) => '<div class="estr-gr"><div class="cresce"><p class="nome">'+h(rr[0].descrizione)+(rr.length > 1 ? ' <span class="sotto">e altre '+(rr.length-1)+'</span>' : '')+'</p><p class="sotto">'+eur(rr.reduce((s,x) => s + x.importo, 0))+' · '+(rr.length === 1 ? dataBreve(rr[0].data) : dataBreve(rr[0].data)+' – '+dataBreve(rr[rr.length-1].data))+(rr[0].manuale ? ' · segnata anche a mano: '+h(rr[0].manuale) : '')+'</p></div>'+
+        '<select data-estr-gruppo="'+h(g)+'" aria-label="Voce">'+opzioniScelta('')+'</select><label class="spunta"><input type="checkbox" data-estr-ricorda="'+h(g)+'"'+(im.ricorda[g] !== false ? ' checked' : '')+'>Ricorda</label></div>').join('')+'</section>';
+    const prop = {}; for (const r of nuove.slice().sort((x,y) => x.data < y.data ? -1 : 1)) if (r.scelta) (prop[r.scelta] = prop[r.scelta] || []).push(r);
+    o += '<section class="card"><h2>Proposte</h2><p class="sotto">Apri una voce per controllare o cambiare le singole righe; segna come straordinarie quelle da escludere dalla calibrazione.</p>'+
+      Object.entries(prop).sort((a,b) => ordineScelta(a[0]) - ordineScelta(b[0]) || nomeScelta(a[0]).localeCompare(nomeScelta(b[0]))).map(([sc, rr]) => { const ap = ui.estrAperti[sc];
+        return '<div class="estr-voce"><button class="voce nudo" data-act="estr_apri" data-k="'+h(sc)+'"><span class="cresce nome">'+h(nomeScelta(sc))+'</span><span class="sotto">'+rr.length+'</span><strong>'+eur0(rr.reduce((s,x) => s + x.importo, 0))+'</strong><span aria-hidden="true">'+(ap ? '▴' : '▾')+'</span></button>'+
+          (ap ? '<div class="elenco fitto">'+rr.map(r => rigaEstr(r, im.righe.indexOf(r))).join('')+'</div>' : '')+'</div>'; }).join('')+'</section>';
+    const str = nuove.filter(r => r.straordinaria);
+    if (str.length) o += '<p class="fonte">Straordinarie: '+str.length+' righe ('+eur0(str.reduce((s,x) => s + x.importo, 0))+'), escluse dalla calibrazione.</p>';
+    o += '<div class="bottoni"><button class="btn primario" data-act="estr_salva"'+(!im.conto || im.salvo ? ' disabled' : '')+'>'+(im.salvo ? 'Salvo…' : 'Salva '+nuove.length+' righe')+'</button><button class="btn" data-act="estr_annulla">Annulla</button></div>';
+    o += fonteRiga('Le righe da assegnare si salvano lo stesso e si sistemano dopo. Regole: BUDGET §10.1 (conti e quote), §10.3 (data contabile), §8 (medie reali).');
+    return o;
+  }
+  const cop = copertura();
+  o += '<section class="card"><h2>Copertura</h2>'+(CONTI_ESTRATTO().map(c => riga(h(c.nome), cop[c.id] ? dataBreve(cop[c.id].da)+' '+String(cop[c.id].da).slice(0,4)+' – '+dataMedia(cop[c.id].a) : '<span class="warn">mai importato</span>')).join(''))+'</section>';
+  const mesi = {}; for (const x of lista('estratto')) { const id = meseDi(parse(x.data)).id; mesi[id] = (mesi[id]||0)+1; }
+  const ids = Object.keys(mesi).sort().reverse();
+  if (ids.length) {
+    const sel = ui.estrMese && mesi[ui.estrMese] ? ui.estrMese : ids[0], m = meseDaId(sel), cm = coperturaMese(m);
+    o += '<section class="card"><div class="card-testa"><h2>Righe del mese</h2>'+chip(cm.completo ? 'mese completo' : 'mese parziale', cm.completo ? 'verde' : 'ambra')+'</div><label>Mese<select data-estr-mese>'+ids.map(i => '<option value="'+i+'"'+(i === sel ? ' selected' : '')+'>'+etichettaMese(meseDaId(i))+' '+i.slice(0,4)+' ('+mesi[i]+')</option>').join('')+'</select></label>'+
+      (cm.completo ? '' : '<p class="sotto warn">'+cm.manca.map(h).join(' · ')+'</p>')+
+      '<div class="elenco fitto">'+lista('estratto').filter(x => nelMese(x.data, m)).sort((a,b) => a.data < b.data ? -1 : 1).map(x => rigaEstr(x, null)).join('')+'</div><button class="link" data-act="apri_spese" data-id="'+sel+'">Spese del mese per voce</button></section>';
+  }
+  const reg = lista('regole').filter(x => x.tipo === 'classe').sort((a,b) => String(a.testo).localeCompare(String(b.testo)));
+  o += '<section class="card"><div class="card-testa"><h2>Regole</h2><span class="sotto">'+reg.length+'</span></div>'+(reg.length ? '<details><summary class="link">Mostra le regole</summary><div class="elenco fitto">'+reg.map(x => rigaElim('regole', x, '“'+h(x.testo)+'” → '+h(nomeScelta(x.scelta))+(x.straordinaria ? ' · straordinaria' : '')+(x.conto ? ' · '+h((S.a.conti[x.conto]||{}).nome||x.conto) : ''), '')).join('')+'</div></details>' : '<p class="sotto">Nessuna regola personale: importa il file delle regole o creale assegnando le righe.</p>')+'</section>';
+  return o;
+}
+function rigaEstr(r, ix){
+  const attr = ix != null ? 'data-estr-riga="'+ix+'"' : 'data-estr-id="'+h(r.id)+'"', q = r.quota != null ? r.quota : (quotaConto(S.a.conti[r.conto]||{}) || 1);
+  return '<div class="estr-riga"><div class="cresce"><p class="nome piccolo">'+h(r.descrizione)+'</p><p class="sotto">'+dataBreve(r.data)+' · '+eur(r.importo)+(q !== 1 ? ' (tua quota '+eur(r2(r.importo*q))+')' : '')+(r.motivo ? ' · '+h(r.motivo) : '')+(r.manuale ? ' · segnata anche a mano: '+h(r.manuale) : '')+'</p></div>'+
+    '<select '+attr+' aria-label="Voce">'+opzioniScelta(r.scelta||'')+'</select><label class="spunta"><input type="checkbox" '+attr.replace('data-estr-', 'data-estr-str-')+(r.straordinaria ? ' checked' : '')+'>Straord.</label></div>';
+}
+VISTE.estratto = vEstratto;
+Object.assign(AZ, {
+  estr_apri(el){ ui.estrAperti[el.dataset.k] = !ui.estrAperti[el.dataset.k]; },
+  estr_annulla(){ ui.estr = null; ui.estrAperti = {}; },
+  async estr_salva(){ const im = ui.estr; if (!im || !im.conto || im.salvo) return; im.salvo = true; render(); const q = quotaConto(S.a.conti[im.conto]||{}) || 1, adesso_ = adesso();
+    const ok = await scrivi(async () => {
+      for (const r of im.righe) { if (r.dup) continue; await metti('estratto', r.id, { conto:im.conto, data:r.data, data_op:r.data_op||r.data, importo:r.importo, quota:q, scelta:r.scelta||'', straordinaria:!!r.straordinaria, descrizione:r.descrizione, mcc:r.mcc||null, fonte:r.fonte, importato_il:adesso_ }); }
+      for (const [g, sc] of Object.entries(im.gruppiScelti||{})) if (sc && im.ricorda[g] !== false && !lista('regole').some(x => x.tipo === 'classe' && x.testo === g)) await aggiungi('regole', { tipo:'classe', testo:g, scelta:sc, conto: sc === 'escluso' ? im.conto : null, origine:'app' });
+      await aggiungi('importazioni', { conto:im.conto, fonte:im.fonte, file:String(im.file).slice(0,80), da:im.da, a:im.a, righe:im.righe.filter(r => !r.dup).length, data:iso(oggi()) });
+    });
+    if (ok) { avviso('Estratto salvato: '+im.righe.filter(r => !r.dup).length+' righe.'); ui.estr = null; ui.estrAperti = {}; ui.estrMese = meseDi(parse(im.a)).id; } else im.salvo = false; }
+});
+document.addEventListener('change', async ev => {
+  const e = ev.target, d = e.dataset || {};
+  if (d.estratto != null) { const f = e.files && e.files[0]; e.value = ''; if (!f) return; ui.estr = { inCorso:true }; render();
+    try { if (f.size > 8e6) throw new Error('grande'); ui.estr = preparaImport(await analizzaFile(f), f.name); }
+    catch (x) { console.error(x); ui.estr = { errore: x && x.message === 'formato' ? 'Non riconosco il formato: servono l’Excel di Banco BPM o il CSV di Trade Republic.' : (x && x.message === 'grande' ? 'File troppo grande.' : 'Non riesco a leggere il file.') }; }
+    render(); return; }
+  const im = ui.estr;
+  if (d.estrConto != null && im) { im.conto = e.value; for (const r of im.righe) { const c = classifica(Object.assign({}, r, { conto:im.conto }), r.testo); if (r.pre == null) { r.scelta = c.scelta; r.straordinaria = c.straordinaria; r.motivo = c.motivo; } } render(); return; }
+  if (d.estrGruppo != null && im) { im.gruppiScelti = im.gruppiScelti || {}; im.gruppiScelti[d.estrGruppo] = e.value; for (const r of im.righe) if (!r.dup && !r.scelta && r.gruppo === d.estrGruppo) { r.scelta = e.value; r.motivo = 'scelta tua'; } render(); return; }
+  if (d.estrRicorda != null && im) { im.ricorda[d.estrRicorda] = e.checked; return; }
+  if (d.estrRiga != null && im) { const r = im.righe[Number(d.estrRiga)]; if (r) { r.scelta = e.value; r.motivo = 'scelta tua'; } render(); return; }
+  if (d.estrStrRiga != null && im) { const r = im.righe[Number(d.estrStrRiga)]; if (r) r.straordinaria = e.checked; render(); return; }
+  if (d.estrId != null) { const id = d.estrId; if (S.a.estratto[id]) await scrivi(() => aggiorna('estratto', id, { scelta:e.value })); render(); return; }
+  if (d.estrStrId != null) { const id = d.estrStrId; if (S.a.estratto[id]) await scrivi(() => aggiorna('estratto', id, { straordinaria:e.checked })); render(); return; }
+  if (d.estrMese != null) { ui.estrMese = e.value; render(); }
+});
+
+/* ---- Foglio: divisione del saldo del conto comune ---- */
+const _foglio3c = foglio;
+foglio = function(){
+  const s = ui.sheet; if (!s || s.tipo !== 'dividi_comune') return _foglio3c();
+  const c = ultimoSaldo('conto_comune'), tot = c ? c.importo : 0, tr = 2557.81;
+  const c0 = '<p class="sotto">Finora il saldo del conto comune era la somma dei due conti'+(c ? ' (€ '+fmtNum(tot, 2)+' al '+dataMedia(c.data)+')' : '')+'. Da ora si inseriscono separati; l’app conta la metà di ciascuno. Proposta: Trade Republic dall’estratto conto del 13 novembre, BPM comune per differenza.</p>'+
+    '<label>Saldo BPM comune (intero)<input id="f_bpm" inputmode="decimal" value="'+h(c ? fmtNum(r2(tot - tr), 2) : '')+'"></label><label>Saldo Trade Republic, solo liquidità (intero)<input id="f_tr" inputmode="decimal" value="'+h(fmtNum(tr, 2))+'"></label><label>Data dei saldi<input id="f_data" type="date" value="'+h(c ? c.data : iso(oggi()))+'"></label>';
+  return '<div class="velo" data-act="chiudi_sheet"></div><div class="foglio" role="dialog" aria-modal="true" aria-label="Dividi il saldo del conto comune"><h2>Dividi il saldo del conto comune</h2><div class="form">'+c0+'</div><div class="bottoni"><button class="btn primario" data-act="dividi_comune_ok">Salva i due saldi</button><button class="btn" data-act="chiudi_sheet">Annulla</button></div></div>';
+};
+AZ.dividi_comune_ok = async function(){ const b = num(val('f_bpm')), t = num(val('f_tr')), d = val('f_data'); if (!(b >= 0) || !(t >= 0) || !isData(d)) return avviso('Controlla saldi e data.');
+  if (await scrivi(async () => { await aggiungi('saldi', { conto:'conto_comune', data:d, importo:r2(b), fonte:'divisione del saldo comune', stato:'confermato' }); await aggiungi('saldi', { conto:'trade_republic', data:d, importo:r2(t), fonte:'divisione del saldo comune', stato:'confermato' }); })) chiudiSheet(); };
+
+/* ---- Spese del mese: colonna dagli estratti conto ---- */
+function cardEstrattoMese(id){
+  const m = meseDaId(id), cm = coperturaMese(m), a = aggregaEstratto(m), chiavi = Object.keys(a.per);
+  if (!chiavi.length && !a.straordN && !a.daAssN) return '<section class="card"><h2>Dagli estratti conto</h2><p class="sotto">Nessuna riga importata per questo mese. <a class="link" href="#estratto">Importa gli estratti conto</a></p></section>';
+  chiavi.sort((x,y) => ordineScelta(x) - ordineScelta(y) || nomeScelta(x).localeCompare(nomeScelta(y)));
+  const tot = r2(chiavi.reduce((s,k) => s + (k === 'x:fondo_pensione' ? 0 : a.per[k]), 0));
+  let o = '<section class="card"><div class="card-testa"><h2>Dagli estratti conto</h2>'+chip(cm.completo ? 'mese completo' : 'mese parziale', cm.completo ? 'verde' : 'ambra')+'</div>'+(cm.completo ? '' : '<p class="sotto warn">'+cm.manca.map(h).join(' · ')+'</p>')+
+    '<div class="tab-estr"><span></span><span>Speso</span><span>Riferimento</span>'+chiavi.map(k => { const rif = riferimentoScelta(k), v = a.per[k], sopra = rif != null && v > rif + 0.5;
+      return '<span>'+h(nomeScelta(k))+'</span><b class="'+(sopra ? 'rosso' : '')+'">'+eur0(v)+'</b><span>'+(rif == null ? '—' : eur0(rif))+'</span>'; }).join('')+'</div>'+
+    riga('<b>Uscite reali del mese</b>', '<b>'+eur0(tot)+'</b>')+
+    Object.entries(a.entr).map(([k,v]) => riga(h(nomeScelta(k)), '+ '+eur0(v))).join('')+
+    (a.daAssN ? riga('Da assegnare ('+a.daAssN+')', eur0(a.daAss)) : '')+(a.straordN ? riga('Straordinarie escluse ('+a.straordN+')', eur0(a.straord)) : '')+
+    fonteRiga('Quota personale, con data contabile. Riferimento: budget mensile, un dodicesimo delle voci annuali o la media delle spese fisse (BUDGET §2–4, §10.2). Movimenti tra i tuoi conti esclusi.')+'</section>';
+  return o;
+}
+const _vSpese3c = VISTE.spese;
+VISTE.spese = function(){ const corr = meseDi(oggi()).id, ids = mesiSpese(corr), id = ui.speseMese && ids.includes(ui.speseMese) ? ui.speseMese : corr;
+  const o = _vSpese3c(), k = o.indexOf('<section class="card"><h2>Voci mensili</h2>'); return k < 0 ? o + cardEstrattoMese(id) : o.slice(0,k) + cardEstrattoMese(id) + o.slice(k); };
+
+/* ---- Calibrazione dagli estratti conto (BUDGET §8: medie reali, escluse le straordinarie) ---- */
+function calibrazioneEstratti(){
+  const mesi = {}; for (const x of lista('estratto')) mesi[meseDi(parse(x.data)).id] = true;
+  const completi = Object.keys(mesi).sort().filter(id => coperturaMese(meseDaId(id)).completo && meseDaId(id).fine < oggi());
+  const somme = {}; for (const id of completi) { const a = aggregaEstratto(meseDaId(id)); for (const [k,v] of Object.entries(a.per)) somme[k] = (somme[k]||0) + v; }
+  return { completi, medie: Object.fromEntries(Object.entries(somme).map(([k,v]) => [k, r2(v/completi.length)])) };
+}
+const _vCal3c = VISTE.calibrazione;
+VISTE.calibrazione = function(){
+  let o = _vCal3c(); const c = calibrazioneEstratti(), min = P('budget.calibrazione.chiusure') || 3;
+  let s = '<section class="card"><div class="card-testa"><h2>Dagli estratti conto</h2>'+chip(c.completi.length+(c.completi.length === 1 ? ' mese completo' : ' mesi completi'), c.completi.length >= min ? 'verde' : 'ambra')+'</div>';
+  if (!c.completi.length) s += '<p class="sotto">Servono mesi coperti da tutti i conti correnti. <a class="link" href="#estratto">Importa gli estratti conto</a></p>';
+  else { const k = Object.keys(c.medie).filter(x => x !== 'x:fondo_pensione').sort((x,y) => ordineScelta(x) - ordineScelta(y) || nomeScelta(x).localeCompare(nomeScelta(y)));
+    s += '<p class="sotto">Dal '+etichettaMese(meseDaId(c.completi[0])).split(' – ')[0]+' '+c.completi[0].slice(0,4)+' al '+dataMedia(meseDaId(c.completi[c.completi.length-1]).fine)+'. Media al mese, quota personale, straordinarie escluse.</p><div class="tab-estr"><span></span><span>Media reale</span><span>Riferimento</span>'+
+      k.map(x => { const rif = riferimentoScelta(x), v = c.medie[x]; return '<span>'+h(nomeScelta(x))+'</span><b class="'+(rif != null && v > rif*1.1 + 1 ? 'rosso' : '')+'">'+eur0(v)+'</b><span>'+(rif == null ? '—' : eur0(rif))+'</span>'; }).join('')+'</div>'; }
+  s += fonteRiga('I budget si cambiano nel BUDGET §10.2 (voci) o §2–4 (spese fisse), poi nei parametri. Per le voci annuali conta l’anno intero, non il singolo mese.')+'</section>';
+  const k2 = o.lastIndexOf('<p class="fonte">'); return k2 < 0 ? o + s : o.slice(0,k2) + s + o.slice(k2);
+};
+
+/* ---- Avvio: migrazione dei conti dopo il caricamento ---- */
+const _render3c = render;
+render = function(){ try { migraConti(); } catch (e) { console.error(e); } return _render3c(); };
+window.render = render;
 </script>
 </body>
 </html>

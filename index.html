@@ -218,7 +218,7 @@ const gh = {
   async leggi(){
     const r = await fetch(gh.url()+'?t='+Date.now(), { headers:gh.head(false), cache:'no-store' });
     if (r.status === 404) return { manca:true };
-    if (!r.ok) throw { code: r.status === 401 || r.status === 403 ? 'auth' : 'rete', status:r.status };
+    if (!r.ok) { let m = ''; try { m = (await r.json()).message || ''; } catch (e) {} throw { code: r.status === 401 || r.status === 403 ? 'auth' : 'rete', status:r.status, msg:m }; }
     const j = await r.json(); let testo;
     if (j.content && j.encoding === 'base64') testo = new TextDecoder().decode(Uint8Array.from(atob(j.content.replace(/\s/g,'')), c => c.charCodeAt(0)));
     else { const r2 = await fetch(gh.url()+'?t='+Date.now(), { headers:gh.head(true), cache:'no-store' }); if (!r2.ok) throw { code:'rete', status:r2.status }; testo = await r2.text(); }
@@ -322,7 +322,7 @@ async function avviaDati(){
   cfg.path = cfg.path || 'dati.json';
   try { const r = await gh.leggi(); if (r.manca) { pannello('Il file '+cfg.path+' non esiste nel repository.', true); return new Promise(() => {}); }
     st.dati = r.dati; st.dati.archivi = st.dati.archivi || {}; st.sha = r.sha; st.stato = 'ok'; badge('ok'); notifica(); return true; }
-  catch (e) { pannello(e.code === 'auth' ? 'GitHub ha rifiutato il token: controlla scadenza e permessi.' : 'GitHub non risponde. Controlla la connessione e riprova.'); return new Promise(() => {}); }
+  catch (e) { pannello(e.status === 401 ? 'GitHub non riconosce il token (errore 401): è scritto male, incompleto o revocato. Ricopialo per intero, inizia con github_pat_.' : e.status === 403 ? 'Il token è valido ma non può leggere questo repository (errore 403): nel token servono Repository access con finanze-dati e il permesso Contents: Read and write.'+(e.msg ? ' Messaggio di GitHub: '+e.msg : '') : 'GitHub non risponde. Controlla la connessione e riprova.'); return new Promise(() => {}); }
 }
 let pronto = null;
 window.claude = { use(n){

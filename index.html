@@ -5,8 +5,12 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#0E4F47">
 <meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Finanze">
 <meta name="robots" content="noindex">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<link rel="manifest" href="manifest.webmanifest">
 <title>Finanze personali</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&display=swap">
 <style>
@@ -157,6 +161,8 @@ input.mini{width:108px;min-height:40px;border:1.5px solid var(--border);border-r
 .toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(96px + env(safe-area-inset-bottom,0px));z-index:60;background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:14px;font-size:14px;font-weight:500;max-width:90%;text-align:center}
 .export{width:100%;height:160px;border:1.5px solid var(--border);border-radius:12px;background:var(--bg);font-family:ui-monospace,monospace;font-size:11px;padding:8px}
 .blocco-link{cursor:pointer}
+.passi{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:8px;font-size:14px}
+.incolla{width:100%;min-height:110px;border:1.5px solid var(--border);border-radius:12px;background:var(--card);color:var(--ink);padding:10px;font-size:16px;font-family:ui-monospace,monospace}
 .griglia{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .eroe-num strong.medio{font-size:28px;letter-spacing:-.5px;line-height:1.15}
 .storico{display:flex;flex-direction:column;gap:6px;padding-bottom:6px}
@@ -810,7 +816,7 @@ function cardAttesa(arch, x){
       const b = x.busta ? S.a.buste[x.busta] : null;
       if (b) { const imp = P(b.param), s = saldoBusta(x.busta); titolo = 'Scalo '+eur(x.importo)+' da “'+h(b.nome)+'”?'; corpo = '<p class="sotto">Nella busta restano '+eur(s - x.importo)+' di '+eur(imp)+'.</p>'; }
       else { titolo = 'Registro '+eur(x.importo)+' come spesa non a budget?'; corpo = '<p class="sotto">Non rientra in nessuna busta: pesa sul mese (BUDGET §10.2).</p>'; }
-      corpo += '<p class="sotto">'+h(x.descrizione||'Spesa')+' · '+dataMedia(x.data)+'</p>';
+      corpo += '<p class="sotto">'+h(x.descrizione||'Spesa')+' · '+dataMedia(x.data)+(x.nota_lettura ? ' · '+h(x.nota_lettura) : '')+'</p>';
     } else { titolo = 'Registro un’entrata di '+eur(x.importo)+'?'; corpo = '<p class="sotto">'+h(x.descrizione||'Entrata')+' · '+dataMedia(x.data)+'</p>'; }
   } else if (arch === 'saldi') {
     if (x.oggetto === 'posizione') { const e = S.a.posizioni[x.etf] || {}; corpo = riga(h(e.ticker||x.etf), h(e.nome||'')) + (x.quote != null ? riga('Quote', fmtNum(x.quote, 4)) : '') + (x.prezzo != null ? riga('Prezzo', eur(x.prezzo)) : '') + (x.valore != null ? riga('Valore', eur(x.valore)) : '') + riga('Data', dataMedia(x.data)); }
@@ -1052,7 +1058,7 @@ function vMensilita(){
 function vAssistente(){
   let o = testa('Scrivi, detta o fotografa', 'Assistente');
   o += '<div class="chips">'+[['quanto_resta','Quanto posso spendere?'],['fasce','Quale ETF è fuori fascia?'],['scadenze','Prossime scadenze'],['dati_vecchi','Dati da aggiornare']].map(([f,t]) => '<button class="pillola" data-act="funzione" data-f="'+f+'" data-t="'+h(t)+'">'+t+'</button>').join('')+'</div>';
-  if (!S.sample) o += '<section class="card nota-ambra"><p class="sotto">Per leggere frasi e foto serve la tua chiave API Anthropic: inseriscila nelle impostazioni (pulsante in alto a destra). Le domande rapide qui sopra funzionano lo stesso: le calcola l’app.</p></section>';
+  if (!S.sample) o += '<section class="card nota-ambra"><p class="sotto">Senza chiave API l’assistente non legge testo e foto da solo: usa Claude sul telefono qui sotto, oppure inserisci la chiave nelle impostazioni (pulsante in alto a destra).</p></section>';
   const viste = new Set();
   for (const c of ui.chat) {
     if (c.ruolo === 'utente') o += '<div class="bolla utente">'+(c.foto ? ico('foto',18)+' ' : '')+h(c.testo)+'</div>';
@@ -1554,6 +1560,62 @@ VISTE.dati = function(){ const im = ui.imp; const qui = ARCHIVI.reduce((s,k) => 
   else c += '<p class="titolino">Il file contiene '+im.n+' documenti in '+Object.keys(im.archivi).length+' archivi'+(im.esportato ? ', esportati il '+dataMedia(im.esportato) : '')+'</p><p class="sotto warn">Qui ora ci sono '+qui+' documenti: quelli degli archivi presenti nel file vengono sostituiti e non si recuperano. Esporta prima una copia.'+(im.scartati ? ' Documenti non validi scartati: '+im.scartati+'.' : '')+'</p>'+(im.problema ? '<p class="sotto warn">'+h(im.problema)+'</p>' : '')+'<div class="bottoni"><button class="btn primario" data-act="importa_ok">Sostituisci i dati</button><button class="btn" data-act="importa_no">Annulla</button></div>';
   c += '</section>';
   return _vDati().replace('<section class="card"><h2>Parametri</h2>', c+'<section class="card"><h2>Parametri</h2>'); };
+
+/* ================= CLAUDE SUL TELEFONO (senza chiave API) ================= */
+ui.incolla = '';
+function istruzioniClaude(){
+  return prompt('(il testo che scrivo qui sotto e/o lo screenshot allegato)', true).replace('Rispondi solo con un oggetto JSON, senza altro testo.', 'Rispondi solo con un oggetto JSON dentro un unico blocco di codice, senza altro testo.') + '\n\nTesto: ';
+}
+Object.assign(AZ, {
+  async copia_istr(){ const t = istruzioniClaude(); try { await navigator.clipboard.writeText(t); avviso('Istruzioni copiate: incollale in Claude con lo screenshot.'); } catch (e) { ui.mostraIstr = true; } },
+  async leggi_incolla(){ const t = (ui.incolla||'').trim(); if (!t) return; const s = t.replace(/```json|```/g,''); const a = s.indexOf('{'), b = s.lastIndexOf('}'); let r;
+    try { r = JSON.parse(s.slice(a, b+1)); } catch (e) { avviso('Non riconosco la risposta: copia tutto il blocco di codice che ti ha dato Claude.'); return; }
+    ui.chat.push({ ruolo:'utente', testo:'Risposta incollata da Claude' }); ui.chat.push(...await elabora(r, 'claude app')); ui.incolla = ''; const e = document.getElementById('q_incolla'); if (e) e.value = ''; scorri(); }
+});
+document.addEventListener('input', ev => { if (ev.target.id === 'q_incolla') ui.incolla = ev.target.value; });
+const _vAss = VISTE.assistente;
+VISTE.assistente = function(){ let o = _vAss(); if (S.sample) return o;
+  o = o.replace(/<section class="card nota-ambra"><p class="sotto">(In questa vista|Senza chiave API)[\s\S]*?<\/section>/, '');
+  { const k = o.indexOf('<div class="scrivi fondo">'); if (k >= 0) { const e = o.indexOf('</div>', k); o = o.slice(0, k) + o.slice(e + 6); } }
+  const c = '<section class="card"><h2>Con Claude sul telefono</h2><p class="sotto">Senza chiave API: Claude legge, l’app controlla e tu confermi.</p>'+
+    '<ol class="passi"><li><button class="btn" data-act="copia_istr">Copia le istruzioni per Claude</button></li><li>Nell’app di Claude incollale, allega lo screenshot o scrivi la spesa dopo “Testo:”, e invia.</li><li>Copia il blocco di codice della risposta e incollalo qui.</li></ol>'+
+    (ui.mostraIstr ? '<textarea class="export" readonly>'+h(istruzioniClaude())+'</textarea><p class="sotto">Copia il testo a mano: il browser non consente la copia automatica.</p>' : '')+
+    '<label class="vh" for="q_incolla">Risposta di Claude</label><textarea id="q_incolla" class="incolla" placeholder="Incolla qui la risposta di Claude">'+h(ui.incolla)+'</textarea><button class="btn primario" data-act="leggi_incolla">Leggi la risposta</button>'+
+    fonteRiga('Ogni dato letto resta “non confermato” finché non lo approvi. Le istruzioni contengono buste, conti ed ETF aggiornati: ricopiale se li cambi.')+'</section>';
+  const i = o.indexOf('</div>', o.indexOf('<div class="chips">')); return o.slice(0, i+6) + c + o.slice(i+6); };
+
+/* ================= SPESA A PAROLE SENZA AI ================= */
+const PAROLE_BUSTE = [
+  ['salute', ['farmacia','farmaci','farmaco','medico','visita','analisi','ticket','ottico','occhiali','fisioterap']],
+  ['vacanze', ['vacanza','vacanze','viaggio','hotel','albergo','airbnb','treno','volo','aereo','traghetto','weekend','b&b','campeggio']],
+  ['auto', ['tagliando','gomme','pneumatici','meccanico','carrozzeria','assicurazione auto','rca']],
+  ['casa', ['idraulico','elettricista','riparazione','lavatrice','lavastoviglie','frigo','elettrodomestico','ferramenta','caldaia','manutenzione']],
+  ['regali', ['regalo','regali','compleanno','natale','matrimonio','battesimo']],
+  ['abbonamenti', ['amazon prime','prime','google one','appblock','abbonamento']],
+  ['', ['dentista','revisione','bollo','multa']]
+];
+function leggiSpesaLocale(t){
+  const testo = String(t||'').trim(), basso = testo.toLowerCase();
+  const m = basso.match(/(\d{1,3}(?:\.\d{3})+(?:,\d{1,2})?|\d+(?:[.,]\d{1,2})?)\s*(?:€|euro|eur)?/);
+  const importo = m ? num(m[1].includes(',') || /\.\d{3}/.test(m[1]) ? m[1] : m[1].replace('.', ',')) : NaN;
+  let data = iso(oggi()); if (/\bieri\b/.test(basso)) data = iso(piuGiorni(oggi(), -1)); else if (/\bl'altro ieri\b|\baltroieri\b/.test(basso)) data = iso(piuGiorni(oggi(), -2));
+  let busta = bustaQuotidiana() ? bustaQuotidiana().id : null, motivo = 'busta predefinita delle piccole spese';
+  for (const [id, ps] of PAROLE_BUSTE) { const p = ps.find(w => basso.includes(w)); if (p) { busta = id || null; motivo = id ? 'riconosciuta da “'+p+'”' : '“'+p+'” è una spesa non a budget (BUDGET §10.2)'; break; } }
+  if (busta && !S.a.buste[busta]) busta = null;
+  let desc = testo.replace(m ? m[0] : '', ' ').replace(/\b(ho speso|speso|spesi|pagato|per|di|la|il|lo|le|i|gli|un|una|euro|eur|ieri|oggi)\b|€/gi, ' ').replace(/\s+/g, ' ').trim();
+  if (!desc) desc = 'Spesa';
+  return { importo, data, busta, motivo, descrizione: desc.charAt(0).toUpperCase() + desc.slice(1, 120) };
+}
+AZ.spesa_parole = async function(){
+  const t = (ui.campi.spesa||'').trim(); if (!t) return;
+  if (S.sample) { ui.ultimaSpesa = t; ui.campi.spesa = ''; chiedi(t, null, 'spesa'); return; }
+  const r = leggiSpesaLocale(t);
+  if (!(r.importo > 0)) { ui.sheet = { tipo:'spesa' }; ui.prefill = r.descrizione; avviso('Non trovo l’importo: completalo nel modulo.'); return; }
+  ui.ultimaSpesa = t; ui.campi.spesa = '';
+  if (await scrivi(() => aggiungi('movimenti', { tipo:'spesa', importo:r2(r.importo), busta:r.busta, descrizione:r.descrizione, data:r.data, stato:'non_confermato', fonte:'testo', nota_lettura:r.motivo }))) avviso('Controlla busta e importo, poi conferma.');
+};
+const _fogSp = foglio;
+foglio = function(){ const o = _fogSp(); if (ui.sheet && ui.sheet.tipo === 'spesa' && !ui.sheet.id && ui.prefill) { const d = ui.prefill; ui.prefill = null; return o.replace('<input id="f_desc" value=""', '<input id="f_desc" value="'+h(d)+'"'); } return o; };
 
 avvia();
 </script>

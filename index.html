@@ -1534,15 +1534,15 @@ Object.assign(AZ, {
   importa_no(){ ui.imp = null; },
   async importa_ok(){ const im = ui.imp; if (!im || im.errore || im.inCorso) return; im.inCorso = true; im.fatti = 0; im.problema = null; render();
     try { for (const k of ARCHIVI) { const nuovi = im.archivi[k]; if (!nuovi) continue;
-        for (const id of Object.keys(S.a[k])) if (!(id in nuovi)) await conRitento(() => col(k).doc(id).delete());
-        for (const [id, d] of Object.entries(nuovi)) { await conRitento(() => col(k).doc(id).set(d)); im.fatti++; if (im.fatti % 10 === 0) render(); } }
+        for (const id of Object.keys(S.a[k])) if (!(id in nuovi) && !(k === 'regole' && S.a.regole[id] && S.a.regole[id].origine === 'app')) await conRitento(() => col(k).doc(id).delete());
+        for (const [id, d] of Object.entries(nuovi)) { if (k === 'regole' && Object.values(S.a.regole).some(x => x.origine === 'app' && x.tipo === d.tipo && x.testo === d.testo && (x.conto||null) === (d.conto||null))) { im.fatti++; continue; } await conRitento(() => col(k).doc(id).set(d)); im.fatti++; if (im.fatti % 10 === 0) render(); } }
       ui.imp = null; S.mancanti.clear(); avviso('Importazione completata.'); }
     catch (e) { console.error(e); im.inCorso = false; im.problema = 'Importazione interrotta dopo '+im.fatti+' documenti su '+im.n+'. Puoi riprovare: riparte dall’inizio senza creare doppioni.'; } }
 });
 document.addEventListener('change', async ev => { const e = ev.target; if (!e.dataset || e.dataset.importa == null) return; const f = e.files && e.files[0]; e.value = ''; if (!f) return; if (f.size > 8e6) { ui.imp = { errore:'File troppo grande.' }; render(); return; } try { ui.imp = leggiImport(await f.text()); } catch (x) { ui.imp = { errore:'Non riesco a leggere il file.' }; } render(); });
 const _vDati = VISTE.dati;
 VISTE.dati = function(){ const im = ui.imp; const qui = ARCHIVI.reduce((s,k) => s + Object.keys(S.a[k]).length, 0);
-  let c = '<section class="card"><h2>Importazione</h2><p class="sotto">Sostituisce gli archivi di questo account con quelli di un file esportato dall’app. Serve per spostare i dati su un altro account o ripristinare una copia.</p>';
+  let c = '<section class="card"><h2>Importazione</h2><p class="sotto">Sostituisce solo gli archivi presenti nel file. Un file di parametri tocca solo i parametri; un’esportazione completa ripristina tutto com’era quel giorno (le modifiche successive si perdono). Le regole che hai creato nell’app restano sempre.</p>';
   if (!im) c += '<label class="btn filebtn">Scegli il file esportato<input type="file" accept=".json,application/json" data-importa class="vh"></label>';
   else if (im.errore) c += '<p class="sotto warn">'+h(im.errore)+'</p><button class="btn" data-act="importa_no">Chiudi</button>';
   else if (im.inCorso) c += '<p class="titolino">Scrivo i dati: '+im.fatti+' su '+im.n+'</p>'+barra(im.fatti/im.n*100, 'verde')+'<p class="sotto">Non chiudere la pagina.</p>';
@@ -2067,7 +2067,7 @@ function cardEstrattoMese(id){
   const m = meseDaId(id), cm = coperturaMese(m), a = aggregaEstratto(m), chiavi = Object.keys(a.per);
   if (!chiavi.length && !a.straordN && !a.daAssN) return '<section class="card"><h2>Dagli estratti conto</h2><p class="sotto">Nessuna riga importata per questo mese. <a class="link" href="#estratto">Importa gli estratti conto</a></p></section>';
   chiavi.sort((x,y) => ordineScelta(x) - ordineScelta(y) || nomeScelta(x).localeCompare(nomeScelta(y)));
-  const tot = r2(chiavi.reduce((s,k) => s + (k === 'x:fondo_pensione' ? 0 : a.per[k]), 0));
+  const tot = r2(chiavi.reduce((s,k) => s + ((k === 'x:fondo_pensione' || k === 'x:lavoro') ? 0 : a.per[k]), 0));
   let o = '<section class="card"><div class="card-testa"><h2>Dagli estratti conto</h2>'+chip(cm.completo ? 'mese completo' : 'mese parziale', cm.completo ? 'verde' : 'ambra')+'</div>'+(cm.completo ? '' : '<p class="sotto warn">'+cm.manca.map(h).join(' · ')+'</p>')+
     '<div class="tab-estr"><span></span><span>Speso</span><span>Riferimento</span>'+chiavi.map(k => { const rif = riferimentoScelta(k), v = a.per[k], sopra = rif != null && v > rif + 0.5;
       return '<span>'+h(nomeScelta(k))+'</span><b class="'+(sopra ? 'rosso' : '')+'">'+eur0(v)+'</b><span>'+(rif == null ? '—' : eur0(rif))+'</span>'; }).join('')+'</div>'+
@@ -2093,7 +2093,7 @@ VISTE.calibrazione = function(){
   let o = _vCal3c(); const c = calibrazioneEstratti(), min = P('budget.calibrazione.chiusure') || 3;
   let s = '<section class="card"><div class="card-testa"><h2>Dagli estratti conto</h2>'+chip(c.completi.length+(c.completi.length === 1 ? ' mese completo' : ' mesi completi'), c.completi.length >= min ? 'verde' : 'ambra')+'</div>';
   if (!c.completi.length) s += '<p class="sotto">Servono mesi coperti da tutti i conti correnti. <a class="link" href="#estratto">Importa gli estratti conto</a></p>';
-  else { const k = Object.keys(c.medie).filter(x => x !== 'x:fondo_pensione').sort((x,y) => ordineScelta(x) - ordineScelta(y) || nomeScelta(x).localeCompare(nomeScelta(y)));
+  else { const k = Object.keys(c.medie).filter(x => x !== 'x:fondo_pensione' && x !== 'x:lavoro').sort((x,y) => ordineScelta(x) - ordineScelta(y) || nomeScelta(x).localeCompare(nomeScelta(y)));
     s += '<p class="sotto">Dal '+etichettaMese(meseDaId(c.completi[0])).split(' – ')[0]+' '+c.completi[0].slice(0,4)+' al '+dataMedia(meseDaId(c.completi[c.completi.length-1]).fine)+'. Media al mese, quota personale, straordinarie escluse.</p><div class="tab-estr"><span></span><span>Media reale</span><span>Riferimento</span>'+
       k.map(x => { const rif = riferimentoScelta(x), v = c.medie[x]; return '<span>'+h(nomeScelta(x))+'</span><b class="'+(rif != null && v > rif*1.1 + 1 ? 'rosso' : '')+'">'+eur0(v)+'</b><span>'+(rif == null ? '—' : eur0(rif))+'</span>'; }).join('')+'</div>'; }
   s += fonteRiga('I budget si cambiano nel BUDGET §10.2 (voci) o §2–4 (spese fisse), poi nei parametri. Per le voci annuali conta l’anno intero, non il singolo mese.')+'</section>';
@@ -2214,12 +2214,12 @@ const _chiusuraCon3e = chiusuraCon;
 chiusuraCon = function(id){
   const c = _chiusuraCon3e(id), m = c.mese; c.copertura = coperturaMese(m);
   const scritte = confermati('movimenti').filter(x => x.tipo === 'non_registrate' && x.sottotipo === 'estratto' && x.mese === id);
-  if (scritte.length) { const tot = r2(scritte.reduce((s,x) => s + x.importo, 0)); c.nonRegistrate = r2(c.nonRegistrate - tot); c.saldoDopo = c.saldoBusta == null ? null : r2(c.saldoBusta - Math.max(0, c.nonRegistrate)); c.giaRipartito = tot; return c; }
+  if (scritte.length) { const tot = r2(scritte.reduce((s,x) => s + x.importo, 0)); c.nonRegistrate = r2(c.nonRegistrate - tot - fuoriEstrattiMese(m)); c.saldoDopo = c.saldoBusta == null ? null : r2(c.saldoBusta - Math.max(0, c.nonRegistrate)); c.giaRipartito = tot; return c; }
   if (!c.copertura.completo) return c;
   const per = spesaVociEstratto(m), seg = {};
   for (const x of confermati('movimenti')) if (x.tipo === 'spesa' && x.busta && nelMese(x.data, m)) seg[x.busta] = r2((seg[x.busta]||0) + x.importo);
   const rip = {}; let tot = 0; for (const [b, v] of Object.entries(per)) { const d = r2(v - (seg[b]||0)); if (d > 0.5 && S.a.buste[b]) { rip[b] = d; tot += d; } }
-  c.ripartizione = rip; c.importato = per; c.segnalatePerVoce = seg; c.daEstratto = r2(tot); c.residuo = r2(c.nonRegistrate - tot);
+  c.ripartizione = rip; c.importato = per; c.segnalatePerVoce = seg; c.daEstratto = r2(tot); c.fuoriEstratti = fuoriEstrattiMese(m); c.residuo = r2(c.nonRegistrate - tot - c.fuoriEstratti);
   if (c.busta && c.saldoBusta != null) c.saldoDopo = r2(c.saldoBusta - (rip[c.busta.id]||0) - Math.max(0, c.residuo));
   return c;
 };
@@ -2230,7 +2230,7 @@ AZ.chiudi_mese = async function(el){
   const ok = await scrivi(async () => { for (const [b, v] of Object.entries(c.ripartizione)) await aggiungi('movimenti', { tipo:'non_registrate', sottotipo:'estratto', mese:id, busta:b, importo:v, data:c.d1, descrizione:'Dagli estratti conto, chiusura '+etichettaMese(c.mese), fonte:'estratto', stato:'confermato' }); });
   if (!ok) return;
   await _chiudi3e.apply(this, arguments);
-  if ((S.a.mesi[id]||{}).stato === 'chiuso') await scrivi(() => aggiorna('mesi', id, { non_registrate:c.nonRegistrate, da_estratto:c.daEstratto, ripartizione:c.ripartizione, residuo:c.residuo }));
+  if ((S.a.mesi[id]||{}).stato === 'chiuso') await scrivi(() => aggiorna('mesi', id, { non_registrate:c.nonRegistrate, da_estratto:c.daEstratto, fuori_estratti:c.fuoriEstratti, ripartizione:c.ripartizione, residuo:c.residuo }));
   else await scrivi(async () => { for (const x of lista('movimenti')) if (x.sottotipo === 'estratto' && x.mese === id) await togli('movimenti', x.id); });
 };
 function cardChiusuraEstratti(c){
@@ -2239,7 +2239,7 @@ function cardChiusuraEstratti(c){
   const ids = Object.keys(Object.assign({}, c.importato, c.segnalatePerVoce)).filter(b => S.a.buste[b]);
   return '<section class="card"><h2>Ripartizione dagli estratti conto</h2><div class="tab-estr tab4"><span></span><span>Importato</span><span>Segnalato</span><span>Si scala</span>'+
     ids.map(b => '<span>'+h(S.a.buste[b].nome)+'</span><b>'+eur0(c.importato[b]||0)+'</b><span>'+eur0(c.segnalatePerVoce[b]||0)+'</span><b>'+eur0(c.ripartizione[b]||0)+'</b>').join('')+'</div>'+
-    riga('Totale dagli estratti', eur0(c.daEstratto))+riga(c.residuo >= 0 ? 'Resto non spiegato → “'+h(c.busta ? c.busta.nome : '')+'”' : 'Differenza non attribuita', eur0(Math.abs(c.residuo)), c.residuo > 0 ? 'rosso' : '')+
+    riga('Totale dagli estratti sulle voci', eur0(c.daEstratto))+(c.fuoriEstratti ? riga('Fuori budget dagli estratti (pesa sul mese)', eur0(c.fuoriEstratti)) : '')+riga(c.residuo >= 0 ? 'Resto non spiegato → “'+h(c.busta ? c.busta.nome : '')+'”' : 'Differenza non attribuita', eur0(Math.abs(c.residuo)), c.residuo > 0 ? 'rosso' : '')+
     fonteRiga('Per ogni voce si scala la parte importata che supera le spese segnalate a mano. Il resto delle spese non registrate va alla voce predefinita; se è negativo non si attribuisce. Le spese fisse restano quelle preventivate (BUDGET §10.3).')+'</section>';
 }
 const _vChius3e = VISTE.chiusura;
@@ -2277,7 +2277,7 @@ const TASSONOMIA = [
  ['fuori','Fuori casa',[
   ['fuori.ristoranti','Ristoranti e pizzerie','b:uscite_quotidiane','comune','pizzeria pizza ristorante trattoria osteria cena pranzo fuori sushi giapponese cinese hamburger burger kebab piadineria tigelle brunch'],
   ['fuori.bar','Bar, caffè e colazioni','b:uscite_quotidiane','personale','bar caffè caffe cappuccino brioche cornetto colazione espresso ginseng spremuta pasticceria'],
-  ['fuori.lavoro','Pranzi di lavoro','b:uscite_quotidiane','personale','pranzo lavoro mensa colleghi panino tramezzino pausa pranzo autogrill'],
+  ['fuori.lavoro','Pranzi di lavoro a tuo carico','b:uscite_quotidiane','personale','pranzo lavoro mensa colleghi panino tramezzino pausa pranzo autogrill'],
   ['fuori.asporto','Asporto e consegna','b:uscite_quotidiane','comune','asporto delivery glovo deliveroo just eat justeat take away consegna'],
   ['fuori.aperitivi','Gelati e aperitivi','b:uscite_quotidiane','personale','gelato gelateria aperitivo spritz birra pub cocktail drink']]],
  ['trasporti','Trasporti',[
@@ -2518,7 +2518,7 @@ preparaImport = function(ris, nome){ const im = _preparaMan3f(ris, nome);
 function speseCategoriaMese(m){
   const o = {};
   for (const x of lista('estratto')) { if (!nelMese(x.data, m) || !contaRiga(x) || x.straordinaria || !x.scelta || x.scelta === 'escluso' || x.scelta.startsWith('e:') || x.scelta === 'x:fondo_pensione') continue;
-    const c = catAuto(x); if (!c || CAT[c].macro === 'nonconsumi' || CAT[c].macro === 'entrate') continue; o[c] = (o[c]||0) - x.importo*(x.quota != null ? x.quota : 1); }
+    const c = catAuto(x); if (!c || CAT[c].macro === 'nonconsumi' || CAT[c].macro === 'entrate' || c === 'var.lavoro') continue; o[c] = (o[c]||0) - x.importo*(x.quota != null ? x.quota : 1); }
   return o;
 }
 function segnaliCategorie(fino){
@@ -2926,6 +2926,53 @@ AZ.spesa_ok = async function(){
   const x = lista('estratto').find(r => r.importo < 0 && Math.abs(-r.importo - imp) < 0.01 && Math.abs(giorniTra(parse(r.data_op || r.data), parse(data))) <= 7 && !r.parte_di);
   if (x) { await scrivi(() => aggiorna('estratto', x.id, { cat:s.cat, scelta:voce, stato:'confermata', motivo:'come la spesa segnata a mano' })); await dividiRiga(x.id, rimb, 'sal.rimborsabile'); avviso('Spesa salvata e riga dell’estratto divisa.'); }
 };
+
+/* ================= FASE 3j: SPESE DI LAVORO ANTICIPATE E RIMBORSATE IN BUSTA PAGA ================= */
+(function(){ const s = ['var.lavoro','Spese di lavoro da rimborsare','x:lavoro','personale','trasferta nota spese note spese spese di lavoro anticipo lavoro rimborso aziendale audit cliente fornitore cena di lavoro pranzo in trasferta hotel di lavoro tassa di soggiorno lavoro'];
+  CAT[s[0]] = { id:s[0], nome:s[1], macro:'varie', macroNome:'Banca, tasse e varie', voce:s[2], conto:s[3], ordine:3.5, sin:sinonimiDa(s[1], s[4]) };
+  const m = TASSONOMIA.find(x => x[0] === 'varie'); m[2].splice(3, 0, s); MACRO.varie.subs.splice(3, 0, s[0]);
+  EXTRA.push(['x:lavoro','Spese di lavoro da rimborsare (fuori budget)']); DEFAULT_CAT['x:lavoro'] = 'var.lavoro'; })();
+
+/* Spese fuori budget dagli estratti del mese (pesano sul mese, non su “Uscite quotidiane”), al netto di quelle già segnate a mano */
+function fuoriEstrattiMese(m){
+  let imp = 0, man = 0;
+  for (const x of lista('estratto')) if (nelMese(x.data, m) && contaRiga(x) && x.scelta && x.scelta.startsWith('x:') && x.scelta !== 'x:fondo_pensione') imp += -x.importo * (x.quota != null ? x.quota : 1);
+  for (const x of confermati('movimenti')) if (x.tipo === 'spesa' && !x.busta && !x.fissa && nelMese(x.data, m) && x.voce && String(x.voce).startsWith('x:')) man += x.importo;
+  return r2(imp - man);
+}
+
+/* Anticipi di lavoro ancora da recuperare */
+function anticipiLavoro(){
+  const aperti = lista('estratto').filter(x => (x.cat === 'var.lavoro' || x.scelta === 'x:lavoro') && x.importo < 0 && !x.rimborso_id).sort((a,b) => a.data < b.data ? -1 : 1);
+  return { aperti, totale: r2(aperti.reduce((s,x) => s - x.importo*(x.quota != null ? x.quota : 1), 0)) };
+}
+function cardAnticipi(){
+  const a = anticipiLavoro(); if (!a.aperti.length) return '';
+  return '<section class="card"><div class="card-testa"><h2>Anticipi di lavoro da recuperare</h2><strong class="gr">'+eur0(a.totale)+'</strong></div><p class="sotto">'+a.aperti.length+(a.aperti.length === 1 ? ' spesa' : ' spese')+' dal '+dataBreve(a.aperti[0].data)+' '+String(a.aperti[0].data).slice(0,4)+'. Quando il rimborso arriva in busta paga, registralo qui: chiude gli anticipi più vecchi.</p>'+
+    '<details><summary class="link">Mostra</summary><div class="elenco fitto">'+a.aperti.map(x => riga(h(x.descrizione)+' <span class="sotto">'+dataBreve(x.data)+'</span>', eur(r2(-x.importo*(x.quota != null ? x.quota : 1))))).join('')+'</div></details>'+
+    '<button class="btn" data-act="sheet" data-sheet="rimborso_lavoro">Registra il rimborso in busta paga</button>'+fonteRiga('BUDGET §10.2: fuori budget; il rimborso è un’entrata “rimborso spese”, separata dallo stipendio.')+'</section>';
+}
+const _foglio3j = foglio;
+foglio = function(){
+  const s = ui.sheet; if (!s || s.tipo !== 'rimborso_lavoro') return _foglio3j();
+  const a = anticipiLavoro(), m = meseDi(oggi()), d = accredito(m.inizio.getFullYear(), m.inizio.getMonth());
+  return '<div class="velo" data-act="chiudi_sheet"></div><div class="foglio" role="dialog" aria-modal="true" aria-label="Rimborso spese in busta paga"><h2>Rimborso spese in busta paga</h2><div class="form">'+
+    '<p class="sotto">Anticipi aperti: '+eur(a.totale)+'. Indica la voce “rimborso spese” del cedolino, non lo stipendio.</p><label>Importo rimborsato<input id="f_rimbl" inputmode="decimal" value="'+h(fmtNum(a.totale, 2))+'"></label><label>Data dell’accredito<input id="f_drimbl" type="date" value="'+h(iso(d))+'"></label></div>'+
+    '<div class="bottoni"><button class="btn primario" data-act="rimborso_lavoro_ok">Registra</button><button class="btn" data-act="chiudi_sheet">Annulla</button></div><p class="fonte">L’app registra un’entrata “rimborso spese” e segna come rimborsati gli anticipi più vecchi fino a quell’importo. Lo stipendio del mese va registrato senza il rimborso.</p></div>';
+};
+AZ.rimborso_lavoro_ok = async function(){
+  const imp = num(val('f_rimbl')), data = val('f_drimbl'); if (!(imp > 0) || !isData(data)) return avviso('Controlla importo e data.');
+  const a = anticipiLavoro(); let resto = imp;
+  const ok = await scrivi(async () => { const id = await aggiungi('movimenti', { tipo:'entrata', sottotipo:'rimborso_spese', importo:r2(imp), data, descrizione:'Rimborso spese di lavoro in busta paga', fonte:'manuale', stato:'confermato' });
+    for (const x of a.aperti) { const v = r2(-x.importo*(x.quota != null ? x.quota : 1)); if (resto + 0.005 < v) break; resto = r2(resto - v); await aggiorna('estratto', x.id, { rimborso_id: id || data }); } });
+  if (ok) { chiudiSheet(); avviso(resto > 0.5 ? 'Rimborso registrato. Restano '+eur(resto)+' non abbinati: controlla gli anticipi.' : 'Rimborso registrato e anticipi chiusi.'); }
+};
+const _vSpese3j = VISTE.spese; VISTE.spese = function(){ const o = _vSpese3j(), c = cardAnticipi(); if (!c) return o; const k = o.indexOf('<section class="card"><h2>Voci mensili</h2>'); return k < 0 ? o + c : o.slice(0,k) + c + o.slice(k); };
+const _vBudget3j = VISTE.budget; VISTE.budget = function(){ const o = _vBudget3j(), c = cardAnticipi(); if (!c) return o; const k = o.indexOf('<section class="card"><div class="card-testa"><h2>Spese del mese per voce</h2>'); return k < 0 ? o + c : o.slice(0,k) + c + o.slice(k); };
+
+/* Promemoria: anticipi di lavoro non rimborsati da oltre 60 giorni */
+const _daFare3j = daFare;
+daFare = function(){ const l = _daFare3j(), a = anticipiLavoro(); if (a.aperti.length && giorniTra(parse(a.aperti[0].data), oggi()) > 60) l.push({ titolo:'Anticipi di lavoro da recuperare: '+eur0(a.totale), testo:'Il più vecchio è del '+dataBreve(a.aperti[0].data)+': controlla nel cedolino la voce “rimborso spese”.', fonte:'BUDGET §10.2', btn:['Budget','go','budget'] }); return l; };
 </script>
 </body>
 </html>

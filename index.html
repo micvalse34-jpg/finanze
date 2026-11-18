@@ -193,8 +193,9 @@ main{padding-top:36px}
 
 .azioni{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:10px} .azione{display:flex;align-items:center;gap:12px;padding:12px;border-radius:14px;background:var(--ambra-bg)} .azione.critica{background:var(--corallo-bg)} .azione .nome{font-weight:600} .azione .sotto{color:var(--ink);margin-top:2px} .btn.piccolo{flex:0 0 auto;min-height:44px;font-size:14px;padding:6px 12px} @media (max-width:360px){.azione{flex-direction:column;align-items:stretch}}
 .tre{display:grid;grid-template-columns:repeat(3,1fr);gap:8px} .tre div{display:flex;flex-direction:column;gap:2px} .tre span{font-size:12px;color:var(--muted)} .tre b{font-size:16px;font-weight:600} .voce-sp{display:flex;flex-direction:column;gap:8px;padding-bottom:12px;border-bottom:1px solid var(--line)} .voce-sp:last-of-type{border-bottom:0;padding-bottom:0} .mesi-nav{display:flex;align-items:center;justify-content:space-between;gap:12px;font-weight:600} .mesi-nav .btn{min-width:48px}
-.estr-gr,.estr-riga{display:flex;flex-wrap:wrap;align-items:center;gap:8px;padding:10px 0;border-bottom:1px solid var(--line)} .estr-gr .cresce,.estr-riga .cresce{flex:1 1 220px;min-width:0} .estr-gr select,.estr-riga select,.card label>select{flex:1 1 170px;min-height:42px;border:1.5px solid var(--border);border-radius:10px;background:var(--card);color:var(--ink);font-size:14px;padding:4px 8px;max-width:100%} .card>label{display:flex;flex-direction:column;gap:6px;font-size:13px;color:var(--muted)} .spunta{display:flex;align-items:center;gap:4px;font-size:12px;color:var(--muted);min-height:42px} .estr-voce{border-bottom:1px solid var(--line)} .estr-voce>.voce{min-height:46px;cursor:pointer} .tab-estr{display:grid;grid-template-columns:1fr auto auto;gap:6px 14px;font-size:14px;align-items:baseline} .tab-estr>span:nth-child(-n+3){font-size:12px;color:var(--muted)} .tab-estr b{font-weight:600;text-align:right} .tab-estr>span:nth-child(3n){text-align:right;color:var(--muted)} details summary{cursor:pointer;min-height:44px;display:flex;align-items:center}
+.estr-gr,.estr-riga{display:flex;flex-wrap:wrap;align-items:center;gap:8px;padding:10px 0;border-bottom:1px solid var(--line)} .estr-gr .cresce,.estr-riga .cresce{flex:1 1 220px;min-width:0} .estr-gr select,.estr-riga select,.card label>select{flex:1 1 170px;min-height:42px;border:1.5px solid var(--border);border-radius:10px;background:var(--card);color:var(--ink);font-size:14px;padding:4px 8px;max-width:100%} .card>label{display:flex;flex-direction:column;gap:6px;font-size:13px;color:var(--muted)} .card>label>select{flex:none} .spunta{display:flex;align-items:center;gap:4px;font-size:12px;color:var(--muted);min-height:42px} .estr-voce{border-bottom:1px solid var(--line)} .estr-voce>.voce{min-height:46px;cursor:pointer} .tab-estr{display:grid;grid-template-columns:1fr auto auto;gap:6px 14px;font-size:14px;align-items:baseline} .tab-estr>span:nth-child(-n+3){font-size:12px;color:var(--muted)} .tab-estr b{font-weight:600;text-align:right} .tab-estr>span:nth-child(3n){text-align:right;color:var(--muted)} details summary{cursor:pointer;min-height:44px;display:flex;align-items:center}
 .tab-estr.tab4{grid-template-columns:1fr auto auto auto} .tab-estr.tab4>*{text-align:right} .tab-estr.tab4>span:nth-child(4n+1){text-align:left} .tab-estr.tab4>span:nth-child(-n+4){font-size:12px;color:var(--muted)}
+.proposte{display:flex;flex-direction:column;gap:6px;margin:-4px 0 4px} .propo{display:flex;justify-content:space-between;align-items:center;gap:10px;text-align:left;min-height:46px;padding:8px 12px;border:1.5px solid var(--border);border-radius:12px;background:var(--card);color:var(--ink);font:inherit;cursor:pointer} .propo span{font-size:12px;color:var(--muted);text-align:right} .scelta-cat{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px 12px;border-radius:12px;background:var(--verde-bg,rgba(46,160,90,.12))} .segnale{margin:6px 0} .form details select{width:100%;min-height:44px;margin-top:6px}
 </style>
 </head>
 <body>
@@ -667,7 +668,7 @@ function chiusura(id){
   const controlla = (L, dRif, nome) => { for (const r of L.righe) { if (!r.s) avvisi.push('Manca il saldo di “'+r.c.nome+'” per la fotografia del '+dataBreve(dRif)+'.'); else if (giorniTra(parse(r.s.data), parse(dRif)) > tol) avvisi.push('“'+r.c.nome+'”: il saldo usato per il '+dataBreve(dRif)+' è del '+dataBreve(r.s.data)+'.'); } };
   controlla(L0, d0); if (oggi() >= m.fine) controlla(L1, d1);
   let entrate = 0, investito = 0, segnalate = 0;
-  for (const x of confermati('movimenti')) { if (!nelMese(x.data, m)) continue; if (x.tipo === 'entrata') entrate += x.importo; else if (x.tipo === 'fondo_pensione') investito += x.importo; else if (x.tipo === 'spesa') segnalate += x.importo; }
+  for (const x of confermati('movimenti')) { if (!nelMese(x.data, m)) continue; if (x.tipo === 'entrata') entrate += x.importo; else if (x.tipo === 'fondo_pensione') investito += x.importo; else if (x.tipo === 'spesa' && !x.fissa) segnalate += x.importo; }
   for (const o of confermati('operazioni')) if (nelMese(o.data, m)) investito += o.importo;
   const fisse = fisseMese(m).totale; const pronta = oggi() >= m.fine && L0.completo && L1.completo;
   const spesaReale = r2(L0.totale + entrate - investito - L1.totale);
@@ -1713,7 +1714,7 @@ function calcoloSpese(id){
     return v; });
   const f = fisseMese(m);
   const fisse = f.datate.map(x => ({ nome:x.sf.nome, importo:x.importo, entrata:x.segno < 0, data:iso(x.data) })).concat(f.senzaData.map(x => ({ nome:x.sf.nome, importo:x.importo, entrata:x.segno < 0, data:null })));
-  const fuori = confermati('movimenti').filter(x => x.tipo === 'spesa' && !x.busta && nelMese(x.data, m)).map(x => ({ descrizione:x.descrizione||'Spesa', importo:x.importo, data:x.data })).sort((a,b) => a.data < b.data ? -1 : 1);
+  const fuori = confermati('movimenti').filter(x => x.tipo === 'spesa' && !x.busta && !x.fissa && nelMese(x.data, m)).map(x => ({ descrizione:x.descrizione||'Spesa', importo:x.importo, data:x.data })).sort((a,b) => a.data < b.data ? -1 : 1);
   const chiuso = !!(md && md.stato === 'chiuso'), conteggio = chiuso && !md.senza_conteggio;
   const fisseUsate = conteggio && md.uscite_fisse != null ? md.uscite_fisse : f.totale;
   const budgetVoci = r2(voci.reduce((s,v) => s + (v.budget||0), 0)), spesoVoci = r2(voci.reduce((s,v) => s + v.speso, 0)), fuoriTot = r2(fuori.reduce((s,x) => s+x.importo, 0));
@@ -1853,7 +1854,7 @@ const MCC_VOCI = [
   ['f:telefono', [4814]], ['b:abbonamenti', [4899,5815,5816,5817,5818]], ['x:fuori', [9311,9399,9222]]
 ];
 const mccVoce = m => { m = Number(m); if (!m) return ''; if ((m >= 3000 && m <= 3299) || (m >= 3501 && m <= 3999) || (m >= 3351 && m <= 3441) || [4511,4722,7011,7012,7512,7513,4411,7991].includes(m)) return 'b:vacanze'; for (const [v, l] of MCC_VOCI) if (l.includes(m)) return v; return ''; };
-function sceltaValida(sc){ if (!sc || sc === 'escluso') return sc || ''; const [k, id] = sc.split(':'); if (k === 'b') return S.a.buste[id] ? sc : ''; if (k === 'f') return S.a.spese_fisse[id] ? sc : ''; return sc; }
+function sceltaValida(sc){ if (sc === 'x:costi_bancari' && S.a.spese_fisse.costi_bancari) sc = 'f:costi_bancari'; if (!sc || sc === 'escluso') return sc || ''; const [k, id] = sc.split(':'); if (k === 'b') return S.a.buste[id] ? sc : ''; if (k === 'f') return S.a.spese_fisse[id] ? sc : ''; return sc; }
 function classifica(r, testo){
   const t = testo.toLowerCase(), segno = r.importo < 0 ? '-' : '+';
   const regole = lista('regole').filter(x => x.tipo === 'classe').sort((a,b) => (b.testo||'').length - (a.testo||'').length);
@@ -1876,8 +1877,8 @@ function righeBpm(tab){
   const corpo = tab.slice(ih+1).filter(r => r && r[0]); const conto = contoBpm(corpo), visti = {};
   const out = corpo.filter(r => !r[5] || /^cont/i.test(String(r[5]).trim())).map(r => {
     const data = dataIt(r[0]), importo = numIt(r[2]), raw = String(r[4]||''), desc = pulisciBpm(raw);
-    const base = 'b-'+data+'-'+Math.round(importo*100)+'-'+hashTesto(raw.toLowerCase()); visti[base] = (visti[base]||0)+1;
-    return { id: base+'-'+visti[base], fonte:'bpm', data, data_op:dataIt(r[1]), importo, descrizione:desc.slice(0,90), testo:raw+' '+desc, gruppo:gruppoDi(desc), mcc:null };
+    const base = 'b-'+data+'-'+Math.round(importo*100)+'-'+hashTesto(normRaw(raw)), baseV = 'b-'+data+'-'+Math.round(importo*100)+'-'+hashTesto(raw.toLowerCase()); visti[base] = (visti[base]||0)+1; visti['v'+baseV] = (visti['v'+baseV]||0)+1;
+    return { id: base+'-'+visti[base], idVecchio: baseV+'-'+visti['v'+baseV], fonte:'bpm', data, data_op:dataIt(r[1]), importo, descrizione:desc.slice(0,90), testo:raw+' '+desc, gruppo:gruppoDi(desc), mcc:null };
   }).filter(x => x.data && isFinite(x.importo));
   return { fonte:'Banco BPM', conto, righe:out };
 }
@@ -2024,7 +2025,7 @@ Object.assign(AZ, {
   estr_annulla(){ ui.estr = null; ui.estrAperti = {}; },
   async estr_salva(){ const im = ui.estr; if (!im || !im.conto || im.salvo) return; im.salvo = true; render(); const q = quotaConto(S.a.conti[im.conto]||{}) || 1, adesso_ = adesso();
     const ok = await scrivi(async () => {
-      for (const r of im.righe) { if (r.dup) continue; await metti('estratto', r.id, { conto:im.conto, data:r.data, data_op:r.data_op||r.data, importo:r.importo, quota:q, scelta:r.scelta||'', straordinaria:!!r.straordinaria, descrizione:r.descrizione, mcc:r.mcc||null, fonte:r.fonte, importato_il:adesso_ }); }
+      for (const r of im.righe) { if (r.dup) continue; await metti('estratto', r.id, { conto:im.conto, data:r.data, data_op:r.data_op||r.data, importo:r.importo, quota:q, scelta:r.scelta||'', straordinaria:!!r.straordinaria, descrizione:r.descrizione, mcc:r.mcc||null, cat:r.cat||null, fonte:r.fonte, importato_il:adesso_ }); }
       for (const [g, sc] of Object.entries(im.gruppiScelti||{})) if (sc && im.ricorda[g] !== false && !lista('regole').some(x => x.tipo === 'classe' && x.testo === g)) await aggiungi('regole', { tipo:'classe', testo:g, scelta:sc, conto: sc === 'escluso' ? im.conto : null, origine:'app' });
       await aggiungi('importazioni', { conto:im.conto, fonte:im.fonte, file:String(im.file).slice(0,80), da:im.da, a:im.a, righe:im.righe.filter(r => !r.dup).length, data:iso(oggi()) });
     });
@@ -2118,8 +2119,8 @@ function righePrepagata(tab){
     const ricarica = /ricaric/.test(tipo) || /^ricarica/i.test(raw), storno = /storno/.test(tipo);
     const fonte = ricarica ? ((raw.replace(/\s+/g, '').match(/conto(\d{6,})/i)||[])[1] || '') : '';
     const desc = ricarica ? 'Ricarica dal conto …'+fonte.slice(-4) : pulisciBpm(raw.replace(/^storno scritture/i, 'pagamento storno'));
-    const base = 'p-'+data+'-'+Math.round(importo*100)+'-'+hashTesto(raw.toLowerCase()); visti[base] = (visti[base]||0)+1;
-    return { id:base+'-'+visti[base], fonte:'prepagata', data, data_op:data, importo, descrizione:(storno ? 'Storno: ' : '')+desc.slice(0,80), testo:raw+' '+desc, gruppo:gruppoDi(desc), mcc:null, ricarica, storno, conto_ricarica:fonte };
+    const base = 'p-'+data+'-'+Math.round(importo*100)+'-'+hashTesto(normRaw(raw)), baseV = 'p-'+data+'-'+Math.round(importo*100)+'-'+hashTesto(raw.toLowerCase()); visti[base] = (visti[base]||0)+1; visti['v'+baseV] = (visti['v'+baseV]||0)+1;
+    return { id:base+'-'+visti[base], idVecchio: baseV+'-'+visti['v'+baseV], fonte:'prepagata', data, data_op:data, importo, descrizione:(storno ? 'Storno: ' : '')+desc.slice(0,80), testo:raw+' '+desc, gruppo:gruppoDi(desc), mcc:null, ricarica, storno, conto_ricarica:fonte };
   }).filter(x => x.data && isFinite(x.importo));
   return { fonte:'Carta prepagata', conto:'prepagata', righe:out };
 }
@@ -2179,7 +2180,7 @@ AZ.estr_salva = async function(){
   const im = ui.estr; if (!im || im.conto !== 'prepagata') return _salva3e.apply(this, arguments);
   if (im.salvo || Object.values(im.fontiRicarica||{}).some(v => !v)) return; im.salvo = true; render(); const t = adesso();
   const ok = await scrivi(async () => {
-    for (const r of im.righe) { if (r.dup) continue; await metti('estratto', r.id, { conto:'prepagata', data:r.data, data_op:r.data, importo:r.importo, quota:r.quota != null ? r.quota : 1, scelta:r.scelta||'', straordinaria:!!r.straordinaria, descrizione:r.descrizione, mcc:null, fonte:'prepagata', importato_il:t }); }
+    for (const r of im.righe) { if (r.dup) continue; await metti('estratto', r.id, { conto:'prepagata', data:r.data, data_op:r.data, importo:r.importo, quota:r.quota != null ? r.quota : 1, scelta:r.scelta||'', straordinaria:!!r.straordinaria, descrizione:r.descrizione, mcc:null, cat:r.cat||null, fonte:'prepagata', importato_il:t }); }
     for (const [f, c] of Object.entries(im.fontiRicarica)) if (c && !lista('regole').some(x => x.tipo === 'ricarica' && String(f).endsWith(String(x.testo)))) await aggiungi('regole', { tipo:'ricarica', testo:String(f).slice(-6), conto:c, origine:'app' });
     for (const [g, sc] of Object.entries(im.gruppiScelti||{})) if (sc && im.ricorda[g] !== false && !lista('regole').some(x => x.tipo === 'classe' && x.testo === g)) await aggiungi('regole', { tipo:'classe', testo:g, scelta:sc, conto:null, origine:'app' });
     await aggiungi('importazioni', { conto:'prepagata', fonte:im.fonte, file:String(im.file).slice(0,80), da:im.da, a:im.a, righe:im.righe.filter(r => !r.dup).length, data:iso(oggi()) });
@@ -2250,6 +2251,387 @@ daFare = function(){
   const k = l.findIndex(x => /^Fotografia/.test(x.titolo)); const it = { titolo:'Importa gli estratti conto fino al '+dataBreve(meseDaId(mc).fine), testo:'Prima della chiusura: così le spese non registrate si ripartiscono sulle voci.', fonte:'BUDGET §10.3', btn:['Importa','go','estratto'] };
   l.splice(k < 0 ? l.length : k, 0, it); return l;
 };
+
+
+/* ================= FASE 3f: CATEGORIE DI ANALISI, SINONIMI, INSERIMENTO GUIDATO (BUDGET §12) ================= */
+/* Tassonomia: macro → sottocategoria → voce di budget (b: busta, f: spesa fissa, x: fuori budget, e: entrata). Vocabolario generico, senza dati personali. */
+const TASSONOMIA = [
+ ['casa','Casa',[
+  ['casa.mutuo','Mutuo','f:mutuo','comune','mutuo rata mutuo finanziamento'],
+  ['casa.condominio','Condominio','f:condominio','comune','condominio amministratore spese condominiali riscaldamento centralizzato'],
+  ['casa.energia','Luce e gas','f:luce_gas','comune','bolletta luce gas energia elettricita enel eni hera iren a2a edison sorgenia octopus'],
+  ['casa.acqua','Acqua','f:acqua','comune','acqua bolletta acqua contatori lettura contatori'],
+  ['casa.tari','TARI e tributi della casa','f:tari','comune','tari rifiuti imu tributi casa'],
+  ['casa.internet','Internet','f:internet','comune','fibra wifi modem fastweb tim vodafone'],
+  ['casa.telefono','Telefono','f:telefono','personale','telefono cellulare ricarica telefonica sim iliad ho mobile kena very mobile wind'],
+  ['casa.pulizia','Pulizia della casa','f:pulizia','comune','pulizie pulizia colf collaboratrice domestica stiro'],
+  ['casa.manutenzione','Manutenzione e riparazioni','b:casa','comune','idraulico elettricista riparazione caldaia ferramenta brico leroy merlin lampadine pile attrezzi vernice manutenzione tecnico serratura chiavi'],
+  ['casa.elettrodomestici','Elettrodomestici ed elettronica','b:casa','comune','elettrodomestico lavatrice lavastoviglie frigorifero aspirapolvere forno microonde mediaworld unieuro euronics televisore computer pc tablet smartphone cuffie caricatore stampante'],
+  ['casa.arredo','Arredo e piante','b:casa','comune','arredo piante mobili ikea divano lampada tende tappeto vaso giardino terriccio cuscini maisons du monde zara home']]],
+ ['spesa','Spesa',[
+  ['spesa.super','Supermercato','f:alimentari','comune','spesa supermercato coop ipercoop iper conad esselunga carrefour lidl eurospin pam despar aspiag naturasi famila bennet market'],
+  ['spesa.botteghe','Botteghe e mercato','f:alimentari','comune','macelleria pescheria forno panificio panetteria fruttivendolo frutta verdura mercato gastronomia salumeria enoteca vino formaggi bottega'],
+  ['spesa.casa','Prodotti per la casa e igiene','f:alimentari','comune','detersivi detersivo carta igienica sapone shampoo dentifricio igiene tigota prodotti casa spugne']]],
+ ['fuori','Fuori casa',[
+  ['fuori.ristoranti','Ristoranti e pizzerie','b:uscite_quotidiane','comune','pizzeria pizza ristorante trattoria osteria cena pranzo fuori sushi giapponese cinese hamburger burger kebab piadineria tigelle brunch'],
+  ['fuori.bar','Bar, caffè e colazioni','b:uscite_quotidiane','personale','bar caffè caffe cappuccino brioche cornetto colazione espresso ginseng spremuta pasticceria'],
+  ['fuori.lavoro','Pranzi di lavoro','b:uscite_quotidiane','personale','pranzo lavoro mensa colleghi panino tramezzino pausa pranzo autogrill'],
+  ['fuori.asporto','Asporto e consegna','b:uscite_quotidiane','comune','asporto delivery glovo deliveroo just eat justeat take away consegna'],
+  ['fuori.aperitivi','Gelati e aperitivi','b:uscite_quotidiane','personale','gelato gelateria aperitivo spritz birra pub cocktail drink']]],
+ ['trasporti','Trasporti',[
+  ['tr.carburante','Carburante','f:benzina','personale','benzina gasolio diesel carburante rifornimento pieno benza distributore q8 esso tamoil agip shell repsol'],
+  ['tr.pedaggi','Pedaggi','b:uscite_quotidiane','personale','autostrada pedaggio telepass casello autostrade aspit'],
+  ['tr.parcheggi','Parcheggi','f:parcheggio','personale','parcheggio parchimetro strisce blu easypark garage sosta'],
+  ['tr.mezzi','Mezzi pubblici e taxi','b:uscite_quotidiane','personale','autobus bus tram metro treno regionale biglietto tper trenitalia italo taxi uber monopattino bike sharing navetta'],
+  ['tr.manutenzione','Manutenzione auto','b:auto','personale','tagliando meccanico gomme pneumatici revisione carrozziere officina autolavaggio lavaggio auto olio motore batteria ricambi'],
+  ['tr.assicurazione','Assicurazione auto','b:auto','personale','assicurazione auto rc auto polizza auto allianz direct prima assicurazioni genertel linear']]],
+ ['salute','Salute',[
+  ['sal.visite','Visite ed esami','b:salute','personale','visita medico specialista esami analisi laboratorio cardiologo dermatologo ecografia radiografia ticket poliambulatorio'],
+  ['sal.farmacia','Farmacia','b:salute','personale','farmacia farmaci medicine parafarmacia cerotti termometro'],
+  ['sal.dentista','Dentista e ottico','b:salute','personale','dentista odontoiatra igiene dentale ottico occhiali lenti lenti a contatto'],
+  ['sal.terapie','Fisioterapia e terapie','b:salute','personale','fisioterapia fisioterapista osteopata massaggio terapia riabilitazione'],
+  ['sal.rimborsabile','Sanitarie rimborsabili','x:rimborsabile','personale','rimborsabile coopersalute da rimborsare']]],
+ ['persona','Persona',[
+  ['per.abbigliamento','Abbigliamento e scarpe','b:uscite_quotidiane','personale','vestiti abbigliamento scarpe maglione pantaloni giacca camicia intimo calze piumino cappotto jeans ovs zara decathlon pittarello uniqlo'],
+  ['per.cura','Parrucchiere e cura','b:uscite_quotidiane','personale','parrucchiere barbiere taglio capelli estetista profumo crema cosmetici rasoio'],
+  ['per.sport','Sport','b:uscite_quotidiane','personale','palestra piscina sport calcetto padel tennis yoga iscrizione gara'],
+  ['per.contanti','Contanti','b:uscite_quotidiane','personale','contanti prelievo prel bancomat'],
+  ['per.varie','Altre spese quotidiane','b:uscite_quotidiane','personale','piccole spese edicola tabaccheria cartoleria varie']]],
+ ['emma','Emma',[
+  ['emma.nido','Nido e scuola','f:nido','comune','nido retta asilo scuola materna mensa scolastica'],
+  ['emma.vestiti','Vestiti di Emma','b:uscite_quotidiane','comune','vestiti emma body tutina scarpine prenatal chicco bimba'],
+  ['emma.puericultura','Pannolini e puericultura','f:alimentari','comune','pannolini salviette latte in polvere omogeneizzati biberon ciuccio passeggino seggiolino'],
+  ['emma.giochi','Giochi e libri di Emma','b:uscite_quotidiane','comune','giochi giocattoli puzzle peluche lego duplo libri bimbi ludoteca']]],
+ ['svago','Svago e cultura',[
+  ['sv.libri','Libri','b:uscite_quotidiane','personale','libro libri libreria feltrinelli mondadori ebook kindle giornale rivista'],
+  ['sv.eventi','Cinema, eventi e musei','b:uscite_quotidiane','comune','cinema film teatro concerto museo mostra biglietti evento spettacolo'],
+  ['sv.hobby','Hobby e corsi','b:uscite_quotidiane','personale','corso hobby lezioni fotografia musica'],
+  ['sv.abbonamenti','Abbonamenti digitali','b:abbonamenti','personale','abbonamento amazon prime google one appblock netflix disney dazn icloud'],
+  ['sv.spotify','Spotify','f:spotify','personale','spotify']]],
+ ['viaggi','Viaggi',[
+  ['vi.trasporti','Voli e treni','b:vacanze','comune','volo aereo ryanair easyjet wizz vueling ita airways frecciarossa traghetto nave'],
+  ['vi.alloggi','Alloggi','b:vacanze','comune','hotel albergo b&b bnb airbnb booking agriturismo campeggio'],
+  ['vi.noleggio','Noleggio auto','b:vacanze','comune','noleggio autonoleggio rent a car cars on booking hertz europcar'],
+  ['vi.spese','Spese in viaggio','b:vacanze','comune','souvenir escursione gita spiaggia ombrellone lettino skipass tassa di soggiorno']]],
+ ['regali','Regali e ricorrenze',[
+  ['reg.regali','Regali','b:regali','personale','regalo regali compleanno natale smartbox buono regalo fiori fiorista'],
+  ['reg.ricorrenze','Ricorrenze ed eventi','b:regali','comune','matrimonio battesimo comunione laurea festa anniversario bomboniere']]],
+ ['varie','Banca, tasse e varie',[
+  ['var.banca','Costi bancari','f:costi_bancari','personale','commissioni canone conto canone carta bollo imposta di bollo spese bancarie emissione carta'],
+  ['var.imposte','Imposte e quote','x:fuori','personale','f24 tasse imposte multa contravvenzione bollo auto siae marca da bollo passaporto carta identità'],
+  ['var.assicurazioni','Assicurazioni della persona','f:infortuni','personale','assicurazione infortuni infortuni polizza vita tcm'],
+  ['var.altro','Altro fuori budget','x:fuori','personale','altro varie']]],
+ ['entrate','Entrate',[
+  ['ent.stipendio','Stipendio','e:stipendio','personale','stipendio'],
+  ['ent.mensilita','Mensilità aggiuntive e premio','e:mensilita','personale','tredicesima quattordicesima premio'],
+  ['ent.coopersalute','Rimborso Coopersalute','e:coopersalute','personale','coopersalute rimborso sanitario'],
+  ['ent.altro','Altre entrate','e:entrata','personale','rimborso vendita interessi entrata']]],
+ ['nonconsumi','Non consumi',[
+  ['nc.giroconto','Tra i tuoi conti','escluso','personale','giroconto trasferimento'],
+  ['nc.fondo','Fondo pensione','x:fondo_pensione','personale','fondo pensione previdenza'],
+  ['nc.pac','PAC di Emma','f:pac_emma','comune','pac etf emma']]]
+];
+const CAT = {}, MACRO = {};
+for (const [mid, mnome, subs] of TASSONOMIA) { MACRO[mid] = { id:mid, nome:mnome, subs:subs.map(s => s[0]) };
+  subs.forEach(([id, nome, voce, conto, sin], i) => { CAT[id] = { id, nome, macro:mid, macroNome:mnome, voce, conto, ordine:i, sin:sin.split(/\s+/).length ? sinonimiDa(nome, sin) : [] }; }); }
+function sinonimiDa(nome, s){
+  /* parole singole più alcune locuzioni note */
+  const loc = ['carta igienica','prodotti casa','pranzo fuori','pausa pranzo','take away','just eat','strisce blu','rc auto','polizza auto','allianz direct','prima assicurazioni','lenti a contatto','igiene dentale','taglio capelli','piccole spese','mensa scolastica','latte in polvere','libri bimbi','amazon prime','google one','ita airways','rent a car','cars on booking','tassa di soggiorno','buono regalo','canone conto','canone carta','imposta di bollo','spese bancarie','emissione carta','bollo auto','marca da bollo','carta identità','polizza vita','rimborso sanitario','fondo pensione','etf emma','lettura contatori','bolletta luce','bolletta acqua','spese condominiali','riscaldamento centralizzato','ricarica telefonica','ho mobile','very mobile','colf','leroy merlin','olio motore','lavaggio auto','maisons du monde','zara home','treno regionale','bike sharing','bus','iscrizione gara','assicurazione infortuni','assicurazione auto','pranzo lavoro','rata mutuo','tributi casa','collaboratrice domestica','vestiti emma','prelievo bancomat','lavastoviglie','forno microonde'];
+  const out = []; let t = ' '+s+' ';
+  for (const l of loc) if (t.includes(' '+l+' ')) { out.push(l); t = t.replace(' '+l+' ', ' '); }
+  return out.concat(t.trim().split(/\s+/).filter(Boolean));
+}
+const normTesto = s => String(s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9&]+/g, ' ').trim();
+const vocePerCat = c => CAT[c] ? sceltaValida(CAT[c].voce === 'x:costi_bancari' ? 'f:costi_bancari' : CAT[c].voce) || (CAT[c].voce === 'f:costi_bancari' ? 'x:costi_bancari' : (CAT[c].voce === 'f:infortuni' ? 'x:fuori' : '')) : '';
+const etichettaCat = c => CAT[c] ? CAT[c].macroNome+' › '+CAT[c].nome : 'Da assegnare';
+/* Una lettera sbagliata, mancante, in più o invertita */
+function vicino(a, b){ if (a === b) return true; const la = a.length, lb = b.length; if (Math.abs(la-lb) > 1) return false;
+  let i = 0; while (i < la && i < lb && a[i] === b[i]) i++;
+  if (la === lb) return a.slice(i+1) === b.slice(i+1) || (a[i] === b[i+1] && a[i+1] === b[i] && a.slice(i+2) === b.slice(i+2));
+  return la > lb ? a.slice(i+1) === b.slice(i) : a.slice(i) === b.slice(i+1); }
+function lev(a, b, max){ if (Math.abs(a.length-b.length) > max) return max+1; const d = Array.from({ length:b.length+1 }, (_, i) => i);
+  for (let i = 1; i <= a.length; i++) { let prev = d[0], minR = i; d[0] = i; for (let j = 1; j <= b.length; j++) { const t = d[j]; d[j] = Math.min(d[j]+1, d[j-1]+1, prev + (a[i-1] === b[j-1] ? 0 : 1)); prev = t; if (d[j] < minR) minR = d[j]; } if (minR > max) return max+1; }
+  return d[b.length]; }
+const POP = { 'fuori.ristoranti':3, 'spesa.super':3, 'fuori.bar':3, 'per.abbigliamento':2.5, 'casa.arredo':2, 'sal.farmacia':2, 'sal.visite':1.5, 'tr.carburante':1.5, 'reg.regali':1.5, 'emma.puericultura':1.5, 'emma.giochi':1, 'sv.libri':1 };
+function punteggio(q, syn){
+  if (syn === q) return 100;
+  if (syn.startsWith(q)) return 90;
+  const parole = syn.split(' ');
+  if (parole.some(p => p.startsWith(q))) return 80;
+  if (q.length >= 4 && syn.includes(q)) return 65;
+  const max = q.length >= 8 ? 2 : (q.length >= 4 ? 1 : 0); if (!max) return 0;
+  for (const p of parole) if (p.length >= 4 && lev(q, p, max) <= max) return 58;
+  for (const p of parole) if (p.length > q.length && (lev(q, p.slice(0, q.length), max) <= max || lev(q, p.slice(0, q.length+1), max) <= max)) return 52;
+  return 0;
+}
+function sinonimiPersonali(){ const o = {}; for (const x of lista('regole')) if (x.tipo === 'sinonimo' && CAT[x.cat]) (o[x.cat] = o[x.cat] || []).push(normTesto(x.testo)); return o; }
+function usoCategorie(){ const o = {}; for (const x of lista('movimenti')) if (x.cat) o[x.cat] = (o[x.cat]||0)+1; return o; }
+/* Proposte per il testo scritto: una per sottocategoria, con il sinonimo che la fa trovare */
+function suggerisci(testo, quante, soloSpese){
+  const q = normTesto(testo); if (q.length < 2) return [];
+  const parole = q.split(' ').filter(w => w.length >= 2), pers = sinonimiPersonali(), uso = usoCategorie(), out = [];
+  for (const c of Object.values(CAT)) {
+    if (soloSpese && (c.macro === 'entrate' || c.macro === 'nonconsumi')) continue;
+    const sin = (pers[c.id]||[]).concat(c.sin.map(normTesto), [normTesto(c.nome)]);
+    let tot = 0, label = null;
+    for (const w of [q].concat(parole.length > 1 ? parole : [])) { let best = 0, lab = null; sin.forEach((s, i) => { const b0 = punteggio(w, s); if (!b0) return; const p = b0 - Math.min(i, 25)*0.4; if (p > best) { best = p; lab = s; } }); if (best > 0) { tot += best; if (!label || w === q) label = lab; } }
+    if (tot > 0) out.push({ cat:c.id, label, punti: tot + (POP[c.id]||0) + Math.min(10, (uso[c.id]||0)) - c.ordine*0.001 });
+  }
+  return out.sort((a,b) => b.punti - a.punti).slice(0, quante || 6);
+}
+const maiuscola = s => s ? s.charAt(0).toUpperCase() + s.slice(1) : s;
+
+/* ---- Categoria delle righe importate ---- */
+const MCC_CAT = [['spesa.super',[5411,5300,5331,5499]],['spesa.botteghe',[5422,5451,5462,5441]],['fuori.ristoranti',[5812,5814]],['fuori.aperitivi',[5813]],['tr.mezzi',[4111,4112,4121,4131,4789]],['tr.pedaggi',[4784]],['tr.parcheggi',[7523]],['tr.carburante',[5541,5542,5983]],['tr.manutenzione',[7538,7531,7542,5532,5533]],
+  ['sal.farmacia',[5912,5122]],['sal.dentista',[8021,8043]],['sal.visite',[8011,8031,8041,8042,8049,8050,8062,8071,8099]],['per.abbigliamento',[5651,5691,5699,5611,5621,5631,5661,5310,5311]],['emma.vestiti',[5641]],['emma.giochi',[5945]],['per.cura',[7230,5977]],['per.sport',[5941,7997]],
+  ['sv.libri',[5942,5994]],['sv.eventi',[7832,7922,7929,7991,7996]],['sv.abbonamenti',[4899,5815,5816,5817,5818]],['casa.manutenzione',[5200,5211,5231,5251,5261,1520,1711,1731,1740,1750,1799,7623,7629]],['casa.arredo',[5712,5719,5992]],['casa.elettrodomestici',[5722,5732,5734]],
+  ['casa.telefono',[4814]],['reg.regali',[5947]],['var.imposte',[9311,9399,9222]]];
+const DEFAULT_CAT = { 'b:uscite_quotidiane':'per.varie', 'b:casa':'casa.manutenzione', 'b:auto':'tr.manutenzione', 'b:salute':'sal.visite', 'b:vacanze':'vi.spese', 'b:regali':'reg.regali', 'b:abbonamenti':'sv.abbonamenti', 'x:fuori':'var.altro', 'x:costi_bancari':'var.banca', 'f:costi_bancari':'var.banca', 'x:rimborsabile':'sal.rimborsabile', 'x:fondo_pensione':'nc.fondo', 'escluso':'nc.giroconto', 'e:stipendio':'ent.stipendio', 'e:mensilita':'ent.mensilita', 'e:coopersalute':'ent.coopersalute', 'e:entrata':'ent.altro' };
+const STOP_IMPORT = ['spesa','internet','pagamento','carta','conto','bonifico','commissioni','varie','altro','evento','festa'];
+function catDaTesto(testo, scelta){
+  const t = ' '+normTesto(testo)+' ', cand = [];
+  for (const c of Object.values(CAT)) for (const s of c.sin) { const n = normTesto(s); if (n.length >= 3 && !STOP_IMPORT.includes(n) && t.includes(' '+n+' ')) cand.push({ c:c.id, l:n.length }); }
+  for (const [cid, ss] of Object.entries(sinonimiPersonali())) for (const n of ss) if (n.length >= 3 && t.includes(' '+n+' ')) cand.push({ c:cid, l:n.length+5 });
+  cand.sort((a,b) => b.l - a.l);
+  if (scelta) { const ok = cand.find(x => vocePerCat(x.c) === scelta || CAT[x.c].voce === scelta); if (ok) return ok.c; }
+  return cand.length && !scelta ? cand[0].c : null;
+}
+function catAuto(x){
+  if (x.cat && CAT[x.cat]) return x.cat;
+  const sc = x.scelta || '';
+  if (!sc) return null;
+  const t = catDaTesto(x.descrizione, sc); if (t) return t;
+  if (x.mcc) for (const [cid, l] of MCC_CAT) if (l.includes(Number(x.mcc)) && (vocePerCat(cid) === sc || CAT[cid].voce === sc)) return cid;
+  if (DEFAULT_CAT[sc]) return DEFAULT_CAT[sc];
+  const f = Object.values(CAT).find(c => c.voce === sc); return f ? f.id : null;
+}
+/* La classificazione restituisce anche la categoria: prima regola con categoria, poi testo, poi codice esercente */
+const _classifica3f = classifica;
+classifica = function(r, testo){
+  const c = _classifica3f(r, testo), t = testo.toLowerCase();
+  const reg = lista('regole').filter(x => x.tipo === 'classe' && x.cat && x.testo && t.includes(String(x.testo).toLowerCase()) && (!x.conto || x.conto === r.conto)).sort((a,b) => b.testo.length - a.testo.length)[0];
+  if (reg && CAT[reg.cat]) { c.cat = reg.cat; return c; }
+  if (!c.scelta) { const tc = catDaTesto(r.descrizione || testo, null); if (tc && r.importo < 0 && !/^e:|^nc|^ent/.test(tc)) { const v = vocePerCat(tc); if (v) { c.scelta = v; c.cat = tc; c.motivo = 'parola: “'+tc.split('.')[1]+'”'; return c; } } }
+  c.cat = catAuto({ descrizione:r.descrizione || testo, scelta:c.scelta, mcc:r.mcc });
+  return c;
+};
+const _prepara3f = preparaImport;
+preparaImport = function(ris, nome){ const im = _prepara3f(ris, nome); for (const r of im.righe) if (!r.cat) r.cat = catAuto({ descrizione:r.descrizione, scelta:r.scelta, mcc:r.mcc }); return im; };
+
+/* ---- Selettore di categoria per le righe importate ---- */
+function opzioniCategoria(sel){
+  const o = (v, t) => '<option value="'+h(v)+'"'+(v === sel ? ' selected' : '')+'>'+h(t)+'</option>';
+  return o('', 'Da assegnare') + TASSONOMIA.map(([mid, mnome, subs]) => '<optgroup label="'+h(mnome)+'">'+subs.map(s => o(s[0], s[1])).join('')+'</optgroup>').join('');
+}
+const _rigaEstr3f = rigaEstr;
+rigaEstr = function(r, ix){
+  const cat = r.cat || catAuto(r);
+  let o = _rigaEstr3f(Object.assign({}, r, { cat }), ix);
+  o = o.replace(/<select (data-estr-(?:riga|id)="[^"]*") aria-label="Voce">[\s\S]*?<\/select>/, (m, attr) => '<select '+attr.replace('data-estr-', 'data-estr-cat-')+' aria-label="Categoria">'+opzioniCategoria(cat||'')+'</select>');
+  if (cat && CAT[cat]) o = o.replace('</p></div>', ' · '+h(nomeScelta(r.scelta||''))+'</p></div>');
+  return o;
+};
+const _vEstratto3f = VISTE.estratto;
+VISTE.estratto = function(){
+  let o = _vEstratto3f();
+  o = o.replace(/<select data-estr-gruppo="([^"]*)" aria-label="Voce">[\s\S]*?<\/select>/g, (m, g) => '<select data-estr-gruppo-cat="'+g+'" aria-label="Categoria">'+opzioniCategoria('')+'</select>');
+  o = o.replace('Una scelta vale per tutte le righe dello stesso esercente.', 'Scegli la categoria: la voce di budget segue da sola. Una scelta vale per tutte le righe dello stesso esercente.');
+  return o;
+};
+document.addEventListener('change', async ev => {
+  const e = ev.target, d = e.dataset || {}, im = ui.estr; const cat = e.value, voce = cat ? vocePerCat(cat) : '';
+  if (d.estrGruppoCat != null && im) { im.gruppiScelti = im.gruppiScelti || {}; im.gruppiCat = im.gruppiCat || {}; im.gruppiScelti[d.estrGruppoCat] = voce; im.gruppiCat[d.estrGruppoCat] = cat;
+    for (const r of im.righe) if (!r.dup && !r.scelta && r.gruppo === d.estrGruppoCat) { r.scelta = voce; r.cat = cat; r.motivo = 'scelta tua'; } render(); return; }
+  if (d.estrCatRiga != null && im) { const r = im.righe[Number(d.estrCatRiga)]; if (r) { r.cat = cat; r.scelta = voce; r.motivo = 'scelta tua'; } render(); return; }
+  if (d.estrCatId != null) { const id = d.estrCatId; if (S.a.estratto[id]) await scrivi(() => aggiorna('estratto', id, { cat, scelta:voce })); render(); }
+});
+/* Salvataggio: categoria sulle righe e nelle regole ricordate */
+const _salva3f = AZ.estr_salva;
+AZ.estr_salva = async function(){
+  const im = ui.estr; if (!im) return; const cats = {}; for (const r of im.righe) if (!r.dup) cats[r.id] = r.cat || null; const gc = Object.assign({}, im.gruppiCat||{});
+  await _salva3f.apply(this, arguments);
+  if (ui.estr) return; /* salvataggio non riuscito */
+  await scrivi(async () => { for (const [id, c] of Object.entries(cats)) if (c && S.a.estratto[id] && S.a.estratto[id].cat !== c) await aggiorna('estratto', id, { cat:c });
+    for (const [g, c] of Object.entries(gc)) { const reg = lista('regole').find(x => x.tipo === 'classe' && x.testo === g); if (reg && c) await aggiorna('regole', reg.id, { cat:c }); } });
+};
+
+/* ---- Inserimento guidato a mano: cosa, importo pagato, pagato con (BUDGET §12) ---- */
+const PAGATO = [['conto_personale','Conto personale',1],['conto_comune','Conto comune BPM',0.5],['trade_republic','Trade Republic (comune)',0.5],['prepagata_comune','Prepagata, ricaricata dal comune',0.5],['prepagata_personale','Prepagata, ricaricata dal personale',1]];
+const quotaPagato = p => { const x = PAGATO.find(y => y[0] === p); return x ? x[2] : 1; };
+function htmlProposte(testo){ const l = suggerisci(testo, 6, true); if (!l.length) return normTesto(testo).length >= 2 ? '<p class="sotto">Nessuna proposta: scegli dall’elenco qui sotto o salva senza categoria.</p>' : '';
+  return l.map(x => '<button type="button" class="propo" data-act="cat_scegli" data-cat="'+h(x.cat)+'"><b>'+h(maiuscola(x.label))+'</b><span>'+h(etichettaCat(x.cat))+'</span></button>').join(''); }
+const _foglio3f = foglio;
+foglio = function(){
+  const s = ui.sheet; if (!s || s.tipo !== 'spesa') return _foglio3f();
+  if (!s.init) { const x = s.id ? (S.a.movimenti[s.id]||{}) : {}; Object.assign(s, { init:true, imp: x.importo_totale != null ? fmtNum(x.importo_totale, 2) : (x.importo != null ? fmtNum(x.importo, 2) : ''), cosa:x.descrizione||'', cat:x.cat||null, pagato:x.pagato_con || (x.id || s.id ? 'conto_personale' : ''), data:x.data||iso(oggi()), busta: x.busta || '' }); }
+  const c = s.cat && CAT[s.cat], voce = c ? vocePerCat(s.cat) : '', fissa = voce.startsWith('f:');
+  const pag = s.pagato || (c ? (c.conto === 'comune' ? 'conto_comune' : 'conto_personale') : 'conto_personale'), q = quotaPagato(pag), imp = num(s.imp), busta = s.bustaManuale ? s.busta : (voce.startsWith('b:') ? voce.slice(2) : '');
+  const corpo = '<label>Cosa hai comprato<input id="f_cosa" autocomplete="off" value="'+h(s.cosa||'')+'" placeholder="Es. pizzeria, piante, tagliando"></label>'+
+    (c ? '<div class="scelta-cat"><span><b>'+h(c.nome)+'</b><br><span class="sotto">'+h(c.macroNome)+(voce ? ' · '+h(nomeScelta(voce)) : '')+'</span></span><button type="button" class="link" data-act="cat_cambia">Cambia</button></div>' : '<div id="f_sugg" class="proposte">'+htmlProposte(s.cosa)+'</div><details><summary class="link">Scegli dall’elenco</summary><select data-cat-elenco aria-label="Categoria">'+opzioniCategoria('').replace(/<optgroup label="(Entrate|Non consumi)">[\s\S]*?<\/optgroup>/g, '')+'</select></details>')+
+    (fissa ? '<p class="sotto warn">È una spesa fissa: è già nel preventivo del mese. La registro senza scalare il budget e senza contarla due volte in chiusura.</p>' : '')+
+    '<label>Importo pagato (totale)<input id="f_imp" inputmode="decimal" value="'+h(s.imp||'')+'"></label>'+
+    '<label>Pagato con<select id="f_pagato" data-pagato>'+PAGATO.map(([v,t]) => '<option value="'+v+'"'+(v === pag ? ' selected' : '')+'>'+h(t)+'</option>').join('')+'</select></label>'+
+    '<p class="sotto" id="f_quota">Tua quota: '+(isFinite(imp) && imp > 0 ? eur(r2(imp*q)) : '—')+(q !== 1 ? ' (50%)' : '')+'</p>'+
+    '<label>Data<input id="f_data" type="date" value="'+h(s.data||iso(oggi()))+'"></label>'+
+    (fissa ? '' : '<details'+(s.bustaManuale ? ' open' : '')+'><summary class="link">Voce di budget: '+h(busta ? (S.a.buste[busta]||{}).nome || busta : 'nessuna (pesa sul mese)')+'</summary><label>Cambia la voce<select id="f_busta" data-busta-man>'+opzBuste(busta)+'</select></label></details>');
+  return '<div class="velo" data-act="chiudi_sheet"></div><div class="foglio" role="dialog" aria-modal="true" aria-label="Segna una spesa"><h2>'+(s.id ? 'Modifica la spesa' : 'Segna una spesa')+'</h2><div class="form">'+corpo+'</div><div class="bottoni"><button class="btn primario" data-act="spesa_ok">'+(fissa ? 'Salva' : 'Conferma e scala')+'</button><button class="btn" data-act="chiudi_sheet">Annulla</button></div><p class="fonte">Per le spese comuni scrivi il totale pagato: l’app conta la tua quota. BUDGET §12.</p></div>';
+};
+document.addEventListener('input', ev => {
+  const e = ev.target, s = ui.sheet; if (!s || s.tipo !== 'spesa') return;
+  if (e.id === 'f_cosa') { s.cosa = e.value; if (!s.cat) { const box = document.getElementById('f_sugg'); if (box) box.innerHTML = htmlProposte(e.value); } }
+  if (e.id === 'f_data') s.data = e.value;
+  if (e.id === 'f_imp') { s.imp = e.value; const q = quotaPagato((document.getElementById('f_pagato')||{}).value), v = num(e.value), p = document.getElementById('f_quota'); if (p) p.textContent = 'Tua quota: '+(isFinite(v) && v > 0 ? eur(r2(v*q)) : '—')+(q !== 1 ? ' (50%)' : ''); }
+});
+document.addEventListener('change', ev => {
+  const e = ev.target, s = ui.sheet; if (!s || s.tipo !== 'spesa') return;
+  if (e.dataset.pagato != null) { s.pagato = e.value; render(); }
+  if (e.dataset.bustaMan != null) { s.busta = e.value; s.bustaManuale = true; render(); }
+  if (e.dataset.catElenco != null && e.value) { s.cat = e.value; s.pagato = s.pagatoScelto ? s.pagato : (CAT[e.value].conto === 'comune' ? 'conto_comune' : 'conto_personale'); render(); }
+});
+Object.assign(AZ, {
+  cat_scegli(el){ const s = ui.sheet; if (!s) return; s.cat = el.dataset.cat; const inp = document.getElementById('f_cosa'); if (inp) s.cosa = inp.value; if (!s.pagatoScelto && !s.id) s.pagato = CAT[s.cat].conto === 'comune' ? 'conto_comune' : 'conto_personale'; s.bustaManuale = false; },
+  cat_cambia(){ const s = ui.sheet; if (s) { s.cat = null; s.bustaManuale = false; } },
+  async spesa_ok(){
+    const s = ui.sheet, imp = num(s.imp), data = s.data, pag = s.pagato || (s.cat && CAT[s.cat] && CAT[s.cat].conto === 'comune' ? 'conto_comune' : 'conto_personale');
+    if (!(imp > 0) || !isData(data)) return avviso('Controlla importo e data.');
+    const q = quotaPagato(pag), voce = s.cat ? vocePerCat(s.cat) : '', fissa = voce.startsWith('f:'), busta = fissa ? null : (s.bustaManuale ? (s.busta||null) : (voce.startsWith('b:') ? voce.slice(2) : null));
+    const d = { importo:r2(imp*q), importo_totale:r2(imp), quota:q, pagato_con:pag, cat:s.cat||null, voce:voce||null, busta, fissa:fissa || null, descrizione:String(s.cosa||'').slice(0,120) || (s.cat ? CAT[s.cat].nome : 'Spesa'), data, stato:'confermato' };
+    const ok = await scrivi(async () => {
+      if (s.id) await aggiorna('movimenti', s.id, Object.assign(d, { confermato_il:adesso() })); else await aggiungi('movimenti', Object.assign({ tipo:'spesa', fonte:'manuale' }, d));
+      /* Impara il sinonimo se la parola scritta non porta già a questa categoria */
+      const w = normTesto(s.cosa); if (s.cat && w && w.length >= 3 && w.split(' ').length <= 3) { const prima = suggerisci(w, 1, true)[0]; if (!prima || prima.cat !== s.cat) { if (!lista('regole').some(x => x.tipo === 'sinonimo' && normTesto(x.testo) === w)) await aggiungi('regole', { tipo:'sinonimo', testo:w, cat:s.cat, origine:'app' }); } }
+    });
+    if (ok) chiudiSheet();
+  }
+});
+/* Abbinamento con le righe importate sull’importo totale */
+const _preparaMan3f = preparaImport;
+preparaImport = function(ris, nome){ const im = _preparaMan3f(ris, nome);
+  const man = confermati('movimenti').filter(x => x.tipo === 'spesa' && x.importo_totale != null);
+  for (const r of im.righe) if (!r.manuale && r.importo < 0) { const m = man.find(x => Math.abs(x.importo_totale + r.importo) < 0.01 && Math.abs(giorniTra(parse(x.data), parse(r.data_op || r.data))) <= 7); if (m) r.manuale = (m.descrizione||'Spesa')+' del '+dataBreve(m.data); }
+  return im; };
+
+/* ---- Segnali per categoria (BUDGET §12): ultimi 3 mesi completi contro la media dei mesi precedenti, fino a 12 ---- */
+function speseCategoriaMese(m){
+  const o = {};
+  for (const x of lista('estratto')) { if (!nelMese(x.data, m) || !contaRiga(x) || x.straordinaria || !x.scelta || x.scelta === 'escluso' || x.scelta.startsWith('e:') || x.scelta === 'x:fondo_pensione') continue;
+    const c = catAuto(x); if (!c || CAT[c].macro === 'nonconsumi' || CAT[c].macro === 'entrate') continue; o[c] = (o[c]||0) - x.importo*(x.quota != null ? x.quota : 1); }
+  return o;
+}
+function segnaliCategorie(fino){
+  const comp = calibrazioneEstratti().completi.filter(id => !fino || id <= fino); if (comp.length < 4) return { pochi:true, n:comp.length };
+  const rec = comp.slice(-3), base = comp.slice(Math.max(0, comp.length-15), -3), som = (ids) => { const o = {}; for (const id of ids) for (const [k,v] of Object.entries(speseCategoriaMese(meseDaId(id)))) o[k] = (o[k]||0) + v; for (const k in o) o[k] = r2(o[k]/ids.length); return o; };
+  const r = som(rec), b = som(base), soglia = 1 + (P('budget.categorie.soglia_aumento') != null ? P('budget.categorie.soglia_aumento')/100 : 0.25), min = P('budget.categorie.minimo_mensile') != null ? P('budget.categorie.minimo_mensile') : 10;
+  const sopra = Object.keys(r).filter(k => r[k] - (b[k]||0) >= min && r[k] > (b[k]||0) * soglia).map(k => ({ cat:k, rec:r[k], base:b[k]||0 })).sort((x,y) => (y.rec-y.base) - (x.rec-x.base));
+  const top = Object.entries(r).sort((x,y) => y[1]-x[1]).slice(0,6);
+  return { rec, base, sopra, top, mediaRec:r, mediaBase:b };
+}
+function cardSegnali(fino){
+  const s = segnaliCategorie(fino);
+  if (s.pochi) return '<section class="card"><h2>Segnali per categoria</h2><p class="sotto">Servono almeno 4 mesi completi di estratti conto (ora '+s.n+').</p></section>';
+  const per = etichettaMese(meseDaId(s.rec[0])).split(' – ')[0]+' – '+etichettaMese(meseDaId(s.rec[2])).split(' – ')[1];
+  let o = '<section class="card"><div class="card-testa"><h2>Segnali per categoria</h2>'+chip(s.sopra.length ? s.sopra.length+' in aumento' : 'nella norma', s.sopra.length ? 'ambra' : 'verde')+'</div><p class="sotto">Ultimi 3 mesi completi ('+per+') contro la media dei '+s.base.length+' precedenti, quota tua, straordinarie escluse.</p>';
+  if (s.sopra.length) o += s.sopra.slice(0,5).map(x => '<p class="segnale"><b>'+h(CAT[x.cat].nome)+'</b>: '+eur0(x.rec)+' al mese contro '+eur0(x.base)+' di media ('+(x.base > 0 ? '+'+Math.round((x.rec/x.base-1)*100)+'%' : 'nuova')+').</p>').join('');
+  o += '<p class="titolino">Dove vanno di più</p><div class="tab-estr"><span></span><span>Ultimi 3 mesi</span><span>Media prima</span>'+s.top.map(([k,v]) => '<span>'+h(CAT[k].nome)+'</span><b>'+eur0(v)+'</b><span>'+eur0(s.mediaBase[k]||0)+'</span>').join('')+'</div>';
+  return o + fonteRiga('Soglia: almeno +25% e +€10 al mese rispetto alla media (BUDGET §12). È un segnale, non un budget.')+'</section>';
+}
+const _vSpese3f = VISTE.spese;
+VISTE.spese = function(){ const o = _vSpese3f(), corr = meseDi(oggi()).id, ids = mesiSpese(corr), id = ui.speseMese && ids.includes(ui.speseMese) ? ui.speseMese : corr;
+  const k = o.indexOf('<section class="card"><h2>Voci mensili</h2>'); const c = cardSegnali(id); return k < 0 ? o + c : o.slice(0,k) + c + o.slice(k); };
+const _vCal3f = VISTE.calibrazione;
+VISTE.calibrazione = function(){
+  let o = _vCal3f(); const comp = calibrazioneEstratti().completi; if (!comp.length) return o;
+  const tot = {}; for (const id of comp) for (const [k,v] of Object.entries(speseCategoriaMese(meseDaId(id)))) tot[k] = (tot[k]||0) + v;
+  let s = '<section class="card"><h2>Media per categoria</h2><p class="sotto">'+comp.length+' mesi completi, quota tua al mese, straordinarie escluse.</p>';
+  for (const [mid, mnome, subs] of TASSONOMIA) { const righe = subs.filter(x => tot[x[0]]).map(x => [x[0], r2(tot[x[0]]/comp.length)]); if (!righe.length) continue;
+    s += '<p class="titolino">'+h(mnome)+' · '+eur0(righe.reduce((a,x) => a + x[1], 0))+'</p><div class="elenco fitto">'+righe.sort((a,b) => b[1]-a[1]).map(([k,v]) => riga(h(CAT[k].nome)+(vocePerCat(k).startsWith('b:') ? ' <span class="sotto">'+h(nomeScelta(vocePerCat(k)))+'</span>' : ''), eur0(v))).join('')+'</div>'; }
+  s += fonteRiga('Categorie e collegamento alle voci: BUDGET §12.')+'</section>';
+  const k2 = o.lastIndexOf('<p class="fonte">'); return k2 < 0 ? o + s : o.slice(0,k2) + s + o.slice(k2);
+};
+
+/* ---- Spese fisse nuove e regole corrette (decisioni del 18/11/2026) ---- */
+function migra3f(){
+  if (S.migrato3f || !S.pronto || !S.a.spese_fisse) return; S.migrato3f = true;
+  const serve = !S.a.spese_fisse.costi_bancari || !S.a.spese_fisse.infortuni || lista('regole').some(x => x.tipo === 'classe' && /ordine biologi/.test(x.testo) && x.scelta !== 'escluso') || !lista('regole').some(x => x.tipo === 'classe' && x.testo === 'assiberg') || !lista('regole').some(x => x.tipo === 'classe' && x.testo === 'siae');
+  if (!serve) return;
+  scrivi(async () => {
+    if (!S.a.spese_fisse.costi_bancari) await metti('spese_fisse', 'costi_bancari', { nome:'Costi bancari', conto:'conto_personale', frequenza:'mensile', giorno:null, importo:10, occorrenze_anno:12, ordine:13.5, documento:'BUDGET', sezione:'3', versione:'2026-11-18', nota:'Canoni, commissioni e bollo dei conti personale e comune, quota tua (stima dagli estratti 2025–2026)' });
+    if (!S.a.spese_fisse.infortuni) await metti('spese_fisse', 'infortuni', { nome:'Assicurazione infortuni', conto:'conto_personale', frequenza:'annuale', giorno:null, importo:77, occorrenze_anno:1, ordine:13.6, documento:'BUDGET', sezione:'3', versione:'2026-11-18', nota:'Assiberg, pagata ad aprile 2026' });
+    for (const x of lista('regole')) if (x.tipo === 'classe' && /ordine biologi/.test(x.testo) && x.scelta !== 'escluso') await aggiorna('regole', x.id, { testo:'boll.cbill ordine biologi', scelta:'escluso', straordinaria:false, nota:'Spesa di Claudia, rimborsata' });
+    if (!lista('regole').some(x => x.tipo === 'classe' && x.testo === 'assiberg')) await aggiungi('regole', { tipo:'classe', testo:'assiberg', scelta:'f:infortuni', cat:'var.assicurazioni', origine:'documenti' });
+    if (!lista('regole').some(x => x.tipo === 'classe' && x.testo === 'siae')) await aggiungi('regole', { tipo:'classe', testo:'siae', scelta:'x:fuori', cat:'var.imposte', straordinaria:true, dal:'2026-08-01', al:'2026-10-31', origine:'documenti' });
+    for (const x of lista('estratto')) { const d = String(x.descrizione||'').toLowerCase();
+      if (/ordine biologi/.test(d) && x.scelta !== 'escluso') await aggiorna('estratto', x.id, { scelta:'escluso', cat:'nc.giroconto' });
+      else if (/siae/.test(d) && x.data >= '2026-08-01' && x.data <= '2026-10-31' && !x.straordinaria) await aggiorna('estratto', x.id, { straordinaria:true, scelta:'x:fuori', cat:'var.imposte' });
+      else if (/assiberg/.test(d) && x.scelta !== 'f:infortuni') await aggiorna('estratto', x.id, { scelta:'f:infortuni', cat:'var.assicurazioni' });
+      else if (x.scelta === 'x:costi_bancari') await aggiorna('estratto', x.id, { scelta:'f:costi_bancari', cat:'var.banca' }); }
+  });
+}
+const _render3f = render;
+render = function(){ try { migra3f(); } catch (e) { console.error(e); } return _render3f(); };
+window.render = render;
+
+/* ---- Doppioni: oltre all’identificativo, stessa data, conto, importo ed esercente (descrizione ripulita) ---- */
+const _prepDup = preparaImport;
+preparaImport = function(ris, nome){
+  const im = _prepDup(ris, nome), chiave = (c, x) => [c, x.data, Math.round(x.importo*100), normTesto(x.descrizione)].join('|'), salvati = {}, visti = {};
+  for (const x of lista('estratto')) { const k = chiave(x.conto, x); salvati[k] = (salvati[k]||0) + 1; }
+  for (const r of im.righe) { const k = chiave(im.conto, r); visti[k] = (visti[k]||0) + 1; if (!r.dup && visti[k] <= (salvati[k]||0)) r.dup = true; }
+  return im;
+};
+
+/* ================= FASE 3g: DOPPIONI TRA IMPORTAZIONI E COPERTURA ================= */
+/* Descrizione normalizzata per l’impronta: la banca può togliere “-da contab” quando contabilizza */
+function normRaw(s){ return String(s||'').toLowerCase().replace(/-?\s*da\s*contab\w*/g, '').replace(/\s+/g, ' ').trim(); }
+const simileDesc = (a, b) => { const x = normTesto(a).split(' ').slice(0,2).join(' '), y = normTesto(b).split(' ').slice(0,2).join(' '); return !!x && !!y && (x === y || x.includes(y) || y.includes(x)); };
+const _prepara3g = preparaImport;
+preparaImport = function(ris, nome){
+  const im = _prepara3g(ris, nome), alias = new Set(); for (const x of lista('estratto')) if (x.alias) for (const a of [].concat(x.alias)) alias.add(a);
+  for (const r of im.righe) r.dup = !!S.a.estratto[r.id] || (r.idVecchio && !!S.a.estratto[r.idVecchio]) || alias.has(r.id);
+  /* Righe già salvate nel periodo del file che il file non contiene più: probabilmente cambiate (descrizione o data contabile) */
+  const ids = new Set(); for (const r of im.righe) { ids.add(r.id); if (r.idVecchio) ids.add(r.idVecchio); }
+  const mancanti = lista('estratto').filter(x => x.conto === im.conto && x.data >= im.da && x.data <= im.a && !ids.has(x.id) && ![].concat(x.alias||[]).some(a => ids.has(a)));
+  im.probabili = [];
+  for (const r of im.righe) { if (r.dup) continue; const k = mancanti.findIndex(x => Math.abs(x.importo - r.importo) < 0.005 && Math.abs(giorniTra(parse(x.data), parse(r.data))) <= 5 && simileDesc(x.descrizione, r.descrizione));
+    if (k >= 0) { r.dup = true; r.probabile = mancanti[k].id; im.probabili.push(r); mancanti.splice(k, 1); } }
+  return im;
+};
+/* Al salvataggio la riga già presente prende data e descrizione nuove e ricorda l’impronta nuova */
+const _salva3g = AZ.estr_salva;
+AZ.estr_salva = async function(){
+  const im = ui.estr; const prob = im ? (im.probabili||[]).filter(r => r.dup && r.probabile) : [];
+  await _salva3g.apply(this, arguments);
+  if (ui.estr || !prob.length) return;
+  await scrivi(async () => { for (const r of prob) { const x = S.a.estratto[r.probabile]; if (!x) continue; await aggiorna('estratto', r.probabile, { data:r.data, data_op:r.data_op||r.data, descrizione:r.descrizione, alias:[].concat(x.alias||[], [r.id]) }); } });
+};
+AZ.estr_prob = function(){ const im = ui.estr; if (!im) return; im.inclusiProb = !im.inclusiProb; for (const r of im.probabili||[]) r.dup = !im.inclusiProb; };
+const _vEstratto3g = VISTE.estratto;
+VISTE.estratto = function(){
+  let o = _vEstratto3g(); const im = ui.estr; if (!im || !im.righe || !(im.probabili||[]).length) return o;
+  const card = '<section class="card nota-ambra"><p class="titolino">'+im.probabili.length+(im.probabili.length === 1 ? ' probabile doppione' : ' probabili doppioni')+'</p><p class="sotto">Stesso conto e importo, data entro 5 giorni, stesso esercente: è la stessa spesa già importata, con descrizione o data contabile cambiata. '+(im.inclusiProb ? 'Le importo come righe nuove.' : 'Non le importo: aggiorno la riga già salvata.')+'</p>'+
+    '<details><summary class="link">Mostra</summary><div class="elenco fitto">'+im.probabili.map(r => { const x = S.a.estratto[r.probabile]||{}; return riga(h(r.descrizione)+' <span class="sotto">'+dataBreve(r.data)+' · già salvata il '+dataBreve(x.data||r.data)+'</span>', eur(r.importo)); }).join('')+'</div></details>'+
+    '<button class="btn" data-act="estr_prob">'+(im.inclusiProb ? 'Escludili di nuovo' : 'Importali comunque')+'</button></section>';
+  const k = o.indexOf('<section class="card">', o.indexOf('</section>') + 10); return k < 0 ? o + card : o.slice(0,k) + card + o.slice(k);
+};
+
+/* ---- Copertura come unione di periodi; il giorno dell’esportazione non conta come completo ---- */
+copertura = function(){
+  const per = {};
+  for (const x of lista('importazioni')) { if (!x.da || !x.a) continue; let a = x.a; if (x.data && x.data <= x.a) a = iso(piuGiorni(parse(x.a), -1)); if (a < x.da) continue; (per[x.conto] = per[x.conto] || []).push([x.da, a]); }
+  const out = {};
+  for (const [c, l] of Object.entries(per)) { l.sort((p,q) => p[0] < q[0] ? -1 : 1); const m = [];
+    for (const [d, a] of l) { const u = m[m.length-1]; if (u && d <= iso(piuGiorni(parse(u[1]), 1))) { if (a > u[1]) u[1] = a; } else m.push([d, a]); }
+    out[c] = { da:m[0][0], a:m[m.length-1][1], intervalli:m }; }
+  return out;
+};
+const coperto = (x, d0, d1) => !!x && x.intervalli.some(([d, a]) => d <= d0 && a >= d1);
+coperturaMese = function(m){
+  const cop = copertura(), i0 = iso(m.inizio), i1 = iso(m.fine), manca = [];
+  for (const c of CONTI_ESTRATTO()) { if (c.aperto_il && c.aperto_il > i1) continue; const x = cop[c.id], da0 = c.aperto_il && c.aperto_il > i0 ? c.aperto_il : i0;
+    if (!x) manca.push(c.nome+': mai importato'); else if (!coperto(x, da0, i1)) manca.push(c.nome+': manca una parte tra il '+dataMedia(da0)+' e il '+dataMedia(i1)+(x.a < i1 ? ' (importato fino al '+dataMedia(x.a)+')' : '')); }
+  return { completo: !manca.length, manca };
+};
+copreCarta = function(dataIso){ const x = copertura().prepagata; return coperto(x, dataIso, dataIso); };
 </script>
 </body>
 </html>

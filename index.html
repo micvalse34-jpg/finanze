@@ -196,6 +196,7 @@ main{padding-top:36px}
 .estr-gr,.estr-riga{display:flex;flex-wrap:wrap;align-items:center;gap:8px;padding:10px 0;border-bottom:1px solid var(--line)} .estr-gr .cresce,.estr-riga .cresce{flex:1 1 220px;min-width:0} .estr-gr select,.estr-riga select,.card label>select{flex:1 1 170px;min-height:42px;border:1.5px solid var(--border);border-radius:10px;background:var(--card);color:var(--ink);font-size:14px;padding:4px 8px;max-width:100%} .card>label{display:flex;flex-direction:column;gap:6px;font-size:13px;color:var(--muted)} .card>label>select{flex:none} .spunta{display:flex;align-items:center;gap:4px;font-size:12px;color:var(--muted);min-height:42px} .estr-voce{border-bottom:1px solid var(--line)} .estr-voce>.voce{min-height:46px;cursor:pointer} .tab-estr{display:grid;grid-template-columns:1fr auto auto;gap:6px 14px;font-size:14px;align-items:baseline} .tab-estr>span:nth-child(-n+3){font-size:12px;color:var(--muted)} .tab-estr b{font-weight:600;text-align:right} .tab-estr>span:nth-child(3n){text-align:right;color:var(--muted)} details summary{cursor:pointer;min-height:44px;display:flex;align-items:center}
 .tab-estr.tab4{grid-template-columns:1fr auto auto auto} .tab-estr.tab4>*{text-align:right} .tab-estr.tab4>span:nth-child(4n+1){text-align:left} .tab-estr.tab4>span:nth-child(-n+4){font-size:12px;color:var(--muted)}
 .proposte{display:flex;flex-direction:column;gap:6px;margin:-4px 0 4px} .propo{display:flex;justify-content:space-between;align-items:center;gap:10px;text-align:left;min-height:46px;padding:8px 12px;border:1.5px solid var(--border);border-radius:12px;background:var(--card);color:var(--ink);font:inherit;cursor:pointer} .propo span{font-size:12px;color:var(--muted);text-align:right} .scelta-cat{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px 12px;border-radius:12px;background:var(--verde-bg,rgba(46,160,90,.12))} .segnale{margin:6px 0} .form details select{width:100%;min-height:44px;margin-top:6px}
+.esempio{padding:10px 0;border-bottom:1px solid var(--line)} .esempio:last-of-type{border-bottom:0} .lista-sobria{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:8px} .lista-sobria li{line-height:1.45}
 </style>
 </head>
 <body>
@@ -206,7 +207,7 @@ main{padding-top:36px}
 <div id="strato"><div id="foglio"></div><div id="toast"></div></div>
 <script>
 "use strict";
-/* Versione GitHub: sostituisce i servizi di claude.ai con
+/* Versione GitHub (la versione su claude.ai è dismessa):
    - dati: un file JSON in un repository GitHub privato (API Contents), con token salvato solo sul dispositivo
    - assistente: nessuna chiave API; le letture passano da Claude sul telefono con copia e incolla
    - download: file scaricato dal browser
@@ -968,7 +969,7 @@ function vPortafoglio(){
   const pv = P('policy.soglia.prima_verifica'), sg = pv ? soglia(new Date(pv,0,1)) : null;
   if (sg != null) {
     const attiva = oggi().getFullYear() >= pv, so = attiva ? soglia(oggi()) : null;
-    o += '<section class="card"><div class="card-testa"><div><p class="nome">Soglia e jolly</p><p class="sotto">'+(attiva ? 'Soglia a oggi, interpolata' : 'Prima verifica a gennaio '+pv+': nel '+(pv-1)+' la soglia non si applica')+'</p></div><strong class="gr">'+eur0(attiva ? so : sg)+'</strong></div>'+fonteRiga('PIANO PENSIONE §7.4 · POLICY §9. <a href="#rotta">Sono in rotta?</a>')+'</section>';
+    o += '<section class="card"><div class="card-testa"><div><p class="nome">Soglia e jolly</p><p class="sotto">'+(attiva ? 'Soglia a oggi, interpolata' : 'Prima verifica a gennaio '+pv+': nel '+(pv-1)+' la soglia non si applica')+'</p></div><strong class="gr">'+eur0(attiva ? so : sg)+'</strong></div>'+fonteRiga('PIANO PENSIONE §7.4 · POLICY §9. <a href="#soglia">Capire soglia e jolly</a>')+'</section>';
   }
   if (!(pi && pi.prossima) && pf.totale === 0 && t) o += '<section class="card"><h2>Target in vigore</h2>'+barraTarget(t.attivo)+listaEtf(pf.pesi, {})+'</section>';
   o += '<div class="bottoni colonna">'+(S.sample ? '<label class="btn primario filebtn">Aggiorna le posizioni con una foto<input type="file" accept="image/*" data-foto="portafoglio" class="vh"></label>' : '')+'</div>';
@@ -1255,7 +1256,7 @@ function render(){
   const att = document.activeElement, fid = att && att.id, sel = att && att.selectionStart;
   document.getElementById('nav').innerHTML = VISTE_NAV.map(([k,n,i]) => '<a href="#'+k+'"'+((ui.vista === k || (k === 'budget' && (ui.vista === 'chiusura' || ui.vista === 'mensilita' || ui.vista === 'spese' || ui.vista === 'estratto'))) ? ' aria-current="page"' : '')+'>'+ico(i)+'<span>'+n+'</span></a>').join('');
   let o = '';
-  if (S.errore) o = '<header class="testa"><div><p class="sopra">Finanze personali</p><h1>Dati non disponibili</h1></div></header><section class="card nota-ambra"><p class="sotto">'+(S.errore === 'fuori' ? 'Apri l’app dalla sua pagina su claude.ai, con il tuo account: fuori da lì il database privato non è raggiungibile.' : 'In questa vista il database privato non è raggiungibile (accesso non effettuato o permesso revocato). Ricarica la pagina dal tuo account.')+'</p></section>';
+  if (S.errore) o = '<header class="testa"><div><p class="sopra">Finanze personali</p><h1>Dati non disponibili</h1></div></header><section class="card nota-ambra"><p class="sotto">'+(S.errore === 'fuori' ? 'Collega l’app a GitHub dalle impostazioni (indicatore in alto a destra).' : 'In questa vista il database privato non è raggiungibile (accesso non effettuato o permesso revocato). Ricarica la pagina dal tuo account.')+'</p></section>';
   else if (!S.pronto) o = '<header class="testa"><div><p class="sopra">Finanze personali</p><h1>Carico i tuoi dati…</h1></div></header>'+(S.lento ? '<section class="card nota-ambra"><p class="sotto">I dati non sono ancora raggiungibili. L’app non funziona senza connessione: resta in attesa, riprova da sola.</p></section>' : '');
   else { try { o = VISTE[ui.vista](); } catch (e) { console.error(e); o = '<section class="card nota-ambra"><p class="titolino">Errore in questa schermata</p><p class="sotto">'+h(e.message)+'</p></section>'; } }
   const precB = {}; main.querySelectorAll('[data-k]').forEach(e => { precB[e.dataset.k] = e.style.width; });
@@ -1330,7 +1331,7 @@ ui.sim = { busta:'', necessita:false };
 function dateVersamento(da, a){ const primo = PS('investimenti.versamento.primo_mese'); if (!primo) return []; const p0 = parse(primo+'-01'), out = []; for (let i = 0; i < 600; i++) { const d = piuGiorni(accredito(p0.getFullYear(), p0.getMonth()+i), 1); if (d > a) break; if (d >= da) out.push(d); } return out; }
 function jollyDa(pf, sg){ const pieno = P('policy.jolly.pieno'), q = P('policy.jolly.quota_oltre'); const d = pf - sg; if (d <= 0 || pieno == null || q == null) return 0; return d <= pieno ? d : pieno + (d - pieno)*q/100; }
 function rotta(){
-  const t = oggi(), pf = portafoglio().totale, pi = pianoIngresso(), min = P('investimenti.versamento.minimo'), voci = [];
+  const t = oggi(), pf = portafoglio().totale, pi = pianoIngresso(), min = minimoVersamento(), voci = [];
   if (pi) { const dov = pi.rate.filter(r => r.data <= t).length, fat = pi.rate.filter(r => r.fatta).length; voci.push({ nome:'Rate di ingresso', stato: fat >= dov ? 'ok' : 'ko', testo: fat+' fatte su '+dov+' dovute a oggi ('+pi.n+' in tutto)', fonte:'INVESTIMENTI §2' }); }
   if (min != null) { const nd = dateVersamento(new Date(2000,0,1), t).length; let v = 0; for (const o of confermati('operazioni')) if (o.tipo === 'versamento') v += o.importo; voci.push({ nome:'Versamento mensile minimo', stato: v >= nd*min - 0.5 ? 'ok' : 'ko', testo: nd ? eur0(v)+' versati su '+eur0(nd*min)+' dovuti in '+nd+(nd === 1 ? ' mese' : ' mesi') : 'parte a '+MESI_L[parse(PS('investimenti.versamento.primo_mese')+'-01').getMonth()]+' '+PS('investimenti.versamento.primo_mese').slice(0,4), nota: v < nd*min - 0.5 ? 'Versare meno del minimo equivale a un prelievo.' : '', fonte:'POLICY §9' }); }
   const us = (S.a.destinazioni.fondo_emergenza||{}).utilizzato || 0;
@@ -1443,7 +1444,7 @@ function vRotta(){
   o += '<section class="card">'+r.voci.map(v => '<div class="voce"><div class="cresce"><p class="nome">'+h(v.nome)+'</p><p class="sotto">'+h(v.testo)+(v.nota ? ' '+h(v.nota) : '')+' · '+h(v.fonte)+'</p></div>'+chip(STATI[v.stato][0], STATI[v.stato][1])+'</div>').join('')+'</section>';
   const s = r.soglia;
   if (s && !s.attiva) o += '<section class="card"><div class="card-testa"><h2>Verso la prima verifica</h2><strong class="gr">'+eur0(s.prevista)+'</strong></div>'+s.righe.map(x => riga(h(x[0]), eur0(x[1]))).join('')+'<hr>'+riga('<b>Soglia al 1° gennaio '+P('policy.soglia.prima_verifica')+'</b>', '<b>'+eur0(s.soglia)+'</b>')+riga('Differenza', eur0(s.prevista - s.soglia), s.prevista < s.soglia ? 'rosso' : '')+
-    (s.prevista < s.soglia ? '<p class="sotto">Sotto la soglia non c’è jolly e i prelievi sono ammessi solo per necessità. La soglia è il percorso dello scenario prudente con '+eur0(P('investimenti.versamento.obiettivo'))+' al mese: con il minimo si parte sotto.</p>' : '')+fonteRiga('Somma senza rendimenti (Ipotesi dell’app). PIANO PENSIONE §7.4 · POLICY §9.')+'</section>';
+    (s.prevista < s.soglia ? '<p class="sotto">Sotto la soglia non c’è jolly e i prelievi sono ammessi solo per necessità. La soglia è il percorso dello scenario prudente con '+eur0(P('investimenti.versamento.obiettivo'))+' al mese: con il minimo si parte sotto.</p>' : '')+fonteRiga('Con le quote delle mensilità aggiuntive e un rendimento prudente, in euro correnti (Stima). PIANO PENSIONE §7.4 · POLICY §9. <a href="#soglia">Capire soglia e jolly</a>')+'</section>';
   if (s && s.attiva) o += '<section class="card"><div class="card-testa"><h2>Jolly</h2><strong class="gr">'+eur0(s.jolly)+'</strong></div><p class="sotto">Portafoglio meno soglia: '+eur0(s.margine)+'. Fino a '+eur0(P('policy.jolly.pieno'))+' sopra la soglia si spende tutto; oltre, metà.</p>'+(s.margine < 0 ? '<p class="sotto">Sotto la soglia per effetto del mercato: nessuna vendita e nessun recupero automatico. Alle verifiche dei 55 e 60 anni si sceglie tra più risparmio, uscita più tardi o spesa più bassa.</p>' : '')+fonteRiga('POLICY §9.')+'</section>';
   o += '<div class="bottoni colonna"><a class="btn" href="#simula">Simula una spesa grossa</a></div>';
   o += fonteRiga('Verifica semplice, senza simulazioni: confronta i dati con le regole. Le proiezioni restano nel PIANO PENSIONE.');
@@ -1482,7 +1483,7 @@ function vStorico(){
 }
 Object.assign(VISTE, { scadenze:vScadenze, decisioni:vDecisioni, note:vNote, fisco:vFisco, rotta:vRotta, simula:vSimula, calibrazione:vCalibrazione, storico:vStorico });
 const _vOggi = VISTE.oggi;
-VISTE.oggi = function(){ const r = rotta(); const voci = [['spese','Spese del mese'],['rotta','Sono in rotta?'],['scadenze','Scadenze'],['simula','Simula una spesa'],['fisco','Fisco'],['decisioni','Decisioni'],['note','Note di mercato'],['calibrazione','Calibrazione'],['storico','Storico']];
+VISTE.oggi = function(){ const r = rotta(); const voci = [['spese','Spese del mese'],['rotta','Sono in rotta?'],['soglia','Soglia e jolly'],['scadenze','Scadenze'],['simula','Simula una spesa'],['fisco','Fisco'],['decisioni','Decisioni'],['note','Note di mercato'],['calibrazione','Calibrazione'],['storico','Storico']];
   const base = _vOggi(), hub = '<section class="card"><div class="card-testa"><h2>Il piano</h2>'+chip(STATI[r.esito][0], STATI[r.esito][1])+'</div><div class="griglia">'+voci.map(([k,n]) => '<a class="btn" href="#'+k+'">'+n+'</a>').join('')+'</div></section>'; const ix = base.lastIndexOf('<a class="pn"'); return ix < 0 ? base+hub : base.slice(0,ix)+hub+base.slice(ix); };
 
 /* ---- Fogli e azioni ---- */
@@ -1660,7 +1661,7 @@ function daFare(){
   if (tg && tg.daConfermare) norm.push({ titolo:'Ricalcolo del target di gennaio', testo:'Conferma i Fed Funds e i pesi'+(tg.probabile ? ' (probabile '+tg.probabile.azioni+' / '+tg.probabile.obbligazioni+' / '+tg.probabile.managed_futures+')' : '')+': va fatto prima della rata di gennaio.', fonte:'POLICY §6', btn:['Ricalcola','go','portafoglio'] });
   const entro = piuGiorni(t, 3);
   if (pi && pi.prossima && pi.prossima.data <= entro) norm.push({ titolo:'Rata di ingresso '+pi.prossima.n+' di '+pi.n+(pi.rata ? ': '+eur0(pi.rata) : ''), testo: pi.prossima.data < t ? 'In ritardo: era il '+dataBreve(pi.prossima.data)+'. Date fisse, nessuna condizione.' : 'Il '+dataBreve(pi.prossima.data)+', ripartita secondo i pesi target.', fonte:'INVESTIMENTI §2', btn:['Registra la rata','sheet','acquisto','rata_ingresso'] });
-  const min = P('investimenti.versamento.minimo');
+  const min = minimoVersamento();
   if (min != null) { const dovute = dateVersamento(new Date(2000,0,1), entro); let v = 0; for (const o of confermati('operazioni')) if (o.tipo === 'versamento') v += o.importo;
     const manca = r2(dovute.length*min - v);
     if (manca > 0.5) { const prima = dovute[Math.min(dovute.length-1, Math.floor(v/min))]; norm.push({ titolo:'Versamento mensile nel portafoglio: '+eur0(manca), testo: prima < t ? 'In ritardo dal '+dataBreve(prima)+'. Versare meno del minimo equivale a un prelievo.' : 'Il '+dataBreve(prima)+', il giorno dopo lo stipendio.', fonte:'INVESTIMENTI §3 · POLICY §9', btn:['Registra','sheet','acquisto','versamento'] }); } }
@@ -2632,6 +2633,99 @@ coperturaMese = function(m){
   return { completo: !manca.length, manca };
 };
 copreCarta = function(dataIso){ const x = copertura().prepagata; return coperto(x, dataIso, dataIso); };
+
+/* ================= FASE 4: SOGLIA E JOLLY (PIANO PENSIONE §7.4, POLICY §9) ================= */
+TUTTE.push('soglia');
+const P0 = k => S.a.parametri[k] ? P(k) : null;
+/* Coefficiente FOI: 1 fino al 2027; dal 2028 quello registrato nel PIANO PENSIONE §7.4, altrimenti stima con l’inflazione del piano */
+function coeffFoi(anno){
+  const dal = P0('pensione.soglia.rivalutazione_dal') || 2028; if (anno < dal) return { valore:1, tipo:'nessuna' };
+  const p = S.a.parametri['pensione.soglia.foi.'+anno]; if (p && p.valore != null) return { valore:Number(p.valore), tipo:'registrato' };
+  const inf = (P0('pensione.inflazione') != null ? P0('pensione.inflazione') : 2.5)/100; return { valore: Math.pow(1+inf, anno - 2026.5), tipo:'stima' };
+}
+/* La soglia del piano è in euro 2026; quella che si confronta con il portafoglio è rivalutata */
+soglia = (function(orig){ window.sogliaReale = orig; return function(d){ const v = orig(d); return v == null ? null : Math.round(v * coeffFoi(d.getFullYear()).valore); }; })(soglia);
+const sogliaReale = window.sogliaReale;
+function minimoVersamento(d){ const m = P('investimenti.versamento.minimo'); if (m == null) return null; return r2(m * coeffFoi((d||oggi()).getFullYear()).valore); }
+
+/* Previsione al prossimo 1° gennaio di verifica, in euro correnti (Stima) */
+function previsioneSoglia(){
+  const t = oggi(), pv = P('policy.soglia.prima_verifica') || 2028, anno = Math.max(pv, t.getFullYear()+1), T = new Date(anno, 0, 1);
+  const pf = portafoglio().totale, pi = pianoIngresso(), flussi = [];
+  if (pi) for (const r of pi.rate) if (!r.fatta && r.data < T) flussi.push({ d: r.data < t ? t : r.data, v: pi.rata || 0, k:'rate' });
+  const cr = credito730(), a730 = Number(PS('investimenti.credito_730.anno_destinato')); if (cr && a730) { const d = new Date(a730, (P('budget.mensilita.premio.mese')||8)-1, 10); if (d < T) flussi.push({ d: d < t ? t : d, v:cr, k:'730' }); }
+  const vers = dateVersamento(t, piuGiorni(T, -1));
+  /* Mensilità aggiuntive: prima le buste annuali dell’anno solare, poi metà del resto al portafoglio (BUDGET §10.4) */
+  const ann = ordinati('buste').filter(b => b.tipo === 'annuale'), bisogno = {}, qp = (P('budget.mensilita.quota_portafoglio') || 50)/100;
+  for (let i = 0; i < 26; i++) { const d0 = new Date(t.getFullYear(), t.getMonth()+i, 1); if (d0 >= T) break;
+    for (const ms of mensilitaDelMese(d0.getMonth()+1)) { const d = accredito(d0.getFullYear(), d0.getMonth()); if (d < t || d >= T || !ms.importo) continue;
+      if (lista('destinazioni').some(x => x.tipo === 'mensilita' && x.sottotipo === ms.tipo && String(x.data).slice(0,7) === iso(d).slice(0,7))) continue;
+      const y = d.getFullYear(); if (bisogno[y] == null) bisogno[y] = Math.max(0, ann.reduce((s,b) => s + (P(b.param)||0) - (y === t.getFullYear() ? alimentatoAnno(b.id, y) : 0), 0));
+      const usa = Math.min(ms.importo, bisogno[y]); bisogno[y] -= usa; const q = r2((ms.importo - usa) * qp); if (q > 0) flussi.push({ d, v:q, k:'mens' }); } }
+  const somma = k => r2(flussi.filter(x => x.k === k).reduce((s,x) => s + x.v, 0));
+  const inf = (P0('pensione.inflazione') != null ? P0('pensione.inflazione') : 2.5)/100, rp = (P0('pensione.rendimento.prudente') != null ? P0('pensione.rendimento.prudente') : 2.25)/100, co = (P0('pensione.costi.portafoglio') != null ? P0('pensione.costi.portafoglio') : 0.23)/100;
+  const rm = Math.pow((1 + rp - co) * (1 + inf), 1/12) - 1;
+  const simula = (versa, rend) => { let v = pf; const ev = flussi.concat(vers.map(d => ({ d, v:versa }))).sort((a,b) => a.d - b.d); let cur = new Date(t);
+    for (const e of ev) { if (rend) v *= Math.pow(1+rm, giorniTra(cur, e.d)/30.44); v += e.v; cur = e.d; } if (rend) v *= Math.pow(1+rm, giorniTra(cur, T)/30.44); return r2(v); };
+  const min = P('investimenti.versamento.minimo') || 0, obi = P('investimenti.versamento.obiettivo') || 0;
+  const base = r2(pf + somma('rate') + somma('730') + vers.length*min), conMens = r2(base + somma('mens'));
+  return { anno, T, pf, rate:somma('rate'), r730:somma('730'), nv:vers.length, min, obi, vers:r2(vers.length*min), mens:somma('mens'), base, conMens, conRend:simula(min, true), conRendObi:simula(obi, true),
+    sogliaReale: sogliaReale(T), coeff:coeffFoi(anno), soglia: soglia(T), inf:inf*100, rp:rp*100 };
+}
+
+/* La voce di “Sono in rotta?” usa la previsione completa */
+rotta = (function(orig){ return function(){ const r = orig(); const v = r.voci.find(x => x.nome === 'Soglia alla prima verifica');
+  if (v) { const p = previsioneSoglia(); v.stato = p.conRend >= p.soglia ? 'ok' : 'att'; v.testo = 'previsti circa '+eur0(p.conRend)+' contro una soglia di circa '+eur0(p.soglia)+' al 1° gennaio '+p.anno; v.nota = 'Con mensilità aggiuntive e rendimento prudente (Stima). Nel '+(p.anno-1)+' la soglia non si applica.';
+    if (r.soglia) { r.soglia.prevista = p.conRend; r.soglia.soglia = p.soglia; r.soglia.righe = [['Portafoglio oggi', p.pf], ['Rate di ingresso restanti', p.rate], ['Rimborso 730 atteso', p.r730], [p.nv+' versamenti minimi', p.vers], ['Quote delle mensilità aggiuntive (BUDGET §10.4)', p.mens], ['Rendimento prudente (Stima)', r2(p.conRend - p.conMens)]]; } }
+  return r; }; })(rotta);
+
+/* Spiegazione con i numeri: esempi di jolly */
+function esempioJolly(pf, sg){ const d = r2(pf - sg), pieno = P('policy.jolly.pieno'), q = P('policy.jolly.quota_oltre'), j = jollyDa(pf, sg); return { pf, sg, d, j:r2(j), margine: d > pieno ? r2((d - pieno)*(100-q)/100) : 0 }; }
+function vSoglia(){
+  const t = oggi(), pv = P('policy.soglia.prima_verifica') || 2028, attiva = t.getFullYear() >= pv, pf = portafoglio().totale, p = previsioneSoglia();
+  const pieno = P('policy.jolly.pieno'), q = P('policy.jolly.quota_oltre'), obi = P('investimenti.versamento.obiettivo'), mesi10 = P0('pensione.prelievo.mesi_per_10k');
+  let o = testa('Le due regole che decidono quanto puoi togliere dal portafoglio', 'Soglia e jolly', ['rotta','Sono in rotta?']);
+  if (attiva) { const sg = soglia(t), j = jollyDa(pf, sg), d = r2(pf - sg);
+    o += '<section class="card eroe"><div class="eroe-testa"><span>Oggi</span>'+chip(d >= 0 ? 'sopra la soglia' : 'sotto la soglia', d >= 0 ? 'pieno' : 'corallo')+'</div><div class="eroe-num"><strong>'+eur0(j)+'</strong><span>di jolly</span></div><p class="eroe-nota">Portafoglio '+eur0(pf)+' · soglia '+eur0(sg)+' · '+(d >= 0 ? 'sopra di ' : 'sotto di ')+eur0(Math.abs(d))+'</p></section>'; }
+  else o += '<section class="card eroe"><div class="eroe-testa"><span>Prima verifica</span>'+chip('1° gennaio '+pv,'pieno')+'</div><div class="eroe-num"><strong class="medio">Nel '+(pv-1)+' la soglia non si applica</strong></div><p class="eroe-nota">Il '+(pv-1)+' è l’anno di ingresso nel portafoglio. Dal 1° gennaio '+pv+' la soglia sarà di circa '+eur0(p.soglia)+'.</p></section>';
+  o += '<section class="card"><h2>Cosa sono</h2>'+
+    '<p><b>La soglia</b> è il minimo che il portafoglio libero dovrebbe avere ogni 1° gennaio per restare sulla strada dell’uscita dal lavoro a 64 anni. È il percorso dello scenario prudente con '+eur0(obi)+' al mese: se la rispetti, il piano regge anche con rendimenti bassi.</p>'+
+    '<p><b>Il jolly</b> è la parte del portafoglio sopra la soglia che puoi usare per spese non necessarie: i primi '+eur0(pieno)+' sopra la soglia tutti, oltre quella cifra '+(q === 50 ? 'la metà' : q+'%')+'. Il resto rimane come margine fino all’uscita.</p>'+
+    '<p><b>Sotto la soglia</b> il jolly non c’è. Se ci sei finito per colpa del mercato, non si vende e non si recupera nulla in automatico. Se servono soldi, solo per necessità (salute, auto indispensabile, casa) e solo dopo voce di budget, liquidità del mese e fondo emergenza, in quest’ordine'+(mesi10 ? ': ogni €10.000 prelevati costano circa '+mesi10+' mesi di uscita in più' : '')+'.</p>'+
+    '<p><b>I valori della tabella sono in euro 2026.</b> Dal 1° gennaio 2028 soglia e versamento minimo si rivalutano ogni anno con l’indice ISTAT dei prezzi (FOI): l’app confronta sempre il portafoglio con la soglia in euro dell’anno.</p>'+
+    fonteRiga('PIANO PENSIONE §7.4 (soglia e rivalutazione) · POLICY STATEMENT §9 (jolly, prelievi, verifiche)')+'</section>';
+  /* Tabella della soglia */
+  const anni = Object.keys(S.a.parametri).filter(k => /^pensione\.soglia\.\d{4}$/.test(k)).map(k => Number(k.split('.').pop())).sort((a,b) => a-b);
+  o += '<section class="card"><h2>La tua soglia</h2><div class="tab-estr"><span>1° gennaio</span><span>Euro 2026</span><span>Euro dell’anno</span>'+
+    anni.map(a => { const c = coeffFoi(a), v = sogliaReale(new Date(a,0,1)); return '<span>'+a+(a < pv ? ' (non si applica)' : '')+'</span><b>'+eur0(v)+'</b><span>'+(c.tipo === 'nessuna' ? '—' : (c.tipo === 'stima' ? '≈ ' : '')+eur0(Math.round(v*c.valore)))+'</span>'; }).join('')+'</div>'+
+    fonteRiga('Anni intermedi per interpolazione. Euro dell’anno: coefficiente FOI registrato nel PIANO PENSIONE §7.4 o, finché manca, stima con inflazione al '+fmtNum(p.inf,1)+'% (≈).')+'</section>';
+  /* Previsione */
+  o += '<section class="card"><div class="card-testa"><h2>Verso il 1° gennaio '+p.anno+'</h2>'+chip(p.conRend >= p.soglia ? 'in linea' : 'sotto di circa '+eur0(p.soglia - p.conRend), p.conRend >= p.soglia ? 'verde' : 'ambra')+'</div>'+
+    riga('Portafoglio oggi', eur0(p.pf))+(p.rate ? riga('Rate di ingresso restanti', eur0(p.rate)) : '')+(p.r730 ? riga('Rimborso 730', eur0(p.r730)) : '')+riga(p.nv+' versamenti da '+eur0(p.min), eur0(p.vers))+
+    '<hr>'+riga('Solo versamenti e rate', eur0(p.base))+riga('Più le quote delle mensilità aggiuntive', eur0(p.conMens))+riga('<b>Più un rendimento prudente</b>', '<b>'+eur0(p.conRend)+'</b>')+riga('Con '+eur0(p.obi)+' al mese invece di '+eur0(p.min), eur0(p.conRendObi))+
+    '<hr>'+riga('<b>Soglia al 1° gennaio '+p.anno+'</b>', '<b>'+(p.coeff.tipo === 'stima' ? '≈ ' : '')+eur0(p.soglia)+'</b>')+'<p class="sotto">'+eur0(p.sogliaReale)+' in euro 2026'+(p.coeff.tipo !== 'nessuna' ? ' × coefficiente FOI '+fmtNum(p.coeff.valore, 3)+(p.coeff.tipo === 'stima' ? ' (stima)' : '') : '')+'.</p>'+
+    fonteRiga('Stima in euro correnti: rendimento reale prudente '+fmtNum(p.rp,2)+'% lordo meno costi, inflazione '+fmtNum(p.inf,1)+'% (PIANO PENSIONE §5.3). Mensilità: prima le voci annuali dell’anno, poi metà del resto al portafoglio (BUDGET §10.4).')+'</section>';
+  /* Esempi sui tuoi numeri */
+  const S0 = p.soglia, e1 = esempioJolly(p.conRend, S0), e2 = esempioJolly(S0 + 3000, S0), e3 = esempioJolly(S0 + 10000, S0);
+  o += '<section class="card"><h2>Esempi sui tuoi numeri</h2><p class="sotto">Al 1° gennaio '+p.anno+', con una soglia di circa '+eur0(S0)+'.</p>'+
+    '<div class="esempio"><p class="nome">Se avrai '+eur0(e1.pf)+' (la previsione prudente)</p><p class="sotto">'+(e1.d < 0 ? 'Sei sotto di '+eur0(-e1.d)+': niente jolly nel '+p.anno+'. Nessuna vendita: continui a versare il minimo; a luglio '+(p.anno-1)+' si valuta il passaggio a '+eur0(p.obi)+' al mese.' : 'Sei sopra di '+eur0(e1.d)+': jolly di '+eur0(e1.j)+'.')+'</p></div>'+
+    '<div class="esempio"><p class="nome">Se avrai '+eur0(e2.pf)+'</p><p class="sotto">Sopra di '+eur0(e2.d)+', meno di '+eur0(pieno)+': il jolly è tutto, '+eur0(e2.j)+'. Puoi usarlo per una spesa non necessaria senza uscire dal piano.</p></div>'+
+    '<div class="esempio"><p class="nome">Se avrai '+eur0(e3.pf)+'</p><p class="sotto">Sopra di '+eur0(e3.d)+': '+eur0(pieno)+' interi più metà dei restanti '+eur0(e3.d - pieno)+'. Jolly '+eur0(e3.j)+'; gli altri '+eur0(e3.margine)+' restano come margine.</p></div>'+
+    fonteRiga('POLICY STATEMENT §9, regola 4.')+'</section>';
+  /* Cosa puoi fare */
+  const cosa = attiva ? (pf >= soglia(t) ? ['Puoi spendere fino al jolly per spese non necessarie: si preleva dal portafoglio vendendo prima l’ETF più sovrappesato (POLICY §8).', 'Usi del jolly oltre €10.000 con una data (per esempio l’aiuto a Emma): diventano obiettivi datati e 3–5 anni prima passano a strumenti a breve (POLICY §9, regola 9).', 'La liquidità libera delle mensilità aggiuntive non è jolly: si spende secondo il BUDGET §10.4.']
+      : ['Se sei sotto per il mercato: nessuna vendita, nessun recupero automatico (POLICY §9, regola 6).', 'Per una spesa necessaria: prima la voce di budget, poi la liquidità del mese, poi il fondo emergenza (da reintegrare entro 12 mesi); il portafoglio solo dopo.', 'Alle verifiche dei 55 e 60 anni (2042 e 2047), se sei sotto, si sceglie tra più risparmio, uscita più tardi o spesa più bassa (POLICY §9, regola 7).'])
+    : ['Fino al 31 dicembre '+(pv-1)+' non ci sono jolly né limiti dalla soglia: conta rispettare rate e versamento minimo.', 'Le spese non previste seguono l’ordine: voce di budget, liquidità del mese, fondo emergenza (BUDGET §10.2 e §10.4).', 'A luglio '+(pv-1)+' si valuta il passaggio a '+eur0(p.obi)+' al mese (INVESTIMENTI §3): con la previsione di oggi '+(p.conRend >= p.soglia ? 'non è necessario per la soglia' : 'avvicinerebbe la soglia di circa '+eur0(p.conRendObi - p.conRend))+'.'];
+  o += '<section class="card"><h2>Cosa puoi fare</h2><ul class="lista-sobria">'+cosa.map(x => '<li>'+h(x)+'</li>').join('')+'</ul></section>';
+  return o;
+}
+VISTE.soglia = vSoglia;
+/* Collegamenti: da “Sono in rotta?” e dal riquadro del portafoglio */
+const _vRotta4 = VISTE.rotta;
+VISTE.rotta = function(){ const o = _vRotta4(); const k = o.indexOf('<section class="card">', o.indexOf('eroe')); const c = '<section class="card"><div class="card-testa"><h2>Soglia e jolly</h2><a class="btn piccolo" href="#soglia">Capire</a></div><p class="sotto">Cosa sono, la soglia di quest’anno, quanto sei sopra o sotto e cosa puoi fare.</p></section>'; return k < 0 ? o + c : o.slice(0,k) + c + o.slice(k); };
+/* Promemoria del coefficiente FOI da gennaio dell’anno di rivalutazione */
+const _daFare4 = daFare;
+daFare = function(){ const l = _daFare4(), a = oggi().getFullYear(); if (coeffFoi(a).tipo === 'stima') l.push({ titolo:'Registra il coefficiente FOI '+a, testo:'Ultimo indice FOI ISTAT diviso per la media 2026: va nel PIANO PENSIONE §7.4 e poi nei parametri. Finché manca, l’app usa una stima.', fonte:'PIANO PENSIONE §7.4', btn:['Soglia e jolly','go','soglia'] }); return l; };
 </script>
 </body>
 </html>

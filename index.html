@@ -2296,6 +2296,7 @@ const TASSONOMIA = [
  ['persona','Persona',[
   ['per.abbigliamento','Abbigliamento e scarpe','b:uscite_quotidiane','personale','vestiti abbigliamento scarpe maglione pantaloni giacca camicia intimo calze piumino cappotto jeans ovs zara decathlon pittarello uniqlo'],
   ['per.cura','Parrucchiere e cura','b:uscite_quotidiane','personale','parrucchiere barbiere taglio capelli estetista profumo crema cosmetici rasoio'],
+  ['per.lavanderia','Lavanderia e sartoria','b:uscite_quotidiane','personale','lavanderia lavasecco tintoria stireria sartoria orlo lavaggio capi riparazione abiti'],
   ['per.sport','Sport','b:uscite_quotidiane','personale','palestra piscina sport calcetto padel tennis yoga iscrizione gara'],
   ['per.contanti','Contanti','b:uscite_quotidiane','personale','contanti prelievo prel bancomat'],
   ['per.varie','Altre spese quotidiane','b:uscite_quotidiane','personale','piccole spese edicola tabaccheria cartoleria varie']]],
@@ -2385,7 +2386,7 @@ const maiuscola = s => s ? s.charAt(0).toUpperCase() + s.slice(1) : s;
 
 /* ---- Categoria delle righe importate ---- */
 const MCC_CAT = [['spesa.super',[5411,5300,5331,5499]],['spesa.botteghe',[5422,5451,5462,5441]],['fuori.ristoranti',[5812,5814]],['fuori.aperitivi',[5813]],['tr.mezzi',[4111,4112,4121,4131,4789]],['tr.pedaggi',[4784]],['tr.parcheggi',[7523]],['tr.carburante',[5541,5542,5983]],['tr.manutenzione',[7538,7531,7542,5532,5533]],
-  ['sal.farmacia',[5912,5122]],['sal.dentista',[8021,8043]],['sal.visite',[8011,8031,8041,8042,8049,8050,8062,8071,8099]],['per.abbigliamento',[5651,5691,5699,5611,5621,5631,5661,5310,5311]],['emma.vestiti',[5641]],['emma.giochi',[5945]],['per.cura',[7230,5977]],['per.sport',[5941,7997]],
+  ['sal.farmacia',[5912,5122]],['sal.dentista',[8021,8043]],['sal.visite',[8011,8031,8041,8042,8049,8050,8062,8071,8099]],['per.abbigliamento',[5651,5691,5699,5611,5621,5631,5661,5310,5311]],['emma.vestiti',[5641]],['emma.giochi',[5945]],['per.cura',[7230,5977]],['per.lavanderia',[7210,7211,7216,5697]],['per.sport',[5941,7997]],
   ['sv.libri',[5942,5994]],['sv.eventi',[7832,7922,7929,7991,7996]],['sv.abbonamenti',[4899,5815,5816,5817,5818]],['casa.manutenzione',[5200,5211,5231,5251,5261,1520,1711,1731,1740,1750,1799,7623,7629]],['casa.arredo',[5712,5719,5992]],['casa.elettrodomestici',[5722,5732,5734]],
   ['casa.telefono',[4814]],['reg.regali',[5947]],['var.imposte',[9311,9399,9222]]];
 const DEFAULT_CAT = { 'b:uscite_quotidiane':'per.varie', 'b:casa':'casa.manutenzione', 'b:auto':'tr.manutenzione', 'b:salute':'sal.visite', 'b:vacanze':'vi.spese', 'b:regali':'reg.regali', 'b:abbonamenti':'sv.abbonamenti', 'x:fuori':'var.altro', 'x:costi_bancari':'var.banca', 'f:costi_bancari':'var.banca', 'x:rimborsabile':'sal.rimborsabile', 'x:fondo_pensione':'nc.fondo', 'escluso':'nc.giroconto', 'e:stipendio':'ent.stipendio', 'e:mensilita':'ent.mensilita', 'e:coopersalute':'ent.coopersalute', 'e:entrata':'ent.altro' };
@@ -2486,13 +2487,13 @@ document.addEventListener('input', ev => {
 });
 document.addEventListener('change', ev => {
   const e = ev.target, s = ui.sheet; if (!s || s.tipo !== 'spesa') return;
-  if (e.dataset.pagato != null) { s.pagato = e.value; render(); }
-  if (e.dataset.bustaMan != null) { s.busta = e.value; s.bustaManuale = true; render(); }
-  if (e.dataset.catElenco != null && e.value) { s.cat = e.value; s.pagato = s.pagatoScelto ? s.pagato : (CAT[e.value].conto === 'comune' ? 'conto_comune' : 'conto_personale'); render(); }
+  if (e.dataset.pagato != null) { s.pagato = e.value; ui.forzaFoglio = true; render(); }
+  if (e.dataset.bustaMan != null) { s.busta = e.value; s.bustaManuale = true; ui.forzaFoglio = true; render(); }
+  if (e.dataset.catElenco != null && e.value) { ui.forzaFoglio = true; s.cat = e.value; s.pagato = s.pagatoScelto ? s.pagato : (CAT[e.value].conto === 'comune' ? 'conto_comune' : 'conto_personale'); render(); }
 });
 Object.assign(AZ, {
-  cat_scegli(el){ const s = ui.sheet; if (!s) return; s.cat = el.dataset.cat; const inp = document.getElementById('f_cosa'); if (inp) s.cosa = inp.value; if (!s.pagatoScelto && !s.id) s.pagato = CAT[s.cat].conto === 'comune' ? 'conto_comune' : 'conto_personale'; s.bustaManuale = false; },
-  cat_cambia(){ const s = ui.sheet; if (s) { s.cat = null; s.bustaManuale = false; } },
+  cat_scegli(el){ const s = ui.sheet; if (!s) return; ui.forzaFoglio = true; s.cat = el.dataset.cat; const inp = document.getElementById('f_cosa'); if (inp) s.cosa = inp.value; if (!s.pagatoScelto && !s.id) s.pagato = CAT[s.cat].conto === 'comune' ? 'conto_comune' : 'conto_personale'; s.bustaManuale = false; },
+  cat_cambia(){ const s = ui.sheet; if (s) { ui.forzaFoglio = true; s.cat = null; s.bustaManuale = false; } },
   async spesa_ok(){
     const s = ui.sheet, imp = num(s.imp), data = s.data, pag = s.pagato || (s.cat && CAT[s.cat] && CAT[s.cat].conto === 'comune' ? 'conto_comune' : 'conto_personale');
     if (!(imp > 0) || !isData(data)) return avviso('Controlla importo e data.');
@@ -2592,7 +2593,7 @@ preparaImport = function(ris, nome){
   for (const r of im.righe) r.dup = !!S.a.estratto[r.id] || (r.idVecchio && !!S.a.estratto[r.idVecchio]) || alias.has(r.id);
   /* Righe già salvate nel periodo del file che il file non contiene più: probabilmente cambiate (descrizione o data contabile) */
   const ids = new Set(); for (const r of im.righe) { ids.add(r.id); if (r.idVecchio) ids.add(r.idVecchio); }
-  const mancanti = lista('estratto').filter(x => x.conto === im.conto && x.data >= im.da && x.data <= im.a && !ids.has(x.id) && ![].concat(x.alias||[]).some(a => ids.has(a)));
+  const mancanti = lista('estratto').filter(x => x.conto === im.conto && !x.parte_di && x.data >= im.da && x.data <= im.a && !ids.has(x.id) && ![].concat(x.alias||[]).some(a => ids.has(a)));
   im.probabili = [];
   for (const r of im.righe) { if (r.dup) continue; const k = mancanti.findIndex(x => Math.abs(x.importo - r.importo) < 0.005 && Math.abs(giorniTra(parse(x.data), parse(r.data))) <= 5 && simileDesc(x.descrizione, r.descrizione));
     if (k >= 0) { r.dup = true; r.probabile = mancanti[k].id; im.probabili.push(r); mancanti.splice(k, 1); } }
@@ -2857,6 +2858,74 @@ AZ.spesa_ok = async function(){
 /* Riepiloghi: quante righe restano da confermare */
 const _cardSegnali3h = cardSegnali;
 cardSegnali = function(fino){ const o = _cardSegnali3h(fino), n = lista('estratto').filter(x => x.scelta !== 'escluso' && statoRiga(x) !== 'confermata').length; return n ? o.replace('</section>', '<p class="sotto warn">'+n+' righe importate ancora da confermare o in dubbio: <a class="link" href="#estratto">rivedi</a>.</p></section>') : o; };
+
+/* ================= FASE 3i: SPESE SANITARIE IN PARTE RIMBORSABILI (BUDGET §10.2 e §12) ================= */
+/* Una riga importata si divide in due: la parte a carico resta nella sua categoria, l’altra va nella categoria scelta (di norma “Sanitarie rimborsabili”) */
+async function dividiRiga(id, impB, catB){
+  const x = S.a.estratto[id]; if (!x || !CAT[catB]) return false; const segno = x.importo < 0 ? -1 : 1, b = r2(Math.abs(impB)) * segno;
+  if (Math.abs(b) < 0.01 || Math.abs(b) >= Math.abs(x.importo) - 0.009) return false;
+  const copia = Object.assign({}, x); delete copia.id; delete copia.alias;
+  return scrivi(async () => {
+    await aggiorna('estratto', id, { importo: r2(x.importo - b), importo_originale: x.importo_originale != null ? x.importo_originale : x.importo });
+    await metti('estratto', id+'-p'+Date.now().toString(36), Object.assign(copia, { importo:b, cat:catB, scelta:vocePerCat(catB), stato:'confermata', motivo:'parte divisa da una riga dell’estratto', parte_di:id, descrizione:(x.descrizione||'')+' (parte)' }));
+  });
+}
+/* Il rimborso Coopersalute riduce la stessa categoria: le due righe si compensano e resta visibile solo la parte non rimborsata */
+for (const r of REGOLE_BASE) if (r[0] === 'coopersalute') { r[1] = 'x:rimborsabile'; }
+/* Le parti divise non sono righe dell’estratto da ritrovare nei file successivi */
+const _prepara3i = preparaImport;
+preparaImport = function(ris, nome){ const im = _prepara3i(ris, nome);
+  const man = confermati('movimenti').filter(x => x.tipo === 'spesa' && x.rimborsabile_totale > 0);
+  for (const r of im.righe) if (!r.dup && r.daMano && r.importo < 0) { const m = man.find(x => x.importo_totale != null && Math.abs(x.importo_totale + r.importo) < 0.01 && Math.abs(giorniTra(parse(x.data), parse(r.data_op || r.data))) <= 7); if (m) r.dividiRimb = m.rimborsabile_totale; }
+  return im; };
+const _salva3i = AZ.estr_salva;
+AZ.estr_salva = async function(){ const im = ui.estr; const div = im ? im.righe.filter(r => !r.dup && r.dividiRimb > 0).map(r => [r.id, r.dividiRimb]) : [];
+  await _salva3i.apply(this, arguments); if (ui.estr) return; for (const [id, v] of div) await dividiRiga(id, v, 'sal.rimborsabile'); };
+
+/* Foglio “Dividi la riga” */
+const _foglio3i = foglio;
+foglio = function(){
+  const s = ui.sheet; if (!s || s.tipo !== 'dividi_riga') return _foglio3i();
+  const x = S.a.estratto[s.id]; if (!x) return _foglio3i();
+  const c1 = catAuto(x), q = x.quota != null ? x.quota : 1;
+  const corpo = '<p class="nome">'+h(x.descrizione)+'</p><p class="sotto">'+dataBreve(x.data)+' '+String(x.data).slice(0,4)+' · '+eur(x.importo)+(q !== 1 ? ' (tua quota '+eur(r2(x.importo*q))+')' : '')+' · '+h(nomeConto(x.conto))+'</p>'+
+    '<label>Importo della seconda parte (sul totale della riga)<input id="f_parteB" inputmode="decimal" placeholder="Es. la parte che Coopersalute rimborserà"></label>'+
+    '<label>Categoria della seconda parte<select id="f_catB">'+opzioniCategoria('sal.rimborsabile')+'</select></label>'+
+    '<p class="sotto">La parte restante resta in “'+h(c1 && CAT[c1] ? CAT[c1].nome : nomeScelta(x.scelta||''))+'”. Per una spesa sanitaria: seconda parte = quanto ti rimborserà Coopersalute, in “Sanitarie rimborsabili”. Quando arriva il rimborso, assegnalo alla stessa categoria: si compensano.</p>';
+  return '<div class="velo" data-act="chiudi_sheet"></div><div class="foglio" role="dialog" aria-modal="true" aria-label="Dividi la riga"><h2>Dividi la riga</h2><div class="form">'+corpo+'</div><div class="bottoni"><button class="btn primario" data-act="dividi_riga_ok">Dividi</button><button class="btn" data-act="chiudi_sheet">Annulla</button></div><p class="fonte">BUDGET §10.2 e §12.</p></div>';
+};
+AZ.dividi_riga_ok = async function(){ const s = ui.sheet, v = num(val('f_parteB')), c = val('f_catB'); const x = S.a.estratto[s.id];
+  if (!x || !(v > 0) || v >= Math.abs(x.importo) - 0.009) return avviso('Indica un importo maggiore di zero e minore del totale della riga.');
+  if (await dividiRiga(s.id, v, c)) { chiudiSheet(); avviso('Riga divisa.'); } };
+/* Pulsante “Dividi” sulle righe salvate */
+const bottoneDividi = id => '<button class="link" data-act="sheet" data-sheet="dividi_riga" data-id="'+h(id)+'">Dividi</button>';
+const _rigaEstr3i = rigaEstr;
+rigaEstr = function(r, ix){ const o = _rigaEstr3i(r, ix); return ix == null && S.a.estratto[r.id] && !r.parte_di ? o.replace(/<\/div>$/, bottoneDividi(r.id)+'</div>') : o; };
+const _azioniRiga3i = azioniRiga;
+azioniRiga = function(k, stato, straord){ const o = _azioniRiga3i(k, stato, straord); if (!k.startsWith('s:')) return o; const id = k.slice(2); return S.a.estratto[id] && !S.a.estratto[id].parte_di ? o.replace(/<\/div>$/, bottoneDividi(id)+'</div>') : o; };
+
+/* Inserimento a mano: “di cui rimborsabile” per le spese sanitarie */
+const _foglioSpesa3i = foglio;
+foglio = function(){ const s = ui.sheet, o = _foglioSpesa3i(); if (!s || s.tipo !== 'spesa' || !s.cat || !CAT[s.cat] || CAT[s.cat].macro !== 'salute' || s.cat === 'sal.rimborsabile') return o;
+  const campo = '<label>Di cui rimborsabile da Coopersalute (totale)<input id="f_rimb" inputmode="decimal" value="'+h(s.rimb||'')+'" placeholder="0"></label><p class="sotto">Nella voce Salute va solo la parte a tuo carico; la parte rimborsabile è fuori budget e si compensa con il rimborso (BUDGET §10.2).</p>';
+  return o.replace('<label>Pagato con', campo+'<label>Pagato con'); };
+document.addEventListener('input', ev => { if (ev.target.id === 'f_rimb' && ui.sheet) ui.sheet.rimb = ev.target.value; });
+const _spesaOk3i = AZ.spesa_ok;
+AZ.spesa_ok = async function(){
+  const s = ui.sheet, rimb = s ? num(s.rimb) : NaN; if (!s || !(rimb > 0) || !s.cat || !CAT[s.cat] || CAT[s.cat].macro !== 'salute') return _spesaOk3i.apply(this, arguments);
+  const imp = num(s.imp), data = s.data; if (!(imp > 0) || !isData(data) || rimb >= imp) return avviso('Controlla importo, parte rimborsabile e data.');
+  const pag = s.pagato || 'conto_personale', q = quotaPagato(pag), voce = vocePerCat(s.cat), busta = voce.startsWith('b:') ? voce.slice(2) : null, desc = String(s.cosa||'').slice(0,120) || CAT[s.cat].nome;
+  const ok = await scrivi(async () => {
+    const base = { tipo:'spesa', fonte:'manuale', pagato_con:pag, quota:q, data, stato:'confermato' };
+    if (s.id) await aggiorna('movimenti', s.id, Object.assign({}, base, { importo:r2((imp-rimb)*q), importo_totale:r2(imp), rimborsabile_totale:r2(rimb), cat:s.cat, voce, busta, descrizione:desc, confermato_il:adesso() }));
+    else await aggiungi('movimenti', Object.assign({}, base, { importo:r2((imp-rimb)*q), importo_totale:r2(imp), rimborsabile_totale:r2(rimb), cat:s.cat, voce, busta, descrizione:desc }));
+    await aggiungi('movimenti', Object.assign({}, base, { importo:r2(rimb*q), importo_totale:null, cat:'sal.rimborsabile', voce:'x:rimborsabile', busta:null, descrizione:desc+' (parte rimborsabile)' }));
+  });
+  if (!ok) return; chiudiSheet();
+  /* Riga dell’estratto già importata: si conferma e si divide nello stesso modo */
+  const x = lista('estratto').find(r => r.importo < 0 && Math.abs(-r.importo - imp) < 0.01 && Math.abs(giorniTra(parse(r.data_op || r.data), parse(data))) <= 7 && !r.parte_di);
+  if (x) { await scrivi(() => aggiorna('estratto', x.id, { cat:s.cat, scelta:voce, stato:'confermata', motivo:'come la spesa segnata a mano' })); await dividiRiga(x.id, rimb, 'sal.rimborsabile'); avviso('Spesa salvata e riga dell’estratto divisa.'); }
+};
 </script>
 </body>
 </html>

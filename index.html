@@ -197,6 +197,7 @@ main{padding-top:36px}
 .tab-estr.tab4{grid-template-columns:1fr auto auto auto} .tab-estr.tab4>*{text-align:right} .tab-estr.tab4>span:nth-child(4n+1){text-align:left} .tab-estr.tab4>span:nth-child(-n+4){font-size:12px;color:var(--muted)}
 .proposte{display:flex;flex-direction:column;gap:6px;margin:-4px 0 4px} .propo{display:flex;justify-content:space-between;align-items:center;gap:10px;text-align:left;min-height:46px;padding:8px 12px;border:1.5px solid var(--border);border-radius:12px;background:var(--card);color:var(--ink);font:inherit;cursor:pointer} .propo span{font-size:12px;color:var(--muted);text-align:right} .scelta-cat{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px 12px;border-radius:12px;background:var(--verde-bg,rgba(46,160,90,.12))} .segnale{margin:6px 0} .form details select{width:100%;min-height:44px;margin-top:6px}
 .esempio{padding:10px 0;border-bottom:1px solid var(--line)} .esempio:last-of-type{border-bottom:0} .lista-sobria{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:8px} .lista-sobria li{line-height:1.45}
+.rev{padding:12px 0;border-bottom:1px solid var(--line);display:flex;flex-direction:column;gap:8px} .rev:last-of-type{border-bottom:0} .rev-riga{padding:10px 0 10px 10px;border-left:3px solid var(--line);margin:6px 0;display:flex;flex-direction:column;gap:6px} .cerca-cat input{width:100%;min-height:44px;border:1.5px solid var(--border);border-radius:12px;padding:6px 12px;font:inherit;background:var(--card);color:var(--ink)} .cerca-cat .proposte{margin-top:6px} .azioni-riga{display:flex;flex-wrap:wrap;align-items:center;gap:8px} .btn.attivo{background:var(--ambra-bg);border-color:var(--ambra,#c98a00)} .riga-cat{display:flex;align-items:center;gap:8px} .riga-cat .voce{flex:1;min-width:0}
 </style>
 </head>
 <body>
@@ -2026,7 +2027,7 @@ Object.assign(AZ, {
   estr_annulla(){ ui.estr = null; ui.estrAperti = {}; },
   async estr_salva(){ const im = ui.estr; if (!im || !im.conto || im.salvo) return; im.salvo = true; render(); const q = quotaConto(S.a.conti[im.conto]||{}) || 1, adesso_ = adesso();
     const ok = await scrivi(async () => {
-      for (const r of im.righe) { if (r.dup) continue; await metti('estratto', r.id, { conto:im.conto, data:r.data, data_op:r.data_op||r.data, importo:r.importo, quota:q, scelta:r.scelta||'', straordinaria:!!r.straordinaria, descrizione:r.descrizione, mcc:r.mcc||null, cat:r.cat||null, fonte:r.fonte, importato_il:adesso_ }); }
+      for (const r of im.righe) { if (r.dup) continue; await metti('estratto', r.id, { conto:im.conto, data:r.data, data_op:r.data_op||r.data, importo:r.importo, quota:q, scelta:r.scelta||'', straordinaria:!!r.straordinaria, descrizione:r.descrizione, mcc:r.mcc||null, cat:r.cat||null, stato:r.stato||'proposta', motivo:String(r.motivo||'').slice(0,90), fonte:r.fonte, importato_il:adesso_ }); }
       for (const [g, sc] of Object.entries(im.gruppiScelti||{})) if (sc && im.ricorda[g] !== false && !lista('regole').some(x => x.tipo === 'classe' && x.testo === g)) await aggiungi('regole', { tipo:'classe', testo:g, scelta:sc, conto: sc === 'escluso' ? im.conto : null, origine:'app' });
       await aggiungi('importazioni', { conto:im.conto, fonte:im.fonte, file:String(im.file).slice(0,80), da:im.da, a:im.a, righe:im.righe.filter(r => !r.dup).length, data:iso(oggi()) });
     });
@@ -2181,7 +2182,7 @@ AZ.estr_salva = async function(){
   const im = ui.estr; if (!im || im.conto !== 'prepagata') return _salva3e.apply(this, arguments);
   if (im.salvo || Object.values(im.fontiRicarica||{}).some(v => !v)) return; im.salvo = true; render(); const t = adesso();
   const ok = await scrivi(async () => {
-    for (const r of im.righe) { if (r.dup) continue; await metti('estratto', r.id, { conto:'prepagata', data:r.data, data_op:r.data, importo:r.importo, quota:r.quota != null ? r.quota : 1, scelta:r.scelta||'', straordinaria:!!r.straordinaria, descrizione:r.descrizione, mcc:null, cat:r.cat||null, fonte:'prepagata', importato_il:t }); }
+    for (const r of im.righe) { if (r.dup) continue; await metti('estratto', r.id, { conto:'prepagata', data:r.data, data_op:r.data, importo:r.importo, quota:r.quota != null ? r.quota : 1, scelta:r.scelta||'', straordinaria:!!r.straordinaria, descrizione:r.descrizione, mcc:null, cat:r.cat||null, stato:r.stato||'proposta', motivo:String(r.motivo||'').slice(0,90), fonte:'prepagata', importato_il:t }); }
     for (const [f, c] of Object.entries(im.fontiRicarica)) if (c && !lista('regole').some(x => x.tipo === 'ricarica' && String(f).endsWith(String(x.testo)))) await aggiungi('regole', { tipo:'ricarica', testo:String(f).slice(-6), conto:c, origine:'app' });
     for (const [g, sc] of Object.entries(im.gruppiScelti||{})) if (sc && im.ricorda[g] !== false && !lista('regole').some(x => x.tipo === 'classe' && x.testo === g)) await aggiungi('regole', { tipo:'classe', testo:g, scelta:sc, conto:null, origine:'app' });
     await aggiungi('importazioni', { conto:'prepagata', fonte:im.fonte, file:String(im.file).slice(0,80), da:im.da, a:im.a, righe:im.righe.filter(r => !r.dup).length, data:iso(oggi()) });
@@ -2726,6 +2727,136 @@ VISTE.rotta = function(){ const o = _vRotta4(); const k = o.indexOf('<section cl
 /* Promemoria del coefficiente FOI da gennaio dell’anno di rivalutazione */
 const _daFare4 = daFare;
 daFare = function(){ const l = _daFare4(), a = oggi().getFullYear(); if (coeffFoi(a).tipo === 'stima') l.push({ titolo:'Registra il coefficiente FOI '+a, testo:'Ultimo indice FOI ISTAT diviso per la media 2026: va nel PIANO PENSIONE §7.4 e poi nei parametri. Finché manca, l’app usa una stima.', fonte:'PIANO PENSIONE §7.4', btn:['Soglia e jolly','go','soglia'] }); return l; };
+
+/* ================= FASE 3h: REVISIONE DELLE RIGHE IMPORTATE (stato: confermata, proposta, dubbio) ================= */
+const GENERICI = ['amazon','amzn','paypal','satispay','google','apple','stripe','sumup','nexi','pagamento','bonifico'];
+const generico = g => GENERICI.some(x => String(g||'').toLowerCase().includes(x));
+const statoRiga = x => x.stato || 'proposta';
+const confermataDaMotivo = r => r.scelta === 'escluso' || /^regola tua|^tipo di operazione|^ricarica|^scelta tua|^come la spesa/.test(r.motivo||'');
+
+/* Stato iniziale delle righe e risoluzione con le spese segnate a mano */
+const _prepara3h = preparaImport;
+preparaImport = function(ris, nome){
+  const im = _prepara3h(ris, nome);
+  const man = confermati('movimenti').filter(x => x.tipo === 'spesa' && x.cat && CAT[x.cat]);
+  for (const r of im.righe) {
+    if (r.dup) continue;
+    r.stato = r.scelta && confermataDaMotivo(r) ? 'confermata' : 'proposta';
+    if (r.importo < 0) { const q = im.conto === 'prepagata' ? (r.quota || 1) : (quotaConto(S.a.conti[im.conto]||{}) || 1);
+      const m = man.find(x => (x.importo_totale != null ? Math.abs(x.importo_totale + r.importo) < 0.01 : Math.abs(x.importo - r2(-r.importo*q)) < 0.01) && Math.abs(giorniTra(parse(x.data), parse(r.data_op || r.data))) <= 7);
+      if (m) { r.cat = m.cat; r.scelta = vocePerCat(m.cat); r.stato = 'confermata'; r.motivo = 'come la spesa segnata a mano “'+(m.descrizione||'')+'”'; r.daMano = true; } }
+  }
+  /* Stesso esercente (non generico): le altre righe senza conferma prendono la stessa categoria come proposta */
+  for (const r of im.righe.filter(x => x.daMano && !generico(x.gruppo))) for (const o of im.righe) if (!o.dup && o !== r && o.gruppo === r.gruppo && o.stato !== 'confermata') { o.cat = r.cat; o.scelta = r.scelta; o.motivo = 'come la spesa segnata a mano dello stesso esercente'; o.stato = 'proposta'; }
+  for (const r of im.righe) if (generico(r.gruppo) && im.ricorda[r.gruppo] == null) im.ricorda[r.gruppo] = false;
+  return im;
+};
+
+/* ---- Controllo “cerca categoria”, lo stesso dell’inserimento a mano ---- */
+function cercaCat(k, attuale){
+  return '<div class="cerca-cat"><input data-cc-in="'+h(k)+'" autocomplete="off" placeholder="'+h(attuale ? 'Cambia: '+CAT[attuale].nome : 'Scrivi: pizzeria, farmacia, ikea…')+'"><div class="proposte" data-cc-out="'+h(k)+'"></div></div>';
+}
+function azioniRiga(k, stato, straord){
+  return '<div class="azioni-riga"><button class="btn piccolo'+(stato === 'confermata' ? ' attivo' : '')+'" data-act="cc_stato" data-k="'+h(k)+'" data-s="confermata">✓ Conferma</button><button class="btn piccolo'+(stato === 'dubbio' ? ' attivo' : '')+'" data-act="cc_stato" data-k="'+h(k)+'" data-s="dubbio">? Dubbio</button><label class="spunta"><input type="checkbox" data-cc-str="'+h(k)+'"'+(straord ? ' checked' : '')+'>Straordinaria</label></div>';
+}
+document.addEventListener('input', ev => { const e = ev.target; if (!e.dataset || e.dataset.ccIn == null) return; const k = e.dataset.ccIn, out = document.querySelector('[data-cc-out="'+CSS.escape(k)+'"]'); if (!out) return;
+  out.innerHTML = suggerisci(e.value, 5, false).map(x => '<button type="button" class="propo" data-act="cc_scegli" data-k="'+h(k)+'" data-cat="'+h(x.cat)+'"><b>'+h(maiuscola(x.label))+'</b><span>'+h(etichettaCat(x.cat))+'</span></button>').join('') || (normTesto(e.value).length >= 2 ? '<p class="sotto">Nessuna proposta: prova un’altra parola o segna “Dubbio”.</p>' : ''); });
+
+/* Bersagli: g:gruppo e r:indice (import in corso), s:id e sg:conto|gruppo (righe salvate), sc:categoria (proposte salvate di una categoria) */
+function righeDi(k){
+  const [t, v] = [k.slice(0, k.indexOf(':')), k.slice(k.indexOf(':')+1)], im = ui.estr;
+  if (t === 'g') return { imp:true, l: im.righe.filter(r => !r.dup && r.gruppo === v && (!r.scelta || r.stato === 'dubbio' || r.gruppoDa === v)) };
+  if (t === 'r') return { imp:true, l: [im.righe[Number(v)]].filter(Boolean) };
+  if (t === 'p') return { imp:true, l: im.righe.filter(r => !r.dup && r.scelta && r.stato === 'proposta' && (r.cat || r.scelta) === v) };
+  if (t === 's') return { imp:false, l: [S.a.estratto[v]].filter(Boolean) };
+  if (t === 'sg') { const [c, g] = v.split('|'); return { imp:false, l: lista('estratto').filter(x => x.conto === c && gruppoDi(x.descrizione) === g && statoRiga(x) !== 'confermata') }; }
+  if (t === 'sc') return { imp:false, l: lista('estratto').filter(x => x.scelta && statoRiga(x) === 'proposta' && (catAuto(x) || x.scelta) === v) };
+  return { imp:true, l:[] };
+}
+async function applica(k, patch){
+  const { imp, l } = righeDi(k);
+  if (imp) { for (const r of l) { Object.assign(r, patch); if (patch.cat !== undefined && k.startsWith('g:')) r.gruppoDa = k.slice(2); }
+    if (patch.cat && k.startsWith('g:')) { const im = ui.estr; im.gruppiScelti = im.gruppiScelti || {}; im.gruppiCat = im.gruppiCat || {}; im.gruppiScelti[k.slice(2)] = patch.scelta; im.gruppiCat[k.slice(2)] = patch.cat; } return; }
+  if (!l.length) return; await scrivi(async () => { for (const x of l) await aggiorna('estratto', x.id, patch); });
+  if (patch.cat && k.startsWith('sg:')) { const g = k.split('|')[1]; if (!generico(g) && !lista('regole').some(x => x.tipo === 'classe' && x.testo === g)) await scrivi(() => aggiungi('regole', { tipo:'classe', testo:g, scelta:patch.scelta, cat:patch.cat, origine:'app' })); }
+}
+Object.assign(AZ, {
+  async cc_scegli(el){ const c = el.dataset.cat; await applica(el.dataset.k, { cat:c, scelta:vocePerCat(c), stato:'confermata', motivo:'scelta tua' }); },
+  async cc_stato(el){ const k = el.dataset.k, s = el.dataset.s; const { imp, l } = righeDi(k); const nuovo = l.length && l.every(x => statoRiga(x) === s) ? 'proposta' : s; await applica(k, { stato:nuovo }); },
+  estr_tutti(el){ ui.estrTutti = Object.assign({}, ui.estrTutti, { [el.dataset.k]: !(ui.estrTutti||{})[el.dataset.k] }); }
+});
+document.addEventListener('change', async ev => { const e = ev.target; if (!e.dataset || e.dataset.ccStr == null) return; await applica(e.dataset.ccStr, { straordinaria:e.checked }); render(); });
+
+/* ---- Vista di importazione ---- */
+function riassuntoGruppo(rr){ const tot = rr.reduce((s,x) => s + x.importo, 0); return eur(r2(tot))+' · '+(rr.length === 1 ? dataBreve(rr[0].data) : rr.length+' righe, '+dataBreve(rr[0].data)+' – '+dataBreve(rr[rr.length-1].data)); }
+function sezioniImport(im){
+  const nuove = im.righe.filter(r => !r.dup).sort((a,b) => a.data < b.data ? -1 : 1);
+  let o = '';
+  /* 1. Da assegnare, per esercente */
+  const da = {}; for (const r of nuove) if (!r.scelta) (da[r.gruppo] = da[r.gruppo] || []).push(r);
+  const gl = Object.entries(da).sort((a,b) => b[1].length - a[1].length);
+  if (gl.length) o += '<section class="card"><div class="card-testa"><h2>Da assegnare</h2>'+chip(gl.reduce((s,x) => s + x[1].length, 0)+' righe','corallo')+'</div><p class="sotto">Scrivi cosa è, come nell’inserimento a mano: la scelta vale per tutte le righe dello stesso esercente. Se non lo sai, segna “Dubbio”: resta da rivedere e si risolve quando segni a mano la prossima spesa dello stesso esercente.</p>'+
+    gl.map(([g, rr]) => { const st = rr.every(x => x.stato === 'dubbio') ? 'dubbio' : 'proposta';
+      return '<div class="rev"><p class="nome">'+h(rr[0].descrizione)+(st === 'dubbio' ? ' '+chip('in dubbio','ambra') : '')+'</p><p class="sotto">'+riassuntoGruppo(rr)+(rr[0].manuale ? ' · segnata anche a mano: '+h(rr[0].manuale) : '')+'</p>'+cercaCat('g:'+g, null)+
+        '<div class="azioni-riga"><button class="btn piccolo'+(st === 'dubbio' ? ' attivo' : '')+'" data-act="cc_stato" data-k="g:'+h(g)+'" data-s="dubbio">? Dubbio</button><label class="spunta"><input type="checkbox" data-cc-str="g:'+h(g)+'"'+(rr.every(x => x.straordinaria) ? ' checked' : '')+'>Straordinaria</label><label class="spunta"><input type="checkbox" data-estr-ricorda="'+h(g)+'"'+(im.ricorda[g] !== false && !generico(g) ? ' checked' : '')+'>Ricorda</label></div></div>'; }).join('')+'</section>';
+  /* 2. Proposte da confermare, per categoria */
+  const pr = {}; for (const r of nuove) if (r.scelta && r.stato === 'proposta') (pr[r.cat || r.scelta] = pr[r.cat || r.scelta] || []).push(r);
+  const pl = Object.entries(pr).sort((a,b) => b[1].length - a[1].length);
+  if (pl.length) o += '<section class="card"><div class="card-testa"><h2>Proposte da confermare</h2>'+chip(pl.reduce((s,x) => s + x[1].length, 0)+' righe','ambra')+'</div><p class="sotto">Proposte dalle regole generali, dalle parole e dal codice dell’esercente. Conferma per categoria, oppure apri e correggi riga per riga.</p>'+
+    pl.map(([k, rr]) => { const ap = ui.estrAperti['p:'+k]; return '<div class="rev"><div class="riga-cat"><button class="voce nudo" data-act="estr_apri" data-k="p:'+h(k)+'"><span class="cresce nome">'+h(CAT[k] ? etichettaCat(k) : nomeScelta(k))+'</span><span class="sotto">'+rr.length+' · '+eur0(rr.reduce((s,x) => s + x.importo, 0))+'</span><span aria-hidden="true">'+(ap ? '▴' : '▾')+'</span></button><button class="btn piccolo primario" data-act="cc_stato" data-k="p:'+h(k)+'" data-s="confermata">✓ Tutte</button></div>'+
+      (ap ? rr.map(r => { const ix = im.righe.indexOf(r); return '<div class="rev-riga"><p class="nome piccolo">'+h(r.descrizione)+'</p><p class="sotto">'+dataBreve(r.data)+' · '+eur(r.importo)+(r.quota != null && r.quota !== 1 ? ' (quota '+eur(r2(r.importo*r.quota))+')' : '')+' · '+h(r.motivo||'')+'</p>'+cercaCat('r:'+ix, r.cat)+azioniRiga('r:'+ix, r.stato, r.straordinaria)+'</div>'; }).join('') : '')+'</div>'; }).join('')+'</section>';
+  /* 3. In dubbio e confermate */
+  const dub = nuove.filter(r => r.scelta && r.stato === 'dubbio'), conf = nuove.filter(r => r.stato === 'confermata');
+  if (dub.length) o += '<section class="card"><div class="card-testa"><h2>In dubbio</h2>'+chip(dub.length+'','ambra')+'</div>'+dub.map(r => { const ix = im.righe.indexOf(r); return '<div class="rev-riga"><p class="nome piccolo">'+h(r.descrizione)+'</p><p class="sotto">'+dataBreve(r.data)+' · '+eur(r.importo)+' · ipotesi: '+h(CAT[r.cat] ? CAT[r.cat].nome : nomeScelta(r.scelta))+'</p>'+cercaCat('r:'+ix, r.cat)+azioniRiga('r:'+ix, r.stato, r.straordinaria)+'</div>'; }).join('')+'</section>';
+  if (conf.length) { const ap = ui.estrAperti['conf']; o += '<section class="card"><button class="voce nudo" data-act="estr_apri" data-k="conf"><span class="cresce nome">Già confermate (tue regole, tipo di operazione, spese segnate a mano)</span><span class="sotto">'+conf.length+'</span><span aria-hidden="true">'+(ap ? '▴' : '▾')+'</span></button>'+
+    (ap ? conf.map(r => { const ix = im.righe.indexOf(r); return '<div class="rev-riga"><p class="nome piccolo">'+h(r.descrizione)+' · '+h(CAT[r.cat] ? CAT[r.cat].nome : nomeScelta(r.scelta))+'</p><p class="sotto">'+dataBreve(r.data)+' · '+eur(r.importo)+' · '+h(r.motivo||'')+'</p>'+cercaCat('r:'+ix, r.cat)+azioniRiga('r:'+ix, r.stato, r.straordinaria)+'</div>'; }).join('') : '')+'</section>'; }
+  const daFare = nuove.filter(r => r.stato !== 'confermata').length, blocco = !im.conto || im.salvo || (im.conto === 'prepagata' && Object.values(im.fontiRicarica||{}).some(v => !v));
+  o += '<div class="bottoni"><button class="btn primario" data-act="estr_salva"'+(blocco ? ' disabled' : '')+'>'+(im.salvo ? 'Salvo…' : 'Salva '+nuove.length+' righe')+'</button><button class="btn" data-act="estr_annulla">Annulla</button></div>';
+  if (daFare) o += '<p class="fonte">'+daFare+' righe non ancora confermate: le salvo come proposte o dubbi e restano in “Da rivedere”.</p>';
+  return o + fonteRiga('BUDGET §10.1 (conti e quote), §10.3 (data contabile ed estratti), §12 (categorie).');
+}
+/* ---- Da rivedere: righe salvate non confermate ---- */
+function cardDaRivedere(){
+  const non = lista('estratto').filter(x => x.scelta !== 'escluso' && statoRiga(x) !== 'confermata' || !x.scelta);
+  if (!non.length) return '<section class="card"><div class="card-testa"><h2>Da rivedere</h2>'+chip('niente','verde')+'</div><p class="sotto">Tutte le righe importate sono confermate.</p></section>';
+  const senza = {}, prop = {}, dub = [];
+  for (const x of non) { if (!x.scelta) { const k = x.conto+'|'+gruppoDi(x.descrizione); (senza[k] = senza[k] || []).push(x); } else if (statoRiga(x) === 'dubbio') dub.push(x); else { const c = catAuto(x) || x.scelta; (prop[c] = prop[c] || []).push(x); } }
+  const tutti = ui.estrTutti || {};
+  let o = '<section class="card"><div class="card-testa"><h2>Da rivedere</h2>'+chip(non.length+' righe','ambra')+'</div><p class="sotto">Contano già nell’analisi con la voce proposta; confermarle rende affidabili calibrazione e segnali.</p>';
+  const sl = Object.entries(senza).sort((a,b) => b[1].length - a[1].length), maxS = tutti.senza ? sl.length : 12;
+  if (sl.length) o += '<p class="titolino">Senza categoria · '+sl.reduce((s,x) => s + x[1].length, 0)+'</p>'+sl.slice(0, maxS).map(([k, rr]) => { rr.sort((a,b) => a.data < b.data ? -1 : 1); const dubbio = rr.every(x => statoRiga(x) === 'dubbio');
+      return '<div class="rev"><p class="nome">'+h(rr[0].descrizione)+(dubbio ? ' '+chip('in dubbio','ambra') : '')+'</p><p class="sotto">'+h(nomeConto(rr[0].conto))+' · '+riassuntoGruppo(rr)+'</p>'+cercaCat('sg:'+k, null)+'<div class="azioni-riga"><button class="btn piccolo'+(dubbio ? ' attivo' : '')+'" data-act="cc_stato" data-k="sg:'+h(k)+'" data-s="dubbio">? Dubbio</button><label class="spunta"><input type="checkbox" data-cc-str="sg:'+h(k)+'"'+(rr.every(x => x.straordinaria) ? ' checked' : '')+'>Straordinaria</label></div></div>'; }).join('')+
+    (sl.length > maxS ? '<button class="link" data-act="estr_tutti" data-k="senza">Mostra tutti ('+sl.length+')</button>' : '');
+  const pl = Object.entries(prop).sort((a,b) => b[1].length - a[1].length);
+  if (pl.length) o += '<p class="titolino">Proposte · '+pl.reduce((s,x) => s + x[1].length, 0)+'</p>'+pl.map(([k, rr]) => { const ap = ui.estrAperti['sc:'+k]; return '<div class="rev"><div class="riga-cat"><button class="voce nudo" data-act="estr_apri" data-k="sc:'+h(k)+'"><span class="cresce nome">'+h(CAT[k] ? etichettaCat(k) : nomeScelta(k))+'</span><span class="sotto">'+rr.length+' · '+eur0(rr.reduce((s,x) => s + x.importo*(x.quota != null ? x.quota : 1), 0))+'</span><span aria-hidden="true">'+(ap ? '▴' : '▾')+'</span></button><button class="btn piccolo primario" data-act="cc_stato" data-k="sc:'+h(k)+'" data-s="confermata">✓ Tutte</button></div>'+
+      (ap ? rr.sort((a,b) => a.data < b.data ? -1 : 1).map(x => '<div class="rev-riga"><p class="nome piccolo">'+h(x.descrizione)+'</p><p class="sotto">'+dataBreve(x.data)+' '+String(x.data).slice(0,4)+' · '+eur(x.importo)+' · '+h(nomeConto(x.conto))+'</p>'+cercaCat('s:'+x.id, catAuto(x))+azioniRiga('s:'+x.id, statoRiga(x), x.straordinaria)+'</div>').join('') : '')+'</div>'; }).join('');
+  if (dub.length) o += '<p class="titolino">In dubbio · '+dub.length+'</p>'+dub.map(x => '<div class="rev-riga"><p class="nome piccolo">'+h(x.descrizione)+'</p><p class="sotto">'+dataBreve(x.data)+' '+String(x.data).slice(0,4)+' · '+eur(x.importo)+' · ipotesi: '+h(nomeScelta(x.scelta))+'</p>'+cercaCat('s:'+x.id, catAuto(x))+azioniRiga('s:'+x.id, 'dubbio', x.straordinaria)+'</div>').join('');
+  return o + fonteRiga('“Dubbio” resta in attesa finché non lo risolvi o finché una spesa segnata a mano dello stesso importo e periodo lo chiarisce.')+'</section>';
+}
+const _vEstratto3h = VISTE.estratto;
+VISTE.estratto = function(){
+  const im = ui.estr; let o = _vEstratto3h();
+  if (im && im.righe && !im.errore && !im.inCorso) {
+    const k1 = o.indexOf('<section class="card"><div class="card-testa"><h2>Da assegnare</h2>'), k2 = o.indexOf('<section class="card"><h2>Proposte</h2>');
+    const k = [k1, k2].filter(x => x >= 0).sort((a,b) => a-b)[0]; return (k >= 0 ? o.slice(0, k) : o) + sezioniImport(im);
+  }
+  const k = o.indexOf('<section class="card"><h2>Copertura</h2>'); const c = cardDaRivedere(); return k < 0 ? o + c : o.slice(0,k) + c + o.slice(k);
+};
+/* Inserimento a mano: risolve subito la riga importata corrispondente e i dubbi dello stesso esercente */
+const _spesaOk3h = AZ.spesa_ok;
+AZ.spesa_ok = async function(){
+  const s = ui.sheet; const cat = s && s.cat, imp = s && num(s.imp), data = s && s.data; await _spesaOk3h.apply(this, arguments);
+  if (ui.sheet || !cat || !(imp > 0)) return;
+  const x = lista('estratto').find(r => r.importo < 0 && Math.abs(-r.importo - imp) < 0.01 && Math.abs(giorniTra(parse(r.data_op || r.data), parse(data))) <= 7 && statoRiga(r) !== 'confermata');
+  if (!x) return; const v = vocePerCat(cat), g = gruppoDi(x.descrizione);
+  await scrivi(async () => { await aggiorna('estratto', x.id, { cat, scelta:v, stato:'confermata', motivo:'come la spesa segnata a mano' });
+    if (!generico(g)) { for (const y of lista('estratto')) if (y.id !== x.id && y.conto === x.conto && gruppoDi(y.descrizione) === g && (!y.scelta || statoRiga(y) === 'dubbio')) await aggiorna('estratto', y.id, { cat, scelta:v, stato:'proposta', motivo:'come la spesa segnata a mano dello stesso esercente' });
+      if (!lista('regole').some(r => r.tipo === 'classe' && r.testo === g)) await aggiungi('regole', { tipo:'classe', testo:g, scelta:v, cat, origine:'app' }); } });
+  avviso('Riga dell’estratto conto risolta: '+x.descrizione+'.');
+};
+/* Riepiloghi: quante righe restano da confermare */
+const _cardSegnali3h = cardSegnali;
+cardSegnali = function(fino){ const o = _cardSegnali3h(fino), n = lista('estratto').filter(x => x.scelta !== 'escluso' && statoRiga(x) !== 'confermata').length; return n ? o.replace('</section>', '<p class="sotto warn">'+n+' righe importate ancora da confermare o in dubbio: <a class="link" href="#estratto">rivedi</a>.</p></section>') : o; };
 </script>
 </body>
 </html>

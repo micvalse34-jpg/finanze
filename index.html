@@ -3086,7 +3086,7 @@ const _render3k = render; render = function(){ try { migra3k(); } catch (e) { co
   const m = TASSONOMIA.find(x => x[0] === 'nonconsumi'); m[2].splice(1, 0, s); MACRO.nonconsumi.subs.splice(1, 0, s[0]); })();
 
 /* ================= FASE 3m: DUBBI RISOLVIBILI CON UN TOCCO, VERSIONE VISIBILE ================= */
-const VERSIONE_APP = '19/11/2026 · fase 3 completa';
+const VERSIONE_APP = '19/11/2026 · 3 finale';
 /* Nome più chiaro per le partite di giro */
 (function(){ const n = 'Soldi di altri (partita di giro)'; CAT['nc.terzi'].nome = n; const m = TASSONOMIA.find(x => x[0] === 'nonconsumi'); const s = m[2].find(x => x[0] === 'nc.terzi'); if (s) s[1] = n;
   CAT['nc.terzi'].sin = ['soldi di altri','per conto di altri','partita di giro','girato','girata','restituito','restituiti','anticipato per altri','rimborso girato','terzi']; })();
@@ -3305,7 +3305,7 @@ cardFasce = function(pf, anteprima){
 const _daFare10b = daFare;
 daFare = function(){ const l = _daFare10b(), t = oggi(); if (t.getMonth() === 0 && t.getFullYear() >= 2027) { const u = quotaUsa(); if (!u.aggiornata) l.push({ titolo:'Aggiorna la quota USA dai factsheet', testo:'Controllo di gennaio: si interviene solo fuori dal '+u.tmin+'–'+u.tmax+'%.', fonte:'POLICY §8', btn:['Inserisci','sheet','quota_usa'] }); if (u.azione) l.push({ titolo:'Quota USA fuori tolleranza', testo:u.azione, fonte:'POLICY §8', btn:['Portafoglio','go','portafoglio'] }); } return l; };
 
-/* ================= PUNTI 7, 6, 8, 9: SCADENZE RICORRENTI, CALENDARIO, PARAMETRI VECCHI, ICONE ================= */
+/* ================= PUNTI 7, 8, 9: SCADENZE RICORRENTI CON PREAVVISO, PARAMETRI VECCHI, ICONE ================= */
 for (const n of ['ricorrenze']) { ARCHIVI.push(n); S.a[n] = {}; }
 /* ---- 7. Scadenze ricorrenti (dai documenti) ---- */
 const RICORRENTI = [
@@ -3353,36 +3353,15 @@ function migra7(){ if (S.migrato7 || !S.pronto) return; S.migrato7 = true; const
   scrivi(async () => { for (const id of l) await aggiorna('scadenze', id, { fatta:true, fatta_il:iso(oggi()), nota:'Sostituita dalla scadenza ricorrente' }); }); }
 /* Da fare: ricorrenti annuali scadute (non la chiusura, che ha già il suo promemoria) */
 const _daFare7 = daFare;
-daFare = function(){ const l = _daFare7(), rit = ricorrenze(45, 0).filter(x => x.ritardo && !['chiusura','ricalcolo','foi','tredicesima','quattordicesima','premio'].includes(x.rid));
-  if (rit.length) l.push({ titolo: rit.length === 1 ? 'Scadenza passata: '+rit[0].nome : rit.length+' scadenze ricorrenti passate', testo:'Segnale come fatte nella pagina Scadenze.', btn:['Scadenze','go','scadenze'] });
+/* Promemoria in home: 7 giorni prima e, se non segnate come fatte, fino a 45 giorni dopo. Chiusura, ricalcolo, FOI e mensilità hanno già le loro azioni */
+const RIC_CON_AZIONE = ['chiusura','ricalcolo','foi','tredicesima','quattordicesima','premio'];
+daFare = function(){ const l = _daFare7(), t = oggi();
+  for (const x of ricorrenze(45, 7).filter(x => !RIC_CON_AZIONE.includes(x.rid))) { const gg = Math.round(giorniTra(t, x.data));
+    l.push({ titolo: gg > 1 ? 'Tra '+gg+' giorni: '+x.nome : (gg === 1 ? 'Domani: '+x.nome : (gg === 0 ? 'Oggi: '+x.nome : 'Passata il '+dataBreve(x.data)+': '+x.nome)), testo:(x.nota ? x.nota+'. ' : '')+'Quando l’hai fatta, segnala come fatta.', fonte:x.fonte, btn:['Fatto','ric',x.ric] }); }
   const pv = parametriVecchi(); if (pv.length) l.push({ titolo: pv.length === 1 ? '1 parametro da riverificare' : pv.length+' parametri da riverificare', testo:'Norme e dati con più di 12 mesi, stime e ipotesi con più di 24.', btn:['Dati e regole','go','dati'] });
   return l; };
-
-/* ---- 6. Calendario .ics da importare in Google Calendar ---- */
-function eventiCalendario(){
-  const t = oggi(), out = [];
-  for (const x of ricorrenze(0, 730)) out.push({ uid:x.ric, data:x.data, titolo:x.nome, desc:x.fonte+(x.nota ? '. '+x.nota : '') });
-  for (const x of lista('scadenze')) if (!x.fatta && isData(x.data) && parse(x.data) >= t) out.push({ uid:'scad-'+x.id, data:parse(x.data), titolo:x.titolo, desc:fonteDoc(x)+(x.nota ? '. '+x.nota : '') });
-  const pi = pianoIngresso(); if (pi) for (const r of pi.rate) if (!r.fatta && r.data >= t) out.push({ uid:'rata-'+r.n, data:r.data, titolo:'Rata di ingresso '+r.n+' di '+pi.n+' nel portafoglio', desc:'INVESTIMENTI §2. Date fisse, nessun rinvio' });
-  return out.sort((a,b) => a.data - b.data);
-}
-function testoIcs(){
-  const esc = s => String(s||'').replace(/\\/g, '\\\\').replace(/;/g, '\\;').replace(/,/g, '\\,').replace(/\r?\n/g, '\\n');
-  const piega = l => { const out = []; let s = l; while (new TextEncoder().encode(s).length > 73) { let n = 73; while (new TextEncoder().encode(s.slice(0, n)).length > 73) n--; out.push(s.slice(0, n)); s = ' '+s.slice(n); } out.push(s); return out.join('\r\n'); };
-  const d = x => iso(x).replace(/-/g, ''), stamp = new Date().toISOString().replace(/[-:]/g, '').replace(/\.\d+/, '');
-  const r = ['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//Finanze personali//IT','CALSCALE:GREGORIAN','METHOD:PUBLISH','X-WR-CALNAME:Finanze'];
-  for (const e of eventiCalendario()) r.push('BEGIN:VEVENT', 'UID:'+e.uid+'@finanze-personali', 'DTSTAMP:'+stamp, 'DTSTART;VALUE=DATE:'+d(e.data), 'DTEND;VALUE=DATE:'+d(piuGiorni(e.data, 1)), piega('SUMMARY:'+esc(e.titolo)), piega('DESCRIPTION:'+esc(e.desc)), 'TRANSP:TRANSPARENT', 'BEGIN:VALARM', 'ACTION:DISPLAY', piega('DESCRIPTION:'+esc(e.titolo)), 'TRIGGER:PT9H', 'END:VALARM', 'END:VEVENT');
-  r.push('END:VCALENDAR'); return r.join('\r\n')+'\r\n';
-}
-AZ.scarica_ics = function(){ const blob = new Blob([testoIcs()], { type:'text/calendar;charset=utf-8' }), a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'finanze-'+iso(oggi())+'.ics'; document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1500); avviso('Calendario scaricato: '+eventiCalendario().length+' eventi.'); };
-const _vScad7 = VISTE.scadenze;
-VISTE.scadenze = function(){
-  let o = _vScad7(); const ric = RICORRENTI.map(r => { const x = ricorrenze(60, 800).find(y => y.rid === r.id); return { r, x }; });
-  const card = '<section class="card"><h2>Ricorrenti</h2><div class="elenco">'+ric.map(({ r, x }) => '<div class="voce"><div class="cresce"><p class="nome">'+h(r.titolo)+'</p><p class="sotto">'+({ mensile:'Ogni mese', trimestrale:'Ogni trimestre', semestrale:'Ogni sei mesi', annuale:'Ogni anno', biennale:'Ogni due anni' })[r.freq]+' · '+(x ? 'prossima '+dataMedia(iso(x.data))+(x.ritardo ? ' (passata)' : '') : 'nessuna in vista')+' · '+h(r.fonte)+(r.nota ? ' · '+h(r.nota) : '')+'</p></div>'+(x ? '<button class="link" data-act="ric_fatta" data-k="'+h(x.ric)+'">Fatto</button>' : '')+'</div>').join('')+'</div></section>';
-  const cal = '<section class="card"><div class="card-testa"><h2>Calendario Google</h2></div><p class="sotto">Un file con le scadenze dei prossimi 24 mesi ('+eventiCalendario().length+' eventi), da importare in un calendario separato “Finanze”. Nessun collegamento automatico: quando le scadenze cambiano, elimini il calendario e reimporti il file.</p><button class="btn primario" data-act="scarica_ics">Scarica il calendario (.ics)</button>'+
-    '<details><summary class="link">Come importarlo</summary><ol class="lista-sobria"><li>Da computer apri Google Calendar sul web: l’app del telefono non importa file.</li><li>Crea un nuovo calendario chiamato “Finanze”.</li><li>Nelle impostazioni scegli Importa, seleziona il file scaricato e come destinazione il calendario “Finanze”.</li><li>Per aggiornare: elimina il calendario “Finanze”, ricrealo e importa il file nuovo.</li></ol></details></section>';
-  const k = o.indexOf('<section class="card"><h2>Verifiche senza data</h2>'); return k < 0 ? o + card + cal : o.slice(0,k) + card + cal + o.slice(k);
-};
+const _bottoneAzione7 = bottoneAzione;
+bottoneAzione = function(b, primo){ return b[1] === 'ric' ? '<button class="btn piccolo'+(primo ? ' primario' : '')+'" data-act="ric_fatta" data-k="'+h(b[2])+'">'+h(b[0])+'</button>' : _bottoneAzione7(b, primo); };
 
 /* ---- 8. Parametri da riverificare ---- */
 function parametriVecchi(){

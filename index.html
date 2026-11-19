@@ -206,7 +206,7 @@ main{padding-top:36px}
 h2.con-ico{display:flex;align-items:center;gap:10px} .ico-sez{width:30px;height:30px;border-radius:9px;display:grid;place-items:center}
 .riquadro{padding:12px;border-radius:14px;margin:10px 0;display:flex;flex-direction:column;gap:8px;align-items:flex-start}
 .ric{display:flex;align-items:center;gap:10px;padding:2px 0}
-.fas-riga{padding:8px 0} .fas-testa{display:flex;justify-content:space-between;gap:10px;font-size:14px;margin-bottom:6px} .fas-testa>span:first-child{font-weight:600;min-width:0}
+.fas-riga{padding:8px 0} .eroe-num.nero strong{font-size:28px} .eroe-num.nero span{font-size:13px;color:var(--muted)} .fas-testa{display:flex;justify-content:space-between;gap:10px;font-size:14px;margin-bottom:6px} .fas-testa>span:first-child{font-weight:600;min-width:0}
 .fascia{position:relative;height:14px;border-radius:999px;background:var(--track);overflow:visible}
 .fascia .banda{position:absolute;top:0;bottom:0;background:color-mix(in srgb,var(--verde) 35%,transparent);border-radius:999px} .fascia .banda.esterna{background:color-mix(in srgb,var(--ambra) 30%,transparent)}
 .fascia .riemp{position:absolute;left:0;top:4px;height:6px;border-radius:999px;background:var(--pri-track)} .fascia .riemp.fuori{background:var(--ambra)} .fascia .riemp.grave{background:var(--corallo)}
@@ -603,7 +603,7 @@ function portafoglio(){
   const righe = etf.map(e => {
     const v = valorePos(e), att = tot ? v/tot*100 : null, tg = pesi[e.id];
     let lim = (tg != null && fEtf != null) ? tg*fEtf/100 : null;
-    if (lim != null && e.id === 'world' && fMax != null) lim = Math.min(lim, fMax);
+    if (lim != null && fMax != null) lim = Math.min(lim, fMax);
     const fuori = att != null && lim != null && Math.abs(att-tg) > lim;
     return { e, valore:v, attuale:att, target:tg, limite:lim, fuori, vecchio: v > 0 && eVecchio(e.data, 'app.vecchio.prezzi') };
   });
@@ -3084,7 +3084,7 @@ const _render3k = render; render = function(){ try { migra3k(); } catch (e) { co
   const m = TASSONOMIA.find(x => x[0] === 'nonconsumi'); m[2].splice(1, 0, s); MACRO.nonconsumi.subs.splice(1, 0, s[0]); })();
 
 /* ================= FASE 3m: DUBBI RISOLVIBILI CON UN TOCCO, VERSIONE VISIBILE ================= */
-const VERSIONE_APP = '18/11/2026 · 10';
+const VERSIONE_APP = '19/11/2026 · 10b';
 /* Nome più chiaro per le partite di giro */
 (function(){ const n = 'Soldi di altri (partita di giro)'; CAT['nc.terzi'].nome = n; const m = TASSONOMIA.find(x => x[0] === 'nonconsumi'); const s = m[2].find(x => x[0] === 'nc.terzi'); if (s) s[1] = n;
   CAT['nc.terzi'].sin = ['soldi di altri','per conto di altri','partita di giro','girato','girata','restituito','restituiti','anticipato per altri','rimborso girato','terzi']; })();
@@ -3222,7 +3222,7 @@ function cardFasce(pf, anteprima){
   const scalaE = Math.max(10, ...pf.righe.map(r => Math.max((r.target||0) + (r.limite||0), r.attuale||0))) * 1.1;
   let o = '<section class="card"><div class="card-testa"><h2>'+(anteprima ? 'Target e fasce' : 'Pesi contro target')+'</h2>'+(anteprima ? chip('da gennaio','pieno') : '<strong class="gr">'+eur0(pf.totale)+'</strong>')+'</div>'+
     (anteprima ? '<p class="sotto">Come leggerai il portafoglio dopo le prime rate: la tacca è il target, la fascia chiara la tolleranza, la barra il peso attuale.</p>' : '')+
-    '<p class="titolino">Blocchi</p>'+pf.blocchi.map(b => '<div class="fas-riga"><div class="fas-testa"><span>'+NOMI_BL10[b.nome]+'</span><span>'+(b.attuale == null || anteprima ? '' : '<b class="'+(b.fuori ? 'rosso' : '')+'">'+fmtNum(b.attuale,1)+'%</b> ')+'<span class="sotto">target '+b.target+'% ± '+fBl+'</span></span></div>'+barraFascia(anteprima ? null : b.attuale, b.target, fBl, 100, fEcc)+(b.eccezione && !anteprima ? '<p class="sotto warn">Oltre ±'+fEcc+' punti: si ribilancia subito vendendo il blocco sovrappesato.</p>' : '')+'</div>').join('')+
+    '<p class="titolino">Blocchi</p>'+pf.blocchi.map(b => '<div class="fas-riga"><div class="fas-testa"><span>'+NOMI_BL10[b.nome]+'</span><span>'+(b.attuale == null || anteprima ? '' : '<b class="'+(b.fuori ? 'rosso' : '')+'">'+fmtNum(b.attuale,1)+'%</b> ')+'<span class="sotto">target '+b.target+'% ± '+fBl+'</span></span></div>'+barraFascia(anteprima ? null : b.attuale, b.target, (b.nome === 'managed_futures' && pf.righe.find(r => r.e.blocco === 'managed_futures')) ? pf.righe.find(r => r.e.blocco === 'managed_futures').limite : fBl, 100, fEcc)+(b.eccezione && !anteprima ? '<p class="sotto warn">Oltre ±'+fEcc+' punti: si ribilancia subito vendendo il blocco sovrappesato.</p>' : '')+'</div>').join('')+
     '<p class="titolino">ETF</p>'+pf.righe.map(r => '<div class="fas-riga"><div class="fas-testa"><span>'+h(r.e.nome)+'</span><span>'+(r.attuale == null || anteprima ? '' : '<b class="'+(r.fuori ? 'rosso' : '')+'">'+fmtNum(r.attuale,1)+'%</b> ')+'<span class="sotto">target '+r.target+'% ± '+fmtNum(r.limite||0,1)+'</span></span></div>'+barraFascia(anteprima ? null : r.attuale, r.target, r.limite, scalaE, null)+'</div>').join('')+
     '<div class="leg-fasce"><span><i class="l-tacca"></i>target</span><span><i class="l-banda"></i>fascia</span><span><i class="l-riemp"></i>attuale</span><span><i class="l-fuori"></i>fuori fascia</span></div>'+
     fonteRiga('Fasce: blocchi ±'+fBl+' punti (ribilanciamento immediato oltre ±'+fEcc+'), ETF ±'+P('policy.fasce.etf')+'% del proprio peso, massimo ±'+P('policy.fasce.etf_max_punti')+' punti per MSCI World · POLICY §7–8. Fuori fascia: i versamenti del trimestre vanno a quell’ETF; vendite solo al ricalcolo di gennaio.')+'</section>';
@@ -3245,6 +3245,63 @@ function migraRegole(){ if (S.migratoRiapplica || !S.pronto) return; const rr = 
         await aggiorna('estratto', x.id, { scelta:r.scelta, cat:r.cat || catAuto({ descrizione:x.descrizione, scelta:r.scelta }), stato:'confermata', motivo:'regola tua: “'+r.testo+'”' }); }
       await aggiorna('regole', r.id, { riapplica:false }); } }); }
 const _render10 = render; render = function(){ try { migraRegole(); } catch (e) { console.error(e); } return _render10(); }; window.render = render;
+
+/* ================= PUNTO 10b: REGOLE DI RIBILANCIAMENTO DEL 19/11/2026 (POLICY §8) E QUOTA USA ================= */
+const pv10 = (k, d) => { const p = S.a.parametri[k]; return p && p.valore != null ? Number(p.valore) : d; };
+/* Quota della fascia consumata e indicazione operativa per ETF fuori fascia */
+function indicazioneEtf(r, pf){
+  if (r.attuale == null || r.limite == null || !pf.totale) return null;
+  const consumo = Math.abs(r.attuale - r.target) / r.limite, T = pf.totale, v = r.valore, min = minimoVersamento() || 300;
+  const bl = pf.blocchi.find(b => b.nome === r.e.blocco), blInFascia = bl && !bl.fuori;
+  if (consumo <= 1) return { consumo, testo:null };
+  if (r.attuale < r.target) { const low = (r.target - r.limite)/100, C = Math.max(0, (low*T - v)/(1 - low)), mesi = Math.ceil(C/min);
+    return { consumo, testo:'Sottopesato: riceve i versamenti del trimestre; rientra in fascia con circa '+eur0(C)+' (≈ '+mesi+' mesi di versamenti). Non si vende nulla per lui.' }; }
+  const high = (r.target + r.limite)/100, C = Math.max(0, v/high - T), mesi = Math.ceil(C/min), vendita = Math.max(0, v - r.target/100*T);
+  if (blInFascia && mesi <= 12) return { consumo, testo:'Sovrapesato: i versamenti agli altri ETF lo riportano in fascia in circa '+mesi+' mesi. Blocco in fascia: nessuna vendita (POLICY §8).' };
+  return { consumo, testo:'Sovrapesato: '+(mesi <= 12 ? 'i versamenti lo riporterebbero in fascia in circa '+mesi+' mesi, ma il blocco è fuori fascia' : 'i versamenti non bastano entro 12 mesi')+'. Al ricalcolo di gennaio, se è ancora fuori fascia: vendita di circa '+eur0(vendita)+' per tornare al target, scegliendo con il criterio fiscale (POLICY §8).' };
+}
+/* Quota USA dell’azionario */
+const ETF_AZ = ['world','avws','iwqu','iwmo','exus','eimi'];
+function quotaUsa(){
+  const pf = portafoglio(), righe = pf.righe.filter(r => ETF_AZ.includes(r.e.id)), usaReale = pf.totale > 0;
+  const pesi = {}; let tot = 0; for (const r of righe) { const w = usaReale ? r.valore : (P0('policy.quota_interna.'+r.e.id) || 0); pesi[r.e.id] = w; tot += w; }
+  let somma = 0, manca = [], vecchia = null; const anno = oggi().getFullYear();
+  for (const r of righe) { const fisso = r.e.id === 'exus' || r.e.id === 'eimi'; const q = fisso ? 0 : r.e.quota_usa; if (q == null) { manca.push(r.e.nome); continue; } somma += pesi[r.e.id]*q; if (!fisso && r.e.quota_usa_data && (!vecchia || r.e.quota_usa_data < vecchia)) vecchia = r.e.quota_usa_data; }
+  const quota = tot && !manca.length ? somma/tot : null, lmin = pv10('policy.usa.limite_min', 52), lmax = pv10('policy.usa.limite_max', 56), tmin = pv10('policy.usa.tolleranza_min', 50), tmax = pv10('policy.usa.tolleranza_max', 58), sp = pv10('policy.usa.spostamento_max', 2);
+  let azione = null; if (quota != null) { if (quota < tmin) azione = 'Sotto il '+tmin+'%: sposta fino a '+sp+' punti della proporzione interna da EXUS a MSCI World, con i versamenti.'; else if (quota > tmax) azione = 'Sopra il '+tmax+'%: sposta fino a '+sp+' punti della proporzione interna da MSCI World a EXUS, con i versamenti.'; }
+  return { righe, pesi, tot, quota, manca, vecchia, aggiornata: vecchia && vecchia >= anno+'-01-01', lmin, lmax, tmin, tmax, sp, azione, usaReale };
+}
+function cardUsa(){
+  const u = quotaUsa(), st = u.quota == null ? ['da inserire','ambra'] : (u.quota < u.tmin || u.quota > u.tmax ? ['fuori tolleranza','corallo'] : (u.quota < u.lmin || u.quota > u.lmax ? ['nella tolleranza','ambra'] : ['nel limite','verde']));
+  return '<section class="card"><div class="card-testa"><h2>Quota USA dell’azionario</h2>'+chip(st[0], st[1])+'</div>'+
+    (u.quota != null ? '<div class="eroe-num nero"><strong>'+fmtNum(u.quota,1)+'%</strong><span>limite '+u.lmin+'–'+u.lmax+'%, si interviene solo fuori dal '+u.tmin+'–'+u.tmax+'%</span></div>'+barraFascia(u.quota, (u.lmin+u.lmax)/2, (u.lmax-u.lmin)/2, 100, (u.tmax-u.tmin)/2) : '<p class="sotto">Inserisci la quota USA dei 4 ETF che ne contengono, dai factsheet aggiornati: EXUS ed EIMI non hanno USA.</p>')+
+    '<div class="elenco fitto">'+u.righe.map(r => riga(h(r.e.nome)+' <span class="sotto">'+(u.tot ? fmtNum(u.pesi[r.e.id]/u.tot*100,0)+'% dell’azionario' : '')+'</span>', (r.e.id === 'exus' || r.e.id === 'eimi') ? '0%' : (r.e.quota_usa != null ? fmtNum(r.e.quota_usa,1)+'%' : '—'))).join('')+'</div>'+
+    (u.azione ? '<p class="sotto warn">'+h(u.azione)+' La nuova proporzione va scritta nel POLICY §7 e poi nei parametri.</p>' : (u.quota != null ? '<p class="sotto">Nessun intervento.</p>' : ''))+
+    '<button class="btn" data-act="sheet" data-sheet="quota_usa">Aggiorna dai factsheet</button>'+
+    fonteRiga('Pesi '+(u.usaReale ? 'attuali' : 'delle proporzioni interne')+' degli ETF azionari. Controllo a ogni ricalcolo di gennaio · POLICY §3 e §8.'+(u.vecchia ? ' Dati del '+dataMedia(u.vecchia)+'.' : ''))+'</section>';
+}
+const _foglio10b = foglio;
+foglio = function(){ const s = ui.sheet; if (!s || s.tipo !== 'quota_usa') return _foglio10b();
+  const l = ordinati('posizioni').filter(e => ['world','avws','iwqu','iwmo'].includes(e.id));
+  return '<div class="velo" data-act="chiudi_sheet"></div><div class="foglio" role="dialog" aria-modal="true" aria-label="Quota USA dai factsheet"><h2>Quota USA dai factsheet</h2><div class="form"><p class="sotto">Per ogni ETF, la percentuale “Stati Uniti” della ripartizione geografica nel factsheet più recente dell’emittente.</p>'+
+    l.map(e => '<label>'+h(e.nome)+'<input id="f_usa_'+e.id+'" inputmode="decimal" value="'+(e.quota_usa != null ? fmtNum(e.quota_usa,1) : '')+'" placeholder="Es. 71,5"></label>').join('')+
+    '<label>Data dei factsheet<input id="f_usa_data" type="date" value="'+iso(oggi())+'"></label></div><div class="bottoni"><button class="btn primario" data-act="quota_usa_ok">Salva</button><button class="btn" data-act="chiudi_sheet">Annulla</button></div></div>'; };
+AZ.quota_usa_ok = async function(){ const d = val('f_usa_data'), l = ordinati('posizioni').filter(e => ['world','avws','iwqu','iwmo'].includes(e.id)), v = {};
+  for (const e of l) { const x = num(val('f_usa_'+e.id)); if (!(x >= 0 && x <= 100)) return avviso('Controlla le percentuali.'); v[e.id] = x; }
+  if (!isData(d)) return avviso('Controlla la data.');
+  if (await scrivi(async () => { for (const [id, x] of Object.entries(v)) await aggiorna('posizioni', id, { quota_usa:x, quota_usa_data:d }); })) chiudiSheet(); };
+/* Barre: fascia di MFEH per il suo blocco, quota consumata, indicazione operativa; scheda USA */
+const _cardFasce10b = cardFasce;
+cardFasce = function(pf, anteprima){
+  let o = _cardFasce10b(pf, anteprima); const mf = pf.righe.find(r => r.e.blocco === 'managed_futures');
+  if (mf && mf.limite != null) o = o.replace(/(<span>Managed futures<\/span><span>[\s\S]*?target \d+% ± )\d+/, '$1'+fmtNum(mf.limite,1)+' (vale la fascia di MFEH)');
+  if (!anteprima) for (const r of pf.righe) { const ind = indicazioneEtf(r, pf); if (!ind) continue; const nome = '<span>'+h(r.e.nome)+'</span>'; const k = o.indexOf(nome); if (k < 0) continue; const f = o.indexOf('</div></div>', o.indexOf('class="fascia"', k)); if (f < 0) continue;
+    const extra = '<p class="sotto">Fascia consumata: '+Math.round(ind.consumo*100)+'%'+(ind.testo ? ' · '+h(ind.testo) : '')+'</p>'; o = o.slice(0, f+6) + extra + o.slice(f+6); }
+  return o.replace('massimo ±'+P('policy.fasce.etf_max_punti')+' punti per MSCI World', 'massimo ±'+P('policy.fasce.etf_max_punti')+' punti per qualsiasi ETF; ordine per quota di fascia consumata') + cardUsa();
+};
+/* Da fare: a gennaio, quota USA da aggiornare */
+const _daFare10b = daFare;
+daFare = function(){ const l = _daFare10b(), t = oggi(); if (t.getMonth() === 0 && t.getFullYear() >= 2027) { const u = quotaUsa(); if (!u.aggiornata) l.push({ titolo:'Aggiorna la quota USA dai factsheet', testo:'Controllo di gennaio: si interviene solo fuori dal '+u.tmin+'–'+u.tmax+'%.', fonte:'POLICY §8', btn:['Inserisci','sheet','quota_usa'] }); if (u.azione) l.push({ titolo:'Quota USA fuori tolleranza', testo:u.azione, fonte:'POLICY §8', btn:['Portafoglio','go','portafoglio'] }); } return l; };
 </script>
 </body>
 </html>

@@ -3086,12 +3086,13 @@ const _render3k = render; render = function(){ try { migra3k(); } catch (e) { co
   const m = TASSONOMIA.find(x => x[0] === 'nonconsumi'); m[2].splice(1, 0, s); MACRO.nonconsumi.subs.splice(1, 0, s[0]); })();
 
 /* ================= FASE 3m: DUBBI RISOLVIBILI CON UN TOCCO, VERSIONE VISIBILE ================= */
-const VERSIONE_APP = '19/11/2026 · 3 finale';
+const VERSIONE_APP = '19/11/2026 · 3 finale (correzione 1)';
 /* Nome più chiaro per le partite di giro */
 (function(){ const n = 'Soldi di altri (partita di giro)'; CAT['nc.terzi'].nome = n; const m = TASSONOMIA.find(x => x[0] === 'nonconsumi'); const s = m[2].find(x => x[0] === 'nc.terzi'); if (s) s[1] = n;
   CAT['nc.terzi'].sin = ['soldi di altri','per conto di altri','partita di giro','girato','girata','restituito','restituiti','anticipato per altri','rimborso girato','terzi']; })();
 const bottoniRisolvi = k => '<button class="btn piccolo" data-act="cc_terzi" data-k="'+h(k)+'" title="Soldi passati da te ma non tuoi: per esempio un rimborso girato a chi aveva viaggiato">Soldi di altri</button><button class="btn piccolo" data-act="cc_chiudi" data-k="'+h(k)+'">Chiudi senza categoria</button>';
 /* Su dubbi e righe senza categoria: due uscite sempre disponibili */
+function rigaDa(k){ const i = k.indexOf(':'), t = k.slice(0, i), v = k.slice(i+1); if (t === 'r') return ui.estr && ui.estr.righe ? ui.estr.righe[Number(v)] || null : null; if (t === 's') return S.a.estratto[v] ? Object.assign({ id:v }, S.a.estratto[v]) : null; return null; }
 const _azioniRiga3m = azioniRiga;
 azioniRiga = function(k, stato, straord){ let o = _azioniRiga3m(k, stato, straord); const r = rigaDa(k);
   if (stato === 'dubbio' || (r && !r.scelta)) { o = o.replace(/<button class="btn piccolo" data-act="cc_chiudi"[^>]*>Chiudi senza categoria<\/button>/, ''); o = o.replace(/<\/div>$/, bottoniRisolvi(k)+'</div>'); }

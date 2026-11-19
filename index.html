@@ -205,6 +205,7 @@ main{padding-top:36px}
 .legenda{display:flex;flex-direction:column;gap:10px} .leg{display:flex;align-items:center;gap:12px} .leg strong{font-size:15px;font-weight:600;white-space:nowrap}
 h2.con-ico{display:flex;align-items:center;gap:10px} .ico-sez{width:30px;height:30px;border-radius:9px;display:grid;place-items:center}
 .riquadro{padding:12px;border-radius:14px;margin:10px 0;display:flex;flex-direction:column;gap:8px;align-items:flex-start}
+.ric{display:flex;align-items:center;gap:10px;padding:2px 0}
 </style>
 </head>
 <body>
@@ -439,7 +440,7 @@ function ultimoSaldo(conto, entro){
   }
   return best;
 }
-function quotaConto(c){ const q = P(c.param_quota); return q == null ? null : q/100; }
+function quotaConto(c){ if (!c || !c.param_quota) return null; const q = P(c.param_quota); return q == null ? null : q/100; }
 function liquidita(entro, soloCorrenti){
   const righe = []; let tot = 0; const mancanti = [];
   for (const c of ordinati('conti')) {
@@ -1832,7 +1833,9 @@ function pulisciBpm(d){
     .replace(/cbill \d+/ig, '').replace(/rif\.mb\w+/ig, '').replace(/sdd core:\s*\S+/i, '').replace(/\bn\. \*\d[\d ]*/i, '').replace(/carta\s*\*+\d+/ig, '').replace(/\s+/g, ' ').trim();
   return s;
 }
-const gruppoDi = d => String(d).toLowerCase().replace(/[0-9*#.,:;'"()\/-]+/g, ' ').replace(/\b(srl|spa|snc|sas|srls|s r l|di|bologna|bologn|bolo)\b/g, ' ').trim().split(/\s+/).slice(0,3).join(' ') || 'altro';
+const PREFISSI_GRUPPO = /^(?:bonifico a favore|bonifico a|bonifico da|bonifico|bon da|a favore|favore|vs disp rif \S+|add pagam diversi|pag utenze varie|boll cbill|pagamento internet|pagamento con carta|pagamento|storno|spesa pagobancomat|disposizione)\s+/;
+const gruppoDi = d => { let s = String(d).toLowerCase().replace(/[0-9*#.,:;'"()\/-]+/g, ' ').replace(/\s+/g, ' ').trim(), p; do { p = s; s = s.replace(PREFISSI_GRUPPO, ''); } while (s !== p);
+  return s.replace(/\b(srl|spa|snc|sas|srls|s r l|di|bologna|bologn|bolo|causale)\b/g, ' ').trim().split(/\s+/).slice(0,3).join(' ') || 'altro'; };
 
 /* Regole generali (senza dati personali). Le regole personali stanno nell’archivio privato “regole”. */
 const REGOLE_BASE = [
@@ -2381,7 +2384,7 @@ function suggerisci(testo, quante, soloSpese){
   const q = normTesto(testo); if (q.length < 2) return [];
   const parole = q.split(' ').filter(w => w.length >= 2), pers = sinonimiPersonali(), uso = usoCategorie(), out = [];
   for (const c of Object.values(CAT)) {
-    if (soloSpese && (c.macro === 'entrate' || c.macro === 'nonconsumi')) continue;
+    if (soloSpese && (c.macro === 'entrate' || c.macro === 'nonconsumi') && c.id !== 'nc.terzi') continue;
     const sin = (pers[c.id]||[]).concat(c.sin.map(normTesto), [normTesto(c.nome)]);
     let tot = 0, label = null;
     for (const w of [q].concat(parole.length > 1 ? parole : [])) { let best = 0, lab = null; sin.forEach((s, i) => { const b0 = punteggio(w, s); if (!b0) return; const p = b0 - Math.min(i, 25)*0.4; if (p > best) { best = p; lab = s; } }); if (best > 0) { tot += best; if (!label || w === q) label = lab; } }
@@ -3067,6 +3070,135 @@ function migra3k(){ if (S.migrato3k || !S.pronto) return; S.migrato3k = true;
   const l = lista('estratto').filter(x => x.cat === 'per.sport' && /^(prel|prelievo)\b/.test(normTesto(x.descrizione))); if (!l.length) return;
   scrivi(async () => { for (const x of l) await aggiorna('estratto', x.id, { cat:'per.contanti', scelta:vocePerCat('per.contanti') }); }); }
 const _render3k = render; render = function(){ try { migra3k(); } catch (e) { console.error(e); } return _render3k(); }; window.render = render;
+
+/* ================= FASE 3l: PARTITE DI GIRO (soldi per conto di altri) ================= */
+(function(){ const s = ['nc.terzi','Per conto di altri (partita di giro)','escluso','personale','per conto di partita di giro girato girata restituito restituiti soldi di altri anticipo per altri rimborso girato'];
+  CAT[s[0]] = { id:s[0], nome:s[1], macro:'nonconsumi', macroNome:'Non consumi', voce:s[2], conto:s[3], ordine:1.5, sin:['per conto di altri','partita di giro','girato','girata','restituito','restituiti','soldi di altri','anticipo per altri','terzi'] };
+  const m = TASSONOMIA.find(x => x[0] === 'nonconsumi'); m[2].splice(1, 0, s); MACRO.nonconsumi.subs.splice(1, 0, s[0]); })();
+
+/* ================= FASE 3m: DUBBI RISOLVIBILI CON UN TOCCO, VERSIONE VISIBILE ================= */
+const VERSIONE_APP = '18/11/2026 · 3n';
+/* Nome più chiaro per le partite di giro */
+(function(){ const n = 'Soldi di altri (partita di giro)'; CAT['nc.terzi'].nome = n; const m = TASSONOMIA.find(x => x[0] === 'nonconsumi'); const s = m[2].find(x => x[0] === 'nc.terzi'); if (s) s[1] = n;
+  CAT['nc.terzi'].sin = ['soldi di altri','per conto di altri','partita di giro','girato','girata','restituito','restituiti','anticipato per altri','rimborso girato','terzi']; })();
+const bottoniRisolvi = k => '<button class="btn piccolo" data-act="cc_terzi" data-k="'+h(k)+'" title="Soldi passati da te ma non tuoi: per esempio un rimborso girato a chi aveva viaggiato">Soldi di altri</button><button class="btn piccolo" data-act="cc_chiudi" data-k="'+h(k)+'">Chiudi senza categoria</button>';
+/* Su dubbi e righe senza categoria: due uscite sempre disponibili */
+const _azioniRiga3m = azioniRiga;
+azioniRiga = function(k, stato, straord){ let o = _azioniRiga3m(k, stato, straord); const r = rigaDa(k);
+  if (stato === 'dubbio' || (r && !r.scelta)) { o = o.replace(/<button class="btn piccolo" data-act="cc_chiudi"[^>]*>Chiudi senza categoria<\/button>/, ''); o = o.replace(/<\/div>$/, bottoniRisolvi(k)+'</div>'); }
+  return o; };
+const aggiungiRisolvi = o => o.replace(/(<div class="azioni-riga">)(<button class="btn piccolo[^"]*" data-act="cc_stato" data-k="((?:sg|g):[^"]+)" data-s="dubbio">)/g, (m, a, b, k) => a + bottoniRisolvi(k) + b);
+const _cardDaRivedere3m = cardDaRivedere; cardDaRivedere = function(){ return aggiungiRisolvi(_cardDaRivedere3m()); };
+const _vEstratto3m = VISTE.estratto; VISTE.estratto = function(){ const o = aggiungiRisolvi(_vEstratto3m()); return o + '<p class="fonte">Versione dell’app: '+VERSIONE_APP+'</p>'; };
+/* Soldi di altri: esclusi, confermati */
+AZ.cc_terzi = async function(el){ await applica(el.dataset.k, { cat:'nc.terzi', scelta:'escluso', stato:'confermata', motivo:'soldi di altri' }); };
+/* Chiudere senza categoria: uscite in “Spese non attribuite”, entrate in “Altre entrate” */
+AZ.cc_chiudi = async function(el){
+  const k = el.dataset.k, { imp, l } = righeDi(k), patch = x => x.importo < 0 ? { cat:'per.nonattr', scelta:vocePerCat('per.nonattr'), stato:'confermata', motivo:'chiusa senza categoria' } : { cat:'ent.altro', scelta:'e:entrata', stato:'confermata', motivo:'chiusa senza categoria' };
+  if (imp) { for (const r of l) Object.assign(r, patch(r)); return; }
+  await scrivi(async () => { for (const x of l) await aggiorna('estratto', x.id, patch(x)); });
+};
+/* Versione visibile in Dati e regole */
+const _vDati3m = VISTE.dati; VISTE.dati = function(){ const o = _vDati3m(), k = o.indexOf('<section'); const v = '<p class="fonte">Versione dell’app: '+VERSIONE_APP+'. Se dopo un aggiornamento vedi un numero diverso, ricarica la pagina (sul telefono chiudi e riapri l’app).</p>'; return k < 0 ? o + v : o.slice(0,k) + v + o.slice(k); };
+
+/* ================= FASE 3n: REVISIONE PER ECCEZIONE E CASSETTI DI RICONCILIAZIONE (BUDGET §10.3) ================= */
+TUTTE.push('cassetti');
+const sogliaRevisione = () => { const p = S.a.parametri['budget.estratti.soglia_revisione']; return p && p.valore != null ? Number(p.valore) : 30; };
+const quotaRiga = x => x.quota != null ? x.quota : (x.conto && S.a.conti[x.conto] ? (quotaConto(S.a.conti[x.conto]) || 1) : 1);
+
+/* ---- 1. Conferma automatica: esercenti già confermati da te e proposte di importo piccolo ---- */
+function storiaEsercenti(){ const o = {};
+  for (const x of lista('estratto')) { if (statoRiga(x) !== 'confermata' || !x.cat || !CAT[x.cat] || x.cat === 'per.nonattr' || !/^scelta tua|^come la spesa|^regola tua/.test(x.motivo||'')) continue;
+    const g = gruppoDi(x.descrizione); if (generico(g)) continue; (o[g] = o[g] || {})[x.cat] = ((o[g]||{})[x.cat]||0) + 1; }
+  const out = {}; for (const [g, m] of Object.entries(o)) { const best = Object.entries(m).sort((a,b) => b[1]-a[1])[0]; if (best && best[1] >= 1 && Object.keys(m).length === 1) out[g] = best[0]; } return out; }
+function autoConferma(r, storia, soglia){
+  if (r.dup || r.stato === 'confermata' || r.stato === 'dubbio' || r.parte_di) return false;
+  const g = r.gruppo || gruppoDi(r.descrizione);
+  if (storia[g] && (!r.scelta || r.importo < 0)) { r.cat = storia[g]; r.scelta = vocePerCat(storia[g]); r.stato = 'confermata'; r.motivo = 'come le volte precedenti'; return true; }
+  if (r.scelta && r.cat && r.importo < 0 && Math.abs(r.importo * (r.quota != null ? r.quota : 1)) < soglia && !generico(g)) { r.stato = 'confermata'; r.motivo = 'automatica: importo sotto '+eur0(soglia); return true; }
+  return false;
+}
+const _prepara3n = preparaImport;
+preparaImport = function(ris, nome){ const im = _prepara3n(ris, nome), st = storiaEsercenti(), so = sogliaRevisione(); im.auto = 0; for (const r of im.righe) if (autoConferma(r, st, so)) im.auto++; return im; };
+/* Lo stesso sulle righe già salvate, con un tocco */
+function candidateAuto(){ const st = storiaEsercenti(), so = sogliaRevisione(); return lista('estratto').filter(x => { const c = Object.assign({}, x, { cat: x.cat || catAuto(x) }); return autoConferma(c, st, so); }).length; }
+AZ.auto_conferma = async function(){ const st = storiaEsercenti(), so = sogliaRevisione(); const l = [];
+  for (const x of lista('estratto')) { const c = Object.assign({}, x, { cat: x.cat || catAuto(x) }); if (autoConferma(c, st, so)) l.push([x.id, { cat:c.cat, scelta:c.scelta, stato:'confermata', motivo:c.motivo }]); }
+  if (await scrivi(async () => { for (const [id, p] of l) await aggiorna('estratto', id, p); })) avviso(l.length+' righe confermate in automatico.'); };
+
+/* ---- 2. Riconciliazione: un’uscita e un’entrata dello stesso importo si chiudono a vicenda ---- */
+function proposteRiconciliazione(){
+  const tutte = lista('estratto').filter(x => !x.riconciliato_con && !eRicaricaBpm(x) && x.scelta !== 'f:pac_emma' && x.scelta !== 'e:stipendio' && x.scelta !== 'e:mensilita' && x.scelta !== 'x:fondo_pensione' && !(x.scelta === 'escluso' && x.cat !== 'nc.terzi'));
+  const entrate = tutte.filter(x => x.importo > 0), uscite = tutte.filter(x => x.importo < 0), usate = new Set(), out = [];
+  for (const e of entrate.sort((a,b) => a.data < b.data ? -1 : 1)) {
+    const c = uscite.filter(u => !usate.has(u.id) && Math.abs(u.importo + e.importo) < 0.01 && Math.abs(giorniTra(parse(u.data), parse(e.data))) <= 90 && !(u.no_ric||[]).includes(e.id) && !(u.scelta && u.scelta === e.scelta && statoRiga(u) === 'confermata' && statoRiga(e) === 'confermata'))
+      .sort((a,b) => (gruppoDi(b.descrizione) === gruppoDi(e.descrizione)) - (gruppoDi(a.descrizione) === gruppoDi(e.descrizione)) || Math.abs(giorniTra(parse(a.data), parse(e.data))) - Math.abs(giorniTra(parse(b.data), parse(e.data))))[0];
+    if (!c) continue;
+    /* Categoria proposta: quella dell’uscita se è un cassetto o una spesa categorizzata; altrimenti soldi di altri se le controparti sono diverse */
+    const stessa = gruppoDi(c.descrizione) === gruppoDi(e.descrizione), cu = c.cat || catAuto(c);
+    const cat = ['nc.terzi','sal.rimborsabile','var.lavoro'].includes(cu) ? cu : (stessa ? (cu || 'nc.reso') : (statoRiga(c) === 'confermata' && cu && cu !== 'per.nonattr' ? cu : 'nc.terzi'));
+    usate.add(c.id); out.push({ u:c, e, cat, stessa });
+  }
+  return out;
+}
+AZ.ric_ok = async function(el){ const u = S.a.estratto[el.dataset.u], e = S.a.estratto[el.dataset.e], cat = el.dataset.cat || null; if (!u || !e) return;
+  const v = cat ? vocePerCat(cat) : (u.scelta || '');
+  if (await scrivi(async () => { await aggiorna('estratto', el.dataset.u, Object.assign({ riconciliato_con:el.dataset.e, stato:'confermata', motivo:'riconciliata' }, cat ? { cat, scelta:v } : {}));
+    await aggiorna('estratto', el.dataset.e, Object.assign({ riconciliato_con:el.dataset.u, stato:'confermata', motivo:'riconciliata' }, cat ? { cat, scelta:v } : { cat:u.cat || catAuto(u), scelta:u.scelta })); })) avviso('Riconciliate: si compensano a zero.'); };
+AZ.ric_no = async function(el){ const u = S.a.estratto[el.dataset.u]; if (!u) return; await scrivi(() => aggiorna('estratto', el.dataset.u, { no_ric:[].concat(u.no_ric||[], [el.dataset.e]) })); };
+
+/* ---- 3. Cassetti: soldi da recuperare o da restituire ---- */
+function cassetto(cat){
+  const l = lista('estratto').filter(x => (x.cat || catAuto(x)) === cat).sort((a,b) => a.data < b.data ? -1 : 1);
+  const saldo = r2(l.reduce((s,x) => s - x.importo*quotaRiga(x), 0)); /* positivo = devi ricevere, negativo = devi restituire */
+  return { l, saldo, aperte: l.filter(x => !x.riconciliato_con) };
+}
+function vCassetti(){
+  let o = testa('Uscite e entrate che si devono compensare', 'Cassetti', ['estratto','Estratti conto']);
+  const pr = proposteRiconciliazione();
+  o += '<section class="card"><div class="card-testa"><h2>Proposte di riconciliazione</h2>'+chip(pr.length ? pr.length+'' : 'nessuna', pr.length ? 'ambra' : 'verde')+'</div><p class="sotto">Un’uscita e un’entrata dello stesso importo entro 90 giorni: se sono la stessa cosa, riconciliale e si compensano a zero.</p>'+
+    pr.map(p => '<div class="rev"><div class="ric"><div class="cresce"><p class="nome piccolo">− '+eur(-p.u.importo)+' · '+h(p.u.descrizione)+'</p><p class="sotto">'+dataBreve(p.u.data)+' '+String(p.u.data).slice(0,4)+' · '+h(nomeConto(p.u.conto))+'</p></div></div><div class="ric"><div class="cresce"><p class="nome piccolo">+ '+eur(p.e.importo)+' · '+h(p.e.descrizione)+'</p><p class="sotto">'+dataBreve(p.e.data)+' '+String(p.e.data).slice(0,4)+' · '+h(nomeConto(p.e.conto))+'</p></div></div>'+
+      '<p class="sotto">'+('Entrambe in “'+h(CAT[p.cat].nome)+'”')+(p.stessa ? ' · probabile reso o rimborso' : '')+'</p><div class="azioni-riga"><button class="btn piccolo primario" data-act="ric_ok" data-u="'+h(p.u.id)+'" data-e="'+h(p.e.id)+'" data-cat="'+h(p.cat||'')+'">Riconcilia</button><button class="btn piccolo" data-act="ric_no" data-u="'+h(p.u.id)+'" data-e="'+h(p.e.id)+'">Non c’entrano</button></div></div>').join('')+'</section>';
+  const C = [['nc.terzi','Soldi di altri','persone','Positivo: altri ti devono dei soldi. Negativo: hai soldi di altri da restituire.'],['sal.rimborsabile','Sanitarie rimborsabili','croce','Positivo: rimborsi Coopersalute ancora da ricevere.']];
+  for (const [cat, nome, ic, nota] of C) { const c = cassetto(cat); if (!c.l.length) continue;
+    o += '<section class="card"><div class="card-testa"><h2 class="con-ico"><span class="ico-sez a-prev">'+ico(ic, 18)+'</span>'+h(nome)+'</h2><strong class="gr">'+eur0(c.saldo)+'</strong></div><p class="sotto">'+h(nota)+'</p><details><summary class="link">'+c.l.length+' movimenti, '+c.aperte.length+' non riconciliati</summary><div class="elenco fitto">'+
+      c.l.slice().reverse().map(x => riga(h(x.descrizione)+' <span class="sotto">'+dataBreve(x.data)+' '+String(x.data).slice(0,4)+(x.riconciliato_con ? ' · riconciliata' : '')+'</span>', (x.importo > 0 ? '+ ' : '− ')+eur(Math.abs(x.importo*quotaRiga(x))))).join('')+'</div></details></section>'; }
+  const a = anticipiLavoro(); if (a.aperti.length) o += '<section class="card"><div class="card-testa"><h2 class="con-ico"><span class="ico-sez a-prev">'+ico('ricevuta', 18)+'</span>Spese di lavoro</h2><strong class="gr">'+eur0(a.totale)+'</strong></div><p class="sotto">Anticipi da recuperare in busta paga: si chiudono quando registri il rimborso del cedolino, oppure in blocco fino a una data.</p><div class="bottoni"><button class="btn" data-act="sheet" data-sheet="rimborso_lavoro">Registra un rimborso</button><button class="btn" data-act="sheet" data-sheet="anticipi_chiudi">Già rimborsati fino al…</button></div></section>';
+  return o + fonteRiga('BUDGET §10.2 (rimborsabili e lavoro), §10.3 (estratti e riconciliazione), §12 (soldi di altri).');
+}
+VISTE.cassetti = vCassetti;
+
+/* ---- Pagina Estratti conto: revisione per eccezione ---- */
+const _vEstratto3n = VISTE.estratto;
+VISTE.estratto = function(){
+  const im = ui.estr; let o = _vEstratto3n();
+  if (im && im.righe && !im.errore && !im.inCorso) {
+    const auto = im.righe.filter(r => !r.dup && /^come le volte precedenti|^automatica/.test(r.motivo||'')).length;
+    if (auto) o = o.replace('<section class="card"><div class="card-testa"><h2>Da assegnare</h2>', '<p class="fonte">'+auto+' righe confermate in automatico: esercenti che avevi già confermato o importi sotto '+eur0(sogliaRevisione())+' con una proposta. Le trovi in “Già confermate” e le puoi correggere.</p><section class="card"><div class="card-testa"><h2>Da assegnare</h2>');
+    const resto = im.righe.filter(r => !r.dup && r.scelta && r.stato === 'proposta').length;
+    if (resto) o = o.replace('<div class="bottoni"><button class="btn primario" data-act="estr_salva"', '<div class="bottoni"><button class="btn" data-act="estr_conf_tutte">✓ Conferma tutte le '+resto+' proposte</button></div><div class="bottoni"><button class="btn primario" data-act="estr_salva"');
+    return o;
+  }
+  const pr = proposteRiconciliazione().length, ca = candidateAuto();
+  const box = '<section class="card"><div class="card-testa"><h2>Revisione veloce</h2></div>'+
+    (ca ? '<div class="rev"><p class="sotto">'+ca+' righe si possono confermare da sole: esercenti che hai già confermato o importi sotto '+eur0(sogliaRevisione())+'.</p><button class="btn piccolo primario" data-act="auto_conferma">Conferma le '+ca+' righe</button></div>' : '')+
+    '<div class="rev"><p class="sotto">'+(pr ? pr+' coppie uscita–entrata dello stesso importo da riconciliare.' : 'Nessuna coppia da riconciliare.')+'</p><a class="btn piccolo" href="#cassetti">Cassetti e riconciliazioni</a></div>'+
+    fonteRiga('Basta farlo una volta al mese, prima della chiusura del 9. Il resto, in “Da rivedere”, sono solo le eccezioni.')+'</section>';
+  const k = o.indexOf('<section class="card"><div class="card-testa"><h2>Da rivedere</h2>'); return k < 0 ? o + box : o.slice(0,k) + box + o.slice(k);
+};
+AZ.estr_conf_tutte = function(){ const im = ui.estr; if (!im) return; for (const r of im.righe) if (!r.dup && r.scelta && r.stato === 'proposta') r.stato = 'confermata'; };
+
+/* ---- Da fare: una volta al mese, prima della chiusura ---- */
+const _daFare3n = daFare;
+daFare = function(){ const l = _daFare3n(); const mc = meseDaChiudere(); const pr = proposteRiconciliazione().length;
+  if (pr) l.push({ titolo: pr === 1 ? '1 riconciliazione proposta' : pr+' riconciliazioni proposte', testo:'Uscite ed entrate dello stesso importo: un tocco per compensarle.', fonte:'BUDGET §10.3', btn:['Cassetti','go','cassetti'] });
+  if (mc) { const n = lista('estratto').filter(x => nelMese(x.data, meseDaId(mc)) && (statoRiga(x) !== 'confermata')).length; if (n) l.push({ titolo:'Rivedi '+n+' righe del mese', testo:'Solo le eccezioni: senza categoria, in dubbio o proposte sopra '+eur0(sogliaRevisione())+'.', fonte:'BUDGET §10.3', btn:['Rivedi','go','estratto'] }); }
+  return l; };
+
+/* Resi e storni dello stesso esercente: si compensano fuori dai consumi */
+(function(){ const s = ['nc.reso','Resi e storni','escluso','personale','reso','resi','storno','restituzione merce'];
+  CAT[s[0]] = { id:s[0], nome:s[1], macro:'nonconsumi', macroNome:'Non consumi', voce:s[2], conto:s[3], ordine:1.6, sin:['reso','resi','storno','restituzione merce'] };
+  const m = TASSONOMIA.find(x => x[0] === 'nonconsumi'); m[2].splice(2, 0, s); MACRO.nonconsumi.subs.splice(2, 0, s[0]); })();
 </script>
 </body>
 </html>

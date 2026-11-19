@@ -206,6 +206,13 @@ main{padding-top:36px}
 h2.con-ico{display:flex;align-items:center;gap:10px} .ico-sez{width:30px;height:30px;border-radius:9px;display:grid;place-items:center}
 .riquadro{padding:12px;border-radius:14px;margin:10px 0;display:flex;flex-direction:column;gap:8px;align-items:flex-start}
 .ric{display:flex;align-items:center;gap:10px;padding:2px 0}
+.fas-riga{padding:8px 0} .fas-testa{display:flex;justify-content:space-between;gap:10px;font-size:14px;margin-bottom:6px} .fas-testa>span:first-child{font-weight:600;min-width:0}
+.fascia{position:relative;height:14px;border-radius:999px;background:var(--track);overflow:visible}
+.fascia .banda{position:absolute;top:0;bottom:0;background:color-mix(in srgb,var(--verde) 35%,transparent);border-radius:999px} .fascia .banda.esterna{background:color-mix(in srgb,var(--ambra) 30%,transparent)}
+.fascia .riemp{position:absolute;left:0;top:4px;height:6px;border-radius:999px;background:var(--pri-track)} .fascia .riemp.fuori{background:var(--ambra)} .fascia .riemp.grave{background:var(--corallo)}
+.fascia .tacca{position:absolute;top:-3px;width:3px;height:20px;margin-left:-1.5px;border-radius:2px;background:var(--ink)}
+.leg-fasce{display:flex;flex-wrap:wrap;gap:12px;font-size:12px;color:var(--muted);margin-top:8px} .leg-fasce i{display:inline-block;vertical-align:middle;margin-right:5px;border-radius:3px}
+.l-tacca{width:3px;height:12px;background:var(--ink)} .l-banda{width:14px;height:10px;background:color-mix(in srgb,var(--verde) 35%,transparent)} .l-riemp{width:14px;height:6px;background:var(--pri-track)} .l-fuori{width:14px;height:6px;background:var(--ambra)}
 </style>
 </head>
 <body>
@@ -3077,7 +3084,7 @@ const _render3k = render; render = function(){ try { migra3k(); } catch (e) { co
   const m = TASSONOMIA.find(x => x[0] === 'nonconsumi'); m[2].splice(1, 0, s); MACRO.nonconsumi.subs.splice(1, 0, s[0]); })();
 
 /* ================= FASE 3m: DUBBI RISOLVIBILI CON UN TOCCO, VERSIONE VISIBILE ================= */
-const VERSIONE_APP = '18/11/2026 · 3n';
+const VERSIONE_APP = '18/11/2026 · 10';
 /* Nome più chiaro per le partite di giro */
 (function(){ const n = 'Soldi di altri (partita di giro)'; CAT['nc.terzi'].nome = n; const m = TASSONOMIA.find(x => x[0] === 'nonconsumi'); const s = m[2].find(x => x[0] === 'nc.terzi'); if (s) s[1] = n;
   CAT['nc.terzi'].sin = ['soldi di altri','per conto di altri','partita di giro','girato','girata','restituito','restituiti','anticipato per altri','rimborso girato','terzi']; })();
@@ -3199,6 +3206,45 @@ daFare = function(){ const l = _daFare3n(); const mc = meseDaChiudere(); const p
 (function(){ const s = ['nc.reso','Resi e storni','escluso','personale','reso','resi','storno','restituzione merce'];
   CAT[s[0]] = { id:s[0], nome:s[1], macro:'nonconsumi', macroNome:'Non consumi', voce:s[2], conto:s[3], ordine:1.6, sin:['reso','resi','storno','restituzione merce'] };
   const m = TASSONOMIA.find(x => x[0] === 'nonconsumi'); m[2].splice(2, 0, s); MACRO.nonconsumi.subs.splice(2, 0, s[0]); })();
+
+/* ================= PUNTO 10: BARRE DEL PORTAFOGLIO CON TARGET E FASCIA (POLICY §7–8) ================= */
+function barraFascia(att, tg, lim, scala, ecc){
+  const pc = v => Math.max(0, Math.min(100, v/scala*100)).toFixed(2)+'%', fuori = att != null && lim != null && Math.abs(att - tg) > lim, grave = att != null && ecc != null && Math.abs(att - tg) > ecc;
+  return '<div class="fascia" role="img" aria-label="Target '+fmtNum(tg,1)+'%, fascia da '+fmtNum(tg-(lim||0),1)+' a '+fmtNum(tg+(lim||0),1)+(att != null ? ', attuale '+fmtNum(att,1)+'%' : '')+'">'+
+    (ecc != null ? '<span class="banda esterna" style="left:'+pc(tg-ecc)+';width:'+pc(2*ecc)+'"></span>' : '')+
+    (lim != null ? '<span class="banda" style="left:'+pc(tg-lim)+';width:'+pc(2*lim)+'"></span>' : '')+
+    (att != null ? '<span class="riemp '+(grave ? 'grave' : (fuori ? 'fuori' : ''))+'" style="width:'+pc(att)+'"></span>' : '')+
+    '<span class="tacca" style="left:'+pc(tg)+'"></span></div>';
+}
+const NOMI_BL10 = { azioni:'Azioni', obbligazioni:'Obbligazioni', managed_futures:'Managed futures' };
+function cardFasce(pf, anteprima){
+  const fBl = P('policy.fasce.blocchi'), fEcc = P('policy.fasce.eccezione');
+  const scalaE = Math.max(10, ...pf.righe.map(r => Math.max((r.target||0) + (r.limite||0), r.attuale||0))) * 1.1;
+  let o = '<section class="card"><div class="card-testa"><h2>'+(anteprima ? 'Target e fasce' : 'Pesi contro target')+'</h2>'+(anteprima ? chip('da gennaio','pieno') : '<strong class="gr">'+eur0(pf.totale)+'</strong>')+'</div>'+
+    (anteprima ? '<p class="sotto">Come leggerai il portafoglio dopo le prime rate: la tacca è il target, la fascia chiara la tolleranza, la barra il peso attuale.</p>' : '')+
+    '<p class="titolino">Blocchi</p>'+pf.blocchi.map(b => '<div class="fas-riga"><div class="fas-testa"><span>'+NOMI_BL10[b.nome]+'</span><span>'+(b.attuale == null || anteprima ? '' : '<b class="'+(b.fuori ? 'rosso' : '')+'">'+fmtNum(b.attuale,1)+'%</b> ')+'<span class="sotto">target '+b.target+'% ± '+fBl+'</span></span></div>'+barraFascia(anteprima ? null : b.attuale, b.target, fBl, 100, fEcc)+(b.eccezione && !anteprima ? '<p class="sotto warn">Oltre ±'+fEcc+' punti: si ribilancia subito vendendo il blocco sovrappesato.</p>' : '')+'</div>').join('')+
+    '<p class="titolino">ETF</p>'+pf.righe.map(r => '<div class="fas-riga"><div class="fas-testa"><span>'+h(r.e.nome)+'</span><span>'+(r.attuale == null || anteprima ? '' : '<b class="'+(r.fuori ? 'rosso' : '')+'">'+fmtNum(r.attuale,1)+'%</b> ')+'<span class="sotto">target '+r.target+'% ± '+fmtNum(r.limite||0,1)+'</span></span></div>'+barraFascia(anteprima ? null : r.attuale, r.target, r.limite, scalaE, null)+'</div>').join('')+
+    '<div class="leg-fasce"><span><i class="l-tacca"></i>target</span><span><i class="l-banda"></i>fascia</span><span><i class="l-riemp"></i>attuale</span><span><i class="l-fuori"></i>fuori fascia</span></div>'+
+    fonteRiga('Fasce: blocchi ±'+fBl+' punti (ribilanciamento immediato oltre ±'+fEcc+'), ETF ±'+P('policy.fasce.etf')+'% del proprio peso, massimo ±'+P('policy.fasce.etf_max_punti')+' punti per MSCI World · POLICY §7–8. Fuori fascia: i versamenti del trimestre vanno a quell’ETF; vendite solo al ricalcolo di gennaio.')+'</section>';
+  return o;
+}
+const _vPort10 = VISTE.portafoglio;
+VISTE.portafoglio = function(){ let o = _vPort10(); const pf = portafoglio(); if (!pf.righe.length || !pf.blocchi.length) return o;
+  if (pf.totale > 0) { const k = o.indexOf('<section class="card"><div class="card-testa"><h2>Pesi contro target</h2>'); if (k < 0) return o; const f = o.indexOf('</section>', k) + 10;
+    /* Tengo i dettagli per ETF (data, prezzo, modifica) sotto le barre, chiusi */
+    const vecchia = o.slice(k, f).replace('<section class="card"><div class="card-testa"><h2>Pesi contro target</h2>', '<section class="card"><details><summary class="link">Dettaglio e aggiornamento delle posizioni</summary><div class="card-testa"><h2>Posizioni</h2>').replace(/<\/section>$/, '</details></section>');
+    return o.slice(0,k) + cardFasce(pf, false) + vecchia + o.slice(f); }
+  const k = o.indexOf('<section class="card"><h2>Cosa compri con la rata</h2>'); const f = k >= 0 ? o.indexOf('</section>', k) + 10 : -1; const c = cardFasce(pf, true);
+  return f > 0 ? o.slice(0,f) + c + o.slice(f) : o + c; };
+
+/* ---- Regole con “riapplica”: si applicano anche alle righe già salvate (una volta) ---- */
+function migraRegole(){ if (S.migratoRiapplica || !S.pronto) return; const rr = lista('regole').filter(x => x.tipo === 'classe' && x.riapplica && x.testo); S.migratoRiapplica = true; if (!rr.length) return;
+  scrivi(async () => { for (const r of rr) { const t = String(r.testo).toLowerCase();
+      for (const x of lista('estratto')) { if (!String(x.descrizione||'').toLowerCase().includes(t) || x.straordinaria || /^scelta tua|^riconciliata/.test(x.motivo||'')) continue;
+        if (r.conto && r.conto !== x.conto) continue; if (r.segno && r.segno !== (x.importo < 0 ? '-' : '+')) continue;
+        await aggiorna('estratto', x.id, { scelta:r.scelta, cat:r.cat || catAuto({ descrizione:x.descrizione, scelta:r.scelta }), stato:'confermata', motivo:'regola tua: “'+r.testo+'”' }); }
+      await aggiorna('regole', r.id, { riapplica:false }); } }); }
+const _render10 = render; render = function(){ try { migraRegole(); } catch (e) { console.error(e); } return _render10(); }; window.render = render;
 </script>
 </body>
 </html>
